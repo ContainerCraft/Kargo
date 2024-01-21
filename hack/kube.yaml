@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: konductor
+  namespace: default
+  labels:
+    app: konductor
+spec:
+  runtimeClassName: 
+  hostname: konductor
+  containers:
+  - name: konductor
+    image: ghcr.io/containercraft/konductor:latest
+    args:
+    - /usr/bin/env
+    - connect
+    ports:
+    - containerPort: 2222
+      hostPort: 2222
+    - containerPort: 7681
+      hostPort: 7681
+    - containerPort: 8080
+      hostPort: 8080
+    resources: {}
+    securityContext:
+      capabilities:
+        drop:
+        - CAP_MKNOD
+        - CAP_NET_RAW
+      seLinuxOptions:
+        type: spc_t
+  restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: konductor-sshd
+spec:
+  type: NodePort
+  ports:
+  - port: 2222
+    protocol: TCP
+    targetPort: 2222
+  selector:
+    app: konductor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: konductor-code
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: konductor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: konductor-ttyd
+spec:
+  type: NodePort
+  ports:
+  - port: 7681
+    protocol: TCP
+    targetPort: 7681
+  selector:
+    app: konductor

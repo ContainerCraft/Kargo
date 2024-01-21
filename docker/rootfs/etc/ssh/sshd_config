@@ -1,0 +1,58 @@
+AcceptEnv LANG LC_CTYPE
+Port 2222
+PermitRootLogin no
+Subsystem	sftp	/usr/libexec/openssh/sftp-server
+AuthorizedKeysFile	.ssh/authorized_keys
+SyslogFacility AUTH
+#HostKey /etc/ssh/ssh_host_rsa_key
+#HostKey /etc/ssh/ssh_host_ecdsa_key
+#HostKey /etc/ssh/ssh_host_ed25519_key
+#PermitEmptyPasswords no
+PasswordAuthentication no
+#ChallengeResponseAuthentication no
+#GSSAPIAuthentication yes
+#GSSAPICleanupCredentials no
+#UsePAM yes
+AllowAgentForwarding yes
+AllowTcpForwarding yes
+#GatewayPorts no
+X11Forwarding no
+##X11DisplayOffset 10
+##X11UseLocalhost yes
+#PermitTTY yes
+PrintMotd no
+TCPKeepAlive yes
+#PermitUserEnvironment no
+#ChrootDirectory /root/deploy
+#ForceCommand /usr/bin/bash -c connect
+#
+## Accept locale-related environment variables
+#AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+#AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+#AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+#AcceptEnv XMODIFIERS
+#
+## override default of no subsystems
+#Subsystem       sftp    /usr/libexec/openssh/sftp-server
+#SyslogFacility AUTHPRIV
+
+#PasswordAuthentication yes
+ChallengeResponseAuthentication no
+
+GSSAPIAuthentication yes
+GSSAPICleanupCredentials no
+
+UsePAM yes
+
+#X11Forwarding yes
+
+# It is recommended to use pam_motd in /etc/pam.d/sshd instead of PrintMotd,
+# as it is more configurable and versatile than the built-in version.
+#PrintMotd no
+
+# Accept locale-related environment variables
+AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+AcceptEnv XMODIFIERS
+

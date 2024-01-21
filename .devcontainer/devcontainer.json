@@ -1,0 +1,84 @@
+// Reference:
+// - https://containers.dev/features
+// - https://containers.dev/implementors/features
+// - https://containers.dev/implementors/json_reference
+// - https://code.visualstudio.com/docs/getstarted/settings
+{
+  "name": "konductor",
+  "image": "ghcr.io/containercraft/konductor",
+  //"dockerFile": ".github/docker/Dockerfile",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        // https://github.com/VSCodeVim/Vim
+        "vim.disableExtension": true,
+        "vim.easymotion": true,
+        "vim.incsearch": true,
+        "vim.useSystemClipboard": true,
+        "vim.useCtrlKeys": true,
+        "vim.hlsearch": true,
+        "vim.insertModeKeyBindings": [
+          {
+            "before": ["j", "j"],
+            "after": ["<Esc>"]
+          }
+        ],
+        "vim.handleKeys": {
+          "<C-a>": false,
+          "<C-f>": false
+        },
+        "extensions.experimental.affinity": {
+          "vscodevim.vim": 1
+        },
+        "go.testTags": "all",
+        "go.buildTags": "all",
+        "editor.minimap.enabled": false,
+        "editor.lineNumbers": "relative",
+        "editor.quickSuggestionsDelay": 0,
+        "editor.suggestSelection": "first",
+        "editor.snippetSuggestions": "top",
+        "editor.gotoLocation.multipleReferences": "goto",
+        "editor.gotoLocation.multipleDefinitions": "goto",
+        "editor.gotoLocation.multipleDeclarations": "goto",
+        "editor.gotoLocation.multipleImplementations": "goto",
+        "editor.gotoLocation.multipleTypeDefinitions": "goto",
+        "editor.terminal.integrated.shell.linux": "/usr/bin/fish",
+        "terminal.integrated.fontFamily": "FiraMono Nerd Font Mono",
+        //"terminal.integrated.shell.linux": "/usr/bin/fish",
+        "terminal.integrated.shell.linux": "/usr/bin/bash",
+        "terminal.integrated.shellArgs.linux": ["-c", "connect"],
+        "terminal.integrated.sendKeybindingsToShell": true,
+        "workbench.colorTheme": "Dracula Soft",
+        "explorer.openEditors.visible": 1,
+        "files.trimTrailingWhitespace": true,
+        "files.trimFinalNewlines": true
+      },
+      "extensions": [
+        "golang.go",
+        "vscodevim.vim",
+        "github.copilot",
+        "vscodevim.vim",
+        "ms-python.python",
+        "redhat.vscode-yaml",
+        "esbenp.prettier-vscode",
+        "ms-vsliveshare.vsliveshare",
+        "ms-azuretools.vscode-docker",
+        "github.vscode-github-actions",
+        "ms-vscode.vscode-typescript-next",
+        "github.vscode-pull-request-github",
+        "ms-vscode-remote.remote-containers",
+        "visualstudioexptteam.vscodeintellicode",
+        "bierner.markdown-preview-github-styles"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "remoteUser": "vscode",
+  "forwardPorts": [1313, 2222, 6000, 7681, 8080],
+  "postCreateCommand": "sudo chown $USER /workspaces/* 2>/dev/null || true; direnv allow 2>/dev/null || true",
+  "mounts": ["source=dind-var-lib-docker,target=/var/lib/docker,type=volume"],
+  "runArgs": ["--init", "--privileged", "--network=host"],
+  "overrideCommand": false
+}

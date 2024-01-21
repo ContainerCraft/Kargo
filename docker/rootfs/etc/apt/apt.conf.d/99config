@@ -1,0 +1,26 @@
+//// /etc/apt/apt.conf.d/99config
+
+//// Automatically answer 'yes' to prompts
+APT::Get::Assume-Yes "true";
+APT::Get::Show-Upgraded "true";
+
+//// Minimize the installation of recommended packages
+APT::Install-Recommends "false";
+APT::Install-Suggests "false";
+
+//// Set the frontend to non-interactive
+DPkg::Pre-Install-Pkgs {"/usr/sbin/dpkg-preconfigure --apt || true";};
+DPkg::Options {
+   "--force-confdef";
+   "--force-confold";
+};
+
+//// Disable the cache for downloaded packages
+Dir::Cache "var/cache/apt/";
+Dir::Cache::archives "archives/";
+Dir::Cache::pkgcache "pkgcache/";
+Dir::Cache::srcpkgcache "cache/";
+
+//// Do not store downloaded .deb files
+Acquire::http {No-Cache=True;};
+Acquire::BrokenProxy "true";
