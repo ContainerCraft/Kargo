@@ -1,0 +1,6 @@
+name: project
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: we are writing a python monorepo kubernetes platform project. the new project should start with the following pseudo code written as a functional program import pulumi

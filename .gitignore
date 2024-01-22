@@ -1,3 +1,8 @@
 local
 .kube
 .talos
+
+*.pyc
+venv/
+__pycache__/
+pulumi/.pulumi
