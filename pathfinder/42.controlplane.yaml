@@ -87,7 +87,7 @@ machine:
         diskQuotaSupport: true
         # TODO: learn more about kubePrism
         kubePrism:
-            enabled: false
+            enabled: true
             port: 7445
         kubernetesTalosAPIAccess:
             enabled: true
@@ -117,18 +117,18 @@ cluster:
     secret: iuN7iumJaZRxJMu7i48aIUBtBgPKHf7lpqmeNMKGaY0=
     controlPlane:
         endpoint: https://192.168.1.40:6443
-    # Disabling kube-proxy to use Cilium in strict mode
-    proxy:
-        disabled: true
     network:
-        # Disabling built in CNI to use Cilium
-        cni:
-            name: none
         dnsDomain: optiplexprime.kargo.dev
         podSubnets:
             - 10.244.0.0/16
         serviceSubnets:
             - 10.96.0.0/12
+    # Disabling built in CNI to use Cilium
+        cni:
+            name: none
+    # Disabling kube-proxy to use Cilium in strict mode
+    proxy:
+        disabled: true
     token: 11vgq6.yndxc2gwodtlouju
     secretboxEncryptionSecret: XgHt30kchergGSxjhkr1OSoZT+DTkTykRzAeq13NRys=
     ca:
@@ -175,7 +175,7 @@ cluster:
     scheduler:
         image: registry.k8s.io/kube-scheduler:v1.28.0
     discovery:
-        enabled: false
+        enabled: true
         registries:
             kubernetes:
                 disabled: false

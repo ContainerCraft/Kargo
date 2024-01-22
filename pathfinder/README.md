@@ -50,9 +50,13 @@ direnv allow
 # Find the IP Address of your node on the talos console top right information list
 
 # Query the network links of your node(s) and save the output to a yaml file
-talosctl --nodes 192.168.1.164 get links --insecure --output yaml | tee links.yaml
+talosctl --nodes 192.168.1.164 get links --insecure | tee links.list
+talosctl --nodes 192.168.1.166 get links --insecure | tee links.list
+talosctl --nodes 192.168.1.169 get links --insecure | tee links.list
 
 # Find the disk configuration of your node(s)
+talosctl --nodes 192.168.1.164 disks --insecure | tee disks.list
+talosctl --nodes 192.168.1.164 disks --insecure | tee disks.list
 talosctl --nodes 192.168.1.164 disks --insecure | tee disks.list
 
 # Generate your talos kubernetes secrets
@@ -76,26 +80,16 @@ talosctl gen config kargo "https://api.kube.kargo.io:6443" \
 - Resolve any errors before proceeding
 
 ```bash
-talosctl validate --mode metal --config controlplane.41.yaml
+talosctl validate --mode metal --config 41.controlplane.yaml
+talosctl validate --mode metal --config 42.controlplane.yaml
+talosctl validate --mode metal --config 43.controlplane.yaml
 ```
 
-> see included pathfinder/controlplane.41.yaml for example
+> see included pathfinder/41.controlplane.yaml for example
 
 ### 5. Apply Talos Cluster Config
 
 ```bash
-# If necessary perform an API call to reset the node(s) to a clean state
-# CAUTION:
-#  - This will destroy all data on the node(s)
-#
-# talosctl reset --debug \
-#     --nodes 192.168.1.41 \
-#     --endpoints 192.168.1.41 \
-#     --system-labels-to-wipe STATE \
-#     --system-labels-to-wipe EPHEMERAL \
-#     --graceful=false \
-#     --reboot
-
 # Apply the cluster configuration to each node
 talosctl apply-config \
     --nodes 192.168.1.164 \
@@ -142,6 +136,24 @@ talosctl --nodes 192.168.1.41 kubeconfig .kube/config --force
 sed -i 's/api.kube.kargo.io/192.168.1.40/g' .kube/config
 ```
 
+
+### 7. Check your cluster status
+
+```bash
+# Check the status of your cluster
+kubectl get po -A
+
+# check for pending Certificate Signing Requests (CSR)
+kubectl get csr
+
+# Approve the pending CSR(s)
+kubectl get csr | awk '/Pending/ {print $1}' | xargs -n 1 kubectl certificate approve
+
+# Check the status of your cluster
+# All pods should come up except for coredns pods because we still need to deploy the cilium CNI
+kubectl get po -A
+```
+
 ![screenshot of bootstrapping talos cluster with controlplane configs and etcd bootstrap command](.assets/02-vscode-talosctl-apply-config.png)
 
 ## References
@@ -149,4 +161,56 @@ sed -i 's/api.kube.kargo.io/192.168.1.40/g' .kube/config
 ```bash
 # Get Talos Disk Usage
 talosctl --nodes 192.168.1.41 usage -H 2>/dev/null | grep -v readlink | tee du.list
+```
+
+### Apply Config Changes
+
+```bash
+# Apply the cluster configuration to each node
+talosctl apply-config \
+    --nodes 192.168.1.41 \
+    --endpoints 192.168.1.41 \
+    --file 41.controlplane.yaml
+
+talosctl apply-config \
+    --nodes 192.168.1.42 \
+    --endpoints 192.168.1.42 \
+    --file 42.controlplane.yaml
+
+talosctl apply-config \
+    --nodes 192.168.1.43 \
+    --endpoints 192.168.1.43 \
+    --file 43.controlplane.yaml
+```
+
+### Wipe Nodes & Reset
+
+```bash
+# If necessary perform an API call to reset the node(s) to a clean state
+# CAUTION:
+#  - This will destroy all data on the node(s)
+
+talosctl reset --debug \
+    --nodes 192.168.1.41 \
+    --endpoints 192.168.1.41 \
+    --system-labels-to-wipe STATE \
+    --system-labels-to-wipe EPHEMERAL \
+    --graceful=false \
+    --reboot
+
+talosctl reset --debug \
+    --nodes 192.168.1.42 \
+    --endpoints 192.168.1.42 \
+    --system-labels-to-wipe STATE \
+    --system-labels-to-wipe EPHEMERAL \
+    --graceful=false \
+    --reboot
+
+talosctl reset --debug \
+    --nodes 192.168.1.43 \
+    --endpoints 192.168.1.43 \
+    --system-labels-to-wipe STATE \
+    --system-labels-to-wipe EPHEMERAL \
+    --graceful=false \
+    --reboot
 ```
