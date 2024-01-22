@@ -17,9 +17,9 @@ class KubernetesPlatformProject:
 
     def create_namespace(self):
         return kubernetes.core.v1.Namespace(
-            f"{self.project_name}-namespace",
+            f"{self.project_name}",
             metadata=kubernetes.meta.v1.ObjectMetaArgs(
-                name=f"{self.project_name}-namespace"
+                name=f"{self.project_name}"
             ),
             opts=pulumi.ResourceOptions(provider=k8s_provider)
         )

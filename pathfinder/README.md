@@ -100,7 +100,19 @@ talosctl validate --mode metal --config controlplane.41.yaml
 talosctl apply-config \
     --nodes 192.168.1.164 \
     --endpoints 192.168.1.164 \
-    --file controlplane.41.yaml \
+    --file 41.controlplane.yaml \
+    --insecure
+
+talosctl apply-config \
+    --nodes 192.168.1.169 \
+    --endpoints 192.168.1.169 \
+    --file 42.controlplane.yaml \
+    --insecure
+
+talosctl apply-config \
+    --nodes 192.168.1.166 \
+    --endpoints 192.168.1.166 \
+    --file 43.controlplane.yaml \
     --insecure
 
 # Bootstrap the first controlplane etcd node
@@ -130,6 +142,7 @@ talosctl --nodes 192.168.1.41 kubeconfig .kube/config --force
 sed -i 's/api.kube.kargo.io/192.168.1.40/g' .kube/config
 ```
 
+![screenshot of bootstrapping talos cluster with controlplane configs and etcd bootstrap command](.assets/02-vscode-talosctl-apply-config.png)
 
 ## References
 

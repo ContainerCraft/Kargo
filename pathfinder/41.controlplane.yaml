@@ -5,6 +5,7 @@ machine:
     type: controlplane
     nodeLabels:
         kargo.dev/node: ""
+        kargo.dev/controlplane: ""
         kargo.dev/name: "optiplexprime"
         kargo.dev/domain: "kargo.dev"
         kargo.dev/version: "v1alpha1"
@@ -23,9 +24,9 @@ machine:
         defaultRuntimeSeccompProfileEnabled: true
         disableManifestsDirectory: true
         clusterDNS:
-            - 192.168.1.1
             - 8.8.8.8
             - 1.1.1.1
+            - 192.168.1.1
         extraArgs:
             rotate-server-certificates: true
         extraConfig:
@@ -84,8 +85,9 @@ machine:
         stableHostname: false
         apidCheckExtKeyUsage: true
         diskQuotaSupport: true
+        # TODO: learn more about kubePrism
         kubePrism:
-            enabled: true
+            enabled: false
             port: 7445
         kubernetesTalosAPIAccess:
             enabled: true
@@ -108,27 +110,25 @@ machine:
             - time.cloudflare.com
     sysctls:
         kernel.domainname: kargo.dev
-    sysfs:
-        devices.system.cpu.cpu0.cpufreq.scaling_governor: performance
 cluster:
-    clusterName: "kargo.dev"
+    clusterName: "optiplexprime.kargo.dev"
     allowSchedulingOnControlPlanes: true
     id: ZVH3ltUGa88kVoqwzWEQGQxYT0Cbt1VDVF8n4w666eg=
     secret: iuN7iumJaZRxJMu7i48aIUBtBgPKHf7lpqmeNMKGaY0=
     controlPlane:
-        endpoint: https://api.kube.kargo.dev:6443
+        endpoint: https://192.168.1.40:6443
     # Disabling kube-proxy to use Cilium in strict mode
     proxy:
         disabled: true
     network:
+        # Disabling built in CNI to use Cilium
+        cni:
+            name: none
         dnsDomain: optiplexprime.kargo.dev
         podSubnets:
             - 10.244.0.0/16
         serviceSubnets:
             - 10.96.0.0/12
-        # Disabling built in CNI to use Cilium
-        cni:
-            name: none
     token: 11vgq6.yndxc2gwodtlouju
     secretboxEncryptionSecret: XgHt30kchergGSxjhkr1OSoZT+DTkTykRzAeq13NRys=
     ca:
@@ -142,11 +142,11 @@ cluster:
     apiServer:
         image: registry.k8s.io/kube-apiserver:v1.28.0
         certSANs:
-            - api.kube.kargo.dev
             - 192.168.1.40
             - 192.168.1.41
             - 192.168.1.42
             - 192.168.1.43
+            - api.kube.kargo.dev
         disablePodSecurityPolicy: true
         admissionControl:
             - name: PodSecurity
@@ -175,10 +175,10 @@ cluster:
     scheduler:
         image: registry.k8s.io/kube-scheduler:v1.28.0
     discovery:
-        enabled: true
+        enabled: false
         registries:
             kubernetes:
-                disabled: true
+                disabled: false
     etcd:
         ca:
             crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJmRENDQVNPZ0F3SUJBZ0lRUkgvN3VaSVE3U1NHNGRRRlljcENyakFLQmdncWhrak9QUVFEQWpBUE1RMHcKQ3dZRFZRUUtFd1JsZEdOa01CNFhEVEkwTURFeU1USXpNREkxT0ZvWERUTTBNREV4T0RJek1ESTFPRm93RHpFTgpNQXNHQTFVRUNoTUVaWFJqWkRCWk1CTUdCeXFHU000OUFnRUdDQ3FHU000OUF3RUhBMElBQkV5eHRNOGo0VjZtCjZ6a3l0MlZSV01MTXJxM0kwNk5VakxJYVBaNWgyWnl0dVJTWU1CYlZ0Sm5GQWpkR21BOFM1RnZMQmd1WW5GamYKMjRmWnlucmk4NXVqWVRCZk1BNEdBMVVkRHdFQi93UUVBd0lDaERBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjRApBUVlJS3dZQkJRVUhBd0l3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVUGNRbXRFTnhZZ0l3ClV1aVRRZDZ4WVBTcW9UOHdDZ1lJS29aSXpqMEVBd0lEUndBd1JBSWdGaFBwMkdtejQrSXBXOE9GbXJsa1FUNXkKckZ6OFlBb0ZDalJqMlJvY2EvOENJSFc3ZjlaeUNad0ltUGJzK3NBRHRJZnlFZVdxRU9sWGxva05sNm80K2ZXQwotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
