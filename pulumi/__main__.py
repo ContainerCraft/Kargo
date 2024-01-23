@@ -28,6 +28,8 @@ kubernetes_platform_project = KubernetesPlatformProject("kargo")
 
 pulumi.export('namespace_name', kubernetes_platform_project.namespace.metadata.name)
 
+# Using Helm Values per Talos Docs
+# - https://www.talos.dev/latest/kubernetes-guides/network/deploying-cilium/#method-1-helm-install
 cilium_helm_values = {
     "cluster": {
       "name": "kargo.dev"
