@@ -6,3 +6,8 @@ local
 venv/
 __pycache__/
 pulumi/.pulumi
+
+*.pyc
+venv/
+__pycache__/
+.talos/manifest

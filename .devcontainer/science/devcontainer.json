@@ -13,9 +13,9 @@
   "customizations": {
     "vscode": {
       "settings": {
-        "terminal.integrated.shell.linux": "/usr/bin/bash",
         "terminal.integrated.fontFamily": "FiraMono Nerd Font Mono",
-        "terminal.integrated.shellArgs.linux": ["-c", "connect"],
+        "terminal.integrated.shell.linux": "/usr/bin/fish",
+        "terminal.integrated.shellArgs.linux": ["-c", "/usr/bin/connect"],
         "workbench.colorTheme": "Dracula Soft",
         "editor.minimap.enabled": false,
         "editor.lineNumbers": "relative",
