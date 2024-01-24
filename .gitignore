@@ -11,3 +11,4 @@ pulumi/.pulumi
 venv/
 __pycache__/
 .talos/manifest
+.pulumi/plugins
