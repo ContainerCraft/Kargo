@@ -94,7 +94,19 @@ talos-config:
 talos: login talos-config talos-cluster
 	@echo "Talos Cluster Created."
 
-kind: login
+# --- Wait for Kind Ready ---
+# Waits for Kind cluster to be ready
+kind-ready:
+	@echo "Waiting for Kind Cluster to be ready..."
+	kubectl wait --for=condition=Ready pod -l component=etcd --namespace=kube-system --timeout=180s
+	kubectl wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s
+	kubectl wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s
+	kubectl wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s
+	@echo "Kind Cluster is ready."
+
+# --- Create Kind Cluster ---
+# Creates a local Kubernetes cluster using Kind
+kind-cluster:
 	@echo "Creating Kind Cluster..."
 	direnv allow
 	mkdir -p ${HOME}/.kube .kube || true
@@ -107,6 +119,8 @@ kind: login
 	sleep 10
 	kubectl get po -A
 	@echo "Kind Cluster Created."
+
+kind: login kind-cluster kind-ready
 
 # --- Cleanup ---
 clean: down
