@@ -5,7 +5,7 @@ name: kind
 on: push
 
 jobs:
-  test:
+  ci-kargo-kind:
     runs-on: ubuntu-latest
     env:
       FOO: bar
@@ -24,9 +24,12 @@ jobs:
           echo "I am $FOO"
           echo "I am $GITHUB_TOKEN"
           echo "I am $PULUMI_ACCESS_TOKEN"
-          sudo chown -R $(whoami) ../*
-          ls -lah ../
+          sudo chown -R $(whoami) /__w
+          ls -lah /
+          ls -lah /__w
           pwd
+          mkdir /__w/kargo -p
+          git clone https://github.com/containercraft/kargo.git /__w/kargo/kargo
 
       - name: Checkout
         uses: actions/checkout@v3
