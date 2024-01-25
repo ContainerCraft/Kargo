@@ -4,8 +4,7 @@ GITHUB_REPOSITORY_STRING := $(shell echo ${GITHUB_REPOSITORY} | tr '[:upper:]' '
 GITHUB_REPO_NAME := $(shell echo ${GITHUB_REPOSITORY_STRING} | awk -F '/' '{print $$2}')
 GITHUB_REPO_ORG := $(shell echo ${GITHUB_REPOSITORY_STRING} | awk -F '/' '{print $$1}')
 PULUMI_STACK := ${GITHUB_USER}/${GITHUB_REPO_NAME}/${ENV}
-PULUMI_ACCESS_TOKEN := ${PULUMI_ACCESS_TOKEN}
-GITHUB_TOKEN := ${GITHUB_TOKEN}
+
 # --- Help ---
 # Provides a detailed help message displaying all available commands
 help:
@@ -28,9 +27,8 @@ help:
 # --- Pulumi Login Command ---
 login:
 	@echo "Logging in to Pulumi..."
-	export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}
 	direnv allow
-	pulumi login
+	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi login
 	pulumi install
 	@echo "Login successful."
 
@@ -43,25 +41,24 @@ login:
 esc: login
 	$(eval ENV := $(or $(ENV),kubernetes))
 	@echo "Running Pulumi ESC environment with argument ${ENV}..."
-	export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}
 	@env esc open --format shell ${ENV}
 	@echo "Pulumi ESC environment running."
 
+# --- Pulumi Up ---
 # Deploy Pulumi infrastructure
 up: login
 	@echo "Deploying Pulumi infrastructure..."
-	export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}
 	pulumi stack select --create ${PULUMI_STACK}
-	pulumi up --yes --skip-preview --stack ${PULUMI_STACK}
+	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi up --yes --skip-preview --stack ${PULUMI_STACK}
 	sleep 15
 	kubectl get po -A
 	@echo "Deployment complete."
 
+# --- Pulumi Down ---
 # Destroy Pulumi infrastructure
 down: login
 	@echo "Destroying Pulumi infrastructure..."
-	export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}
-	pulumi down --yes --skip-preview --stack ${PULUMI_STACK} || true
+	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi down --yes --skip-preview --stack ${PULUMI_STACK} || true
 	@echo "Infrastructure teardown complete."
 
 # --- Detect Architecture ---
@@ -131,9 +128,7 @@ clean-all: clean
 # --- GitHub Actions ---
 act: clean
 	@echo "Testing GitHub Workflows locally."
-	export GITHUB_TOKEN=${GITHUB_TOKEN}
-	export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}
-	act --rm --container-options "--privileged" --verbose --var PULUMI_ACCESS_TOKEN="${PULUMI_ACCESS_TOKEN}" --var GITHUB_TOKEN="${GITHUB_TOKEN}" --var ACTIONS_RUNTIME_TOKEN="${GITHUB_TOKEN}" --var GHA_GITHUB_TOKEN="${GITHUB_TOKEN}"
+	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} sudo --preserve-env act --rm --container-options "--privileged" --verbose --var PULUMI_ACCESS_TOKEN="${PULUMI_ACCESS_TOKEN}" --var GITHUB_TOKEN="${GITHUB_TOKEN}" --var ACTIONS_RUNTIME_TOKEN="${GITHUB_TOKEN}" --var GHA_GITHUB_TOKEN="${GITHUB_TOKEN}"
 	@echo "GitHub Workflow Test Complete."
 
 # --- Maintain Devcontainer ---
