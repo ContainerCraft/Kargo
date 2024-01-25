@@ -14,12 +14,14 @@ jobs:
 
     container:
       image: ghcr.io/containercraft/konductor:latest
-      options: --security-opt seccomp=unconfined
+      options: --user runner --security-opt seccomp=unconfined
 
     steps:
       - name: whoami
         run: |
           set -x
+          ls -lah /
+          ls -lah /__w
           whoami
           echo "I am $GITHUB_ACTOR"
           echo "I am $GITHUB_REPOSITORY"
