@@ -53,7 +53,7 @@ esc: login
 pulumi-up:
 	@echo "Deploying Pulumi infrastructure..."
 	pulumi stack select --create ${PULUMI_STACK}
-	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi up --yes --skip-preview --stack ${PULUMI_STACK}
+	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi up --yes --skip-preview --refresh --stack ${PULUMI_STACK}
 	sleep 15
 	kubectl get po -A
 	@echo "Deployment complete."
@@ -64,7 +64,7 @@ up: login pulumi-up all-pods-ready
 # Destroy Pulumi infrastructure
 down: login
 	@echo "Destroying Pulumi infrastructure..."
-	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi down --yes --skip-preview --stack ${PULUMI_STACK} || true
+	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK} || true
 	@echo "Infrastructure teardown complete."
 
 # --- Wait for All Pods Ready ---
@@ -73,6 +73,7 @@ all-pods-ready:
 	@echo "Waiting for all pods in the cluster to be ready..."
 	# Wait for all pods in all namespaces to be ready
 	bash -c 'until [ "$$(kubectl get pods --all-namespaces --no-headers | grep -v "Running\|Completed\|Succeeded" | wc -l)" -eq 0 ]; do echo "Waiting for pods to be ready..."; sleep 5; done'
+	kubectl get pods --all-namespaces --show-labels --kubeconfig .kube/config
 	@echo "All pods in the cluster are ready."
 
 # --- Generate Talos Config with Patches ---
@@ -156,15 +157,15 @@ kind: login kind-cluster kind-ready
 # --- Cleanup ---
 clean: down
 	@echo "Cleaning up..."
-	sudo talosctl cluster destroy || true
-	sudo talosctl config remove kargo --noconfirm || true
-	sudo talosctl config remove kargo-1 --noconfirm || true
-	sudo kind delete cluster --name cilium || true
+	sudo -E kind delete cluster --name cilium || true
+	sudo -E talosctl cluster destroy || true
+	sudo -E talosctl config remove kargo --noconfirm || true
+	sudo -E talosctl config remove kargo-1 --noconfirm || true
 	rm -rf .kube/config || true
 	rm -rf .talos/config || true
 	@echo "Cleanup complete."
 
-clean-all: clean
+clean-all: down clean
 	sudo docker volume rm cilium-worker-n01 || true
 	sudo docker volume rm cilium-worker-n02 || true
 	sudo docker volume rm cilium-control-plane-n01 || true
