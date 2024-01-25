@@ -24,6 +24,10 @@ help:
 	@echo "  konductor        - Update and sync .github/devcontainer submodule."
 	@echo "  test             - Run setup tests (kind, up, clean, clean-all)."
 
+# --- Detect Architecture ---
+# Function to detect the system architecture
+detect-arch = $(shell uname -m | awk '{ if ($$1 == "x86_64") print "amd64"; else if ($$1 == "aarch64" || $$1 == "arm64") print "arm64"; else print "unknown" }')
+
 # --- Pulumi Login Command ---
 login:
 	@echo "Logging in to Pulumi..."
@@ -46,13 +50,15 @@ esc: login
 
 # --- Pulumi Up ---
 # Deploy Pulumi infrastructure
-up: login
+pulumi-up:
 	@echo "Deploying Pulumi infrastructure..."
 	pulumi stack select --create ${PULUMI_STACK}
 	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi up --yes --skip-preview --stack ${PULUMI_STACK}
 	sleep 15
 	kubectl get po -A
 	@echo "Deployment complete."
+
+up: login pulumi-up all-pods-ready
 
 # --- Pulumi Down ---
 # Destroy Pulumi infrastructure
@@ -61,9 +67,23 @@ down: login
 	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi down --yes --skip-preview --stack ${PULUMI_STACK} || true
 	@echo "Infrastructure teardown complete."
 
-# --- Detect Architecture ---
-# Function to detect the system architecture
-detect-arch = $(shell uname -m | awk '{ if ($$1 == "x86_64") print "amd64"; else if ($$1 == "aarch64" || $$1 == "arm64") print "arm64"; else print "unknown" }')
+# --- Wait for All Pods Ready ---
+# Waits for all pods in the cluster to be ready
+all-pods-ready:
+	@echo "Waiting for all pods in the cluster to be ready..."
+	# Wait for all pods in all namespaces to be ready
+	bash -c 'until [ "$$(kubectl get pods --all-namespaces --no-headers | grep -v "Running\|Completed\|Succeeded" | wc -l)" -eq 0 ]; do echo "Waiting for pods to be ready..."; sleep 5; done'
+	@echo "All pods in the cluster are ready."
+
+# --- Generate Talos Config with Patches ---
+# Generates and validates Talos configuration with patches from the .talos/patch directory
+talos-config:
+	@echo "Generating Talos Config with Patches from .talos/patch directory..."
+	sudo -E talosctl gen secrets --force --output-file .talos/secrets/secrets.yaml
+	sudo -E talosctl gen config kargo https://10.5.0.2:6443 --force --with-secrets .talos/secrets/secrets.yaml --config-patch @.talos/patch/machine.yaml --kubernetes-version "1.29.0" --output .talos/manifest --with-examples=false --with-docs=false
+	sudo -E talosctl validate --mode container --config .talos/manifest/controlplane.yaml
+	sudo -E talosctl validate --mode container --config .talos/manifest/worker.yaml
+	@echo "Talos Config Generated in .talos/manifest directory."
 
 # --- Create Talos Kubernetes Cluster ---
 # Creates a Talos Kubernetes cluster in Docker with architecture detection and configuration patches
@@ -71,33 +91,44 @@ talos-cluster:
 	@echo "Creating Talos Kubernetes Cluster..."
 	@$(eval ARCH := $(detect-arch))
 	@echo "Detected Architecture: $(ARCH)"
-	@sudo talosctl cluster create --wait=false --arch=$(ARCH) --workers 1 --controlplanes 1 --provisioner docker --state=".talos/state" --exposed-ports="80:8080/tcp,443:8443/tcp,7445:7445/tcp" --config-patch '[{"op": "add", "path": "/cluster/proxy", "value": {"disabled": true}}, {"op":"add", "path": "/cluster/network/cni", "value": {"name": "none"}}]'
-	@sudo talosctl config node 10.5.0.2
-	@sudo talosctl kubeconfig --force --force-context-name kargo --merge=false ${KUBECONFIG}
-	@sudo talosctl cluster show
-	@sudo kubectl config get-contexts
-	@sudo kubectl cluster-info
+	@sudo -E talosctl cluster create --wait=false --arch=$(ARCH) --workers 1 --controlplanes 1 --provisioner docker --state=".talos/state" --exposed-ports="80:8080/tcp,443:8443/tcp,7445:7445/tcp" --config-patch '[{"op": "add", "path": "/cluster/proxy", "value": {"disabled": true}}, {"op":"add", "path": "/cluster/network/cni", "value": {"name": "none"}}]'
+	@sudo -E talosctl config node 10.5.0.2
+	@sudo -E talosctl kubeconfig --force --force-context-name kargo --merge=false ${KUBECONFIG}
+	@sudo chown -R ${USER} .talos .kube .pulumi ${KUBECONFIG}
+	@sudo -E talosctl cluster show
+	@echo "Talos Kubernetes Cluster Created."
+	@echo
 
-# --- Generate Talos Config with Patches ---
-# Generates and validates Talos configuration with patches from the .talos/patch directory
-talos-config:
-	@echo "Generating Talos Config with Patches from .talos/patch directory..."
-	@rm -rf .talos/{manifest,secret}/*
-	@sudo talosctl gen secrets --force --output-file .talos/secret/secrets.yaml
-	@sudo talosctl gen config kargo https://10.5.0.2:6443 --force --with-secrets .talos/secret/secrets.yaml --config-patch @.talos/patch/machine.yaml --kubernetes-version "1.29.0" --output .talos/manifest --with-examples=false --with-docs=false
-	@sudo talosctl validate --mode container --config .talos/manifest/controlplane.yaml
-	@sudo talosctl validate --mode container --config .talos/manifest/worker.yaml
-	@echo "Talos Config Generated in .talos/manifest directory."
+# --- Wait for Talos Ready ---
+# Waits for Talos cluster to be ready
+# Wait for kube-scheduler to exist and be ready
+# Wait for kube-controller-manager to exist and be ready
+# Wait for kube-apiserver to exist and be ready
+talos-ready:
+	@echo "Waiting for Talos Cluster to be ready..."
+	@echo
+	bash -c 'until kubectl --kubeconfig .kube/config wait --for=condition=Ready pod -l k8s-app=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to exist..."; sleep 8; echo; done'
+	bash -c 'until kubectl --kubeconfig .kube/config wait --for=condition=Ready pod -l k8s-app=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to exist..."; sleep 8; echo; done'
+	bash -c 'until kubectl --kubeconfig .kube/config wait --for=condition=Ready pod -l k8s-app=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver to exist..."; sleep 8; echo; done'
+	@echo
+	kubectl --kubeconfig .kube/config wait --for=condition=Ready pod -l k8s-app=kube-scheduler --namespace=kube-system --timeout=180s
+	kubectl --kubeconfig .kube/config wait --for=condition=Ready pod -l k8s-app=kube-controller-manager --namespace=kube-system --timeout=180s
+	kubectl --kubeconfig .kube/config wait --for=condition=Ready pod -l k8s-app=kube-apiserver --namespace=kube-system --timeout=180s
+	@echo
+	kubectl get pods --kubeconfig .kube/config --namespace kube-system --show-labels
+	@echo
+	@echo "Talos Cluster is ready."
 
 # --- Create and Configure Talos Cluster ---
 # Wrapper target to generate Talos config and create the cluster
-talos: login talos-config talos-cluster
+talos: login clean talos-config talos-cluster talos-ready
 	@echo "Talos Cluster Created."
 
 # --- Wait for Kind Ready ---
 # Waits for Kind cluster to be ready
 kind-ready:
 	@echo "Waiting for Kind Cluster to be ready..."
+	bash -c 'until kubectl -n kube-system get po kube-apiserver-cilium-control-plane &> /dev/null; do echo "Waiting for kube-apiserver-cilium-control-plane to exist..."; sleep 3; done && kubectl wait --for=condition=Ready pod/kube-apiserver-cilium-control-plane --namespace=kube-system --timeout=120s'
 	kubectl wait --for=condition=Ready pod -l component=etcd --namespace=kube-system --timeout=180s
 	kubectl wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s
 	kubectl wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s
