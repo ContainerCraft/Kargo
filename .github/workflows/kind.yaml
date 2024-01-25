@@ -24,7 +24,7 @@ jobs:
           echo "I am $FOO"
           echo "I am $GITHUB_TOKEN"
           echo "I am $PULUMI_ACCESS_TOKEN"
-          sudo chown -R $USER /workspaces
+          sudo chown -R $(whoami) /workspaces
           ls -lah /workspaces
           ls -lah /workspaces/Kargo
 
