@@ -1,11 +1,11 @@
 # This Github Workflow will run on every push to the repository
 # and will test and validate the Kargo codebase using Kind Kubernetes.
-name: kind
+name: CI Testing - Konductor on Talos
 
 on: push
 
 jobs:
-  ci-kargo-kind:
+  ci-kargo-talos:
     runs-on: ubuntu-latest
     env:
       FOO: bar
@@ -23,14 +23,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Start Kind Cluster
+      - name: Start Talos K8s Cluster
         run: |
-          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make login kind
+          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make login talos
 
 
-      - name: Run Pulumi Preview
+      - name: Run Pulumi Up
         run: |
-          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make login up down
+          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make up
 
       - name: Cleanup
         if: always()
