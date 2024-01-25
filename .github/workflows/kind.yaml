@@ -1,0 +1,45 @@
+# This Github Workflow will run on every push to the repository
+# and will test and validate the Kargo codebase using Kind Kubernetes.
+name: kind
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      FOO: bar
+      PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    container:
+      image: ghcr.io/containercraft/konductor:latest
+      options: --security-opt seccomp=unconfined
+
+    steps:
+      - name: whoami
+        run: |
+          echo "I am $GITHUB_ACTOR"
+          echo "I am $GITHUB_REPOSITORY"
+          echo "I am $FOO"
+          echo "I am $GITHUB_TOKEN"
+          echo "I am $PULUMI_ACCESS_TOKEN"
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Start Kind Cluster
+        run: |
+          export PULUMI_ACCESS_TOKEN=${{ secrets.PULUMI_ACCESS_TOKEN }} ; make login kind
+
+
+      - name: Run Pulumi Preview
+        run: |
+          export PULUMI_ACCESS_TOKEN=${{ secrets.PULUMI_ACCESS_TOKEN }} ; make login up down
+
+      - name: Cleanup
+        if: always()
+        run: |
+          export PULUMI_ACCESS_TOKEN=${{ secrets.PULUMI_ACCESS_TOKEN }} ; make clean-all
