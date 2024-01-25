@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: whoami
         run: |
+          set -x
+          whoami
           echo "I am $GITHUB_ACTOR"
           echo "I am $GITHUB_REPOSITORY"
           echo "I am $FOO"
