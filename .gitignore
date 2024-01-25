@@ -13,3 +13,4 @@ __pycache__/
 .talos/manifest
 .pulumi/plugins
 .pulumi/*
+Pulumi.*.yaml
