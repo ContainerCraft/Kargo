@@ -25,51 +25,42 @@ jobs:
 
       - id: help
         run: |
-          set -ex
-          make help
+          set -ex; make help
 
       - id: login
         run: |
-          set -ex
-          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make login
+          set -ex; export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make login
 
       - id: talos-config
         run: |
-          set -ex
-          make talos-config
+          set -ex; make talos-config
 
       - id: talos-cluster
         run: |
-          set -ex
-          make talos-cluster
+          set -ex; make talos-cluster
 
       - id: talos-ready
         run: |
-          set -ex
-          make talos-ready
+          set -ex; make talos-ready
 
       - id: pulumi-up
         run: |
-          set -ex
-          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make pulumi-up
+          set -ex; export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make pulumi-up
 
       - id: all-pods-ready
         run: |
-          set -ex
-          make all-pods-ready
+          set -ex; make all-pods-ready
 
       - id: pulumi-down
         run: |
-          set -ex
-          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make pulumi-down
+          set -ex; export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make pulumi-down
 
 
       - name: clean
         run: |
-          make clean
+          set -ex; make clean
 
       - name: clean-all
         if: always()
         run: |
-          set -ex
-          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make clean-all
+          set -ex; export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make clean-all
