@@ -108,11 +108,11 @@ talos-cluster:
 	@echo "Creating Talos Kubernetes Cluster..."
 	@$(eval ARCH := $(detect-arch))
 	@echo "Detected Architecture: $(ARCH)"
-	@sudo -E talosctl cluster create --with-debug --wait=false --arch=$(ARCH) --workers 1 --controlplanes 1 --provisioner docker --state=".talos/state" --exposed-ports="80:8080/tcp,443:8443/tcp,2222:2222/tcp,7445:7445/tcp" --config-patch '[{"op": "add", "path": "/cluster/proxy", "value": {"disabled": true}}, {"op":"add", "path": "/cluster/network/cni", "value": {"name": "none"}}]'
-	@sudo -E talosctl config node 10.5.0.2
-	@sudo -E talosctl kubeconfig --force --force-context-name kargo --merge=false ${KUBECONFIG}
-	@sudo chown -R ${USER} .talos .kube .pulumi ${KUBECONFIG}
-	@sudo -E talosctl cluster show
+	@set -ex; sudo -E talosctl cluster create --with-debug --wait=false --arch=$(ARCH) --workers 1 --controlplanes 1 --provisioner docker --state=".talos/state" --exposed-ports="80:8080/tcp,443:8443/tcp,2232:2232/tcp,7445:7445/tcp" --config-patch '[{"op": "add", "path": "/cluster/proxy", "value": {"disabled": true}}, {"op":"add", "path": "/cluster/network/cni", "value": {"name": "none"}}]'
+	@set -ex; sudo -E talosctl config node 10.5.0.2
+	@set -ex; sudo -E talosctl kubeconfig --force --force-context-name kargo --merge=false ${KUBECONFIG}
+	@set -ex; sudo chown -R ${USER} .talos .kube .pulumi ${KUBECONFIG}
+	@set -ex; sudo -E talosctl cluster show
 	@echo "Talos Kubernetes Cluster Created."
 	@echo
 
@@ -140,7 +140,7 @@ talos-ready:
 
 # --- Create and Configure Talos Cluster ---
 # Wrapper target to generate Talos config and create the cluster
-talos: login clean talos-config talos-cluster talos-ready
+talos: pulumi-login clean clean-all talos-config talos-cluster talos-ready
 	@echo "Talos Cluster Created."
 
 # --- Wait for Kind Ready ---

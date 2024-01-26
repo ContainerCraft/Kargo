@@ -48,17 +48,12 @@ jobs:
           set -ex
           make talos-ready
 
-      - id: all-pods-ready-talos
-        run: |
-          set -ex
-          make all-pods-ready
-
       - id: pulumi-up
         run: |
           set -ex
           export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make pulumi-up
 
-      - id: all-pods-ready-pulumi
+      - id: all-pods-ready
         run: |
           set -ex
           make all-pods-ready
