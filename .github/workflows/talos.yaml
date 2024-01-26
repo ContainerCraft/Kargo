@@ -7,10 +7,6 @@ on: push
 jobs:
   ci-kargo-talos:
     runs-on: ubuntu-latest
-    env:
-      FOO: bar
-      PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     container:
       image: ghcr.io/containercraft/konductor:latest
@@ -29,7 +25,10 @@ jobs:
 
       - id: login
         run: |
-          set -ex; export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make login
+          set -ex; export PULUMI_ACCESS_TOKEN=${{ env.PULUMI_ACCESS_TOKEN }} ; make login
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - id: talos-config
         run: |
@@ -45,7 +44,10 @@ jobs:
 
       - id: pulumi-up
         run: |
-          set -ex; export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make pulumi-up
+          set -ex; export PULUMI_ACCESS_TOKEN=${{ env.PULUMI_ACCESS_TOKEN }} ; make pulumi-up
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - id: all-pods-ready
         run: |
@@ -53,7 +55,10 @@ jobs:
 
       - id: pulumi-down
         run: |
-          set -ex; export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make pulumi-down
+          set -ex; export PULUMI_ACCESS_TOKEN=${{ env.PULUMI_ACCESS_TOKEN }} ; make pulumi-down
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
       - name: clean
@@ -63,4 +68,7 @@ jobs:
       - name: clean-all
         if: always()
         run: |
-          set -ex; export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make clean-all
+          set -ex; export PULUMI_ACCESS_TOKEN=${{ env.PULUMI_ACCESS_TOKEN }} ; make clean-all
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

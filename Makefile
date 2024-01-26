@@ -4,6 +4,7 @@ GITHUB_REPOSITORY_STRING := $(shell echo ${GITHUB_REPOSITORY} | tr '[:upper:]' '
 GITHUB_REPO_NAME := $(shell echo ${GITHUB_REPOSITORY_STRING} | awk -F '/' '{print $$2}')
 GITHUB_REPO_ORG := $(shell echo ${GITHUB_REPOSITORY_STRING} | awk -F '/' '{print $$1}')
 PULUMI_STACK := ${GITHUB_USER}/${GITHUB_REPO_NAME}/${ENV}
+PULUMI_ACCESS_TOKEN := ${PULUMI_ACCESS_TOKEN}
 
 # --- Help ---
 # Provides a detailed help message displaying all available commands
@@ -199,7 +200,7 @@ clean-all:
 # --- GitHub Actions ---
 act: clean-all
 	@echo "Testing GitHub Workflows locally."
-	export GITHUB_TOKEN="${GITHUB_TOKEN}"; export PULUMI_ACCESS_TOKEN="${PULUMI_ACCESS_TOKEN}"; PULUMI_ACCESS_TOKEN="${PULUMI_ACCESS_TOKEN}" sudo --preserve-env act --rm --container-options "--privileged" --verbose --var PULUMI_ACCESS_TOKEN="${PULUMI_ACCESS_TOKEN}" --var GITHUB_TOKEN="${GITHUB_TOKEN}" --var ACTIONS_RUNTIME_TOKEN="${GITHUB_TOKEN}" --var GHA_GITHUB_TOKEN="${GITHUB_TOKEN}"
+	export GITHUB_TOKEN=${GITHUB_TOKEN}; export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}; PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} sudo --preserve-env act --rm --container-options "--privileged" --verbose --var PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} --var GITHUB_TOKEN=${GITHUB_TOKEN} --var ACTIONS_RUNTIME_TOKEN=${GITHUB_TOKEN} --var GHA_GITHUB_TOKEN=${GITHUB_TOKEN}
 	@echo "GitHub Workflow Test Complete."
 
 # --- Maintain Devcontainer ---
