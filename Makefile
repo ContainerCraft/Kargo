@@ -13,7 +13,7 @@ help:
 	@echo "  login            - Authenticate with Pulumi cloud services."
 	@echo "  esc ENV=foobar   - Run Pulumi ESC environment. Default ENV='kubernetes'."
 	@echo "  up               - Deploy Pulumi infrastructure using Pulumi stack."
-	@echo "  down             - Destroy deployed Pulumi infrastructure."
+	@echo "  pulumi-down      - Destroy deployed Pulumi infrastructure."
 	@echo "  talos-cluster    - Deploy a Talos Kubernetes cluster in Docker."
 	@echo "  talos-config     - Generate and validate Talos configuration with patches."
 	@echo "  talos            - Create and configure a Talos Kubernetes cluster."
@@ -29,12 +29,18 @@ help:
 detect-arch = $(shell uname -m | awk '{ if ($$1 == "x86_64") print "amd64"; else if ($$1 == "aarch64" || $$1 == "arm64") print "arm64"; else print "unknown" }')
 
 # --- Pulumi Login Command ---
-login:
+pulumi-login:
 	@echo "Logging in to Pulumi..."
 	direnv allow
 	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi login
 	pulumi install
 	@echo "Login successful."
+	@echo
+
+# --- Pulumi Login ---
+# Login to Pulumi cloud services
+login: pulumi-login
+	@echo "Login complete."
 	@echo
 
 # --- Pulumi ESC ---
@@ -65,10 +71,14 @@ up: login pulumi-up all-pods-ready
 
 # --- Pulumi Down ---
 # Destroy Pulumi infrastructure
-down: login
+pulumi-down: login
 	@echo "Destroying Pulumi infrastructure..."
 	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK} || true
 	@echo "Infrastructure teardown complete."
+	@echo
+
+down: pulumi-down
+	@echo "Pulumi infrastructure destroyed."
 	@echo
 
 # --- Wait for All Pods Ready ---
@@ -168,7 +178,7 @@ kind-cluster:
 kind: login kind-cluster kind-ready
 
 # --- Cleanup ---
-clean: down
+clean: pulumi-down
 	@echo "Cleaning up..."
 	sudo -E kind delete cluster --name cilium || true
 	sudo -E talosctl cluster destroy || true
@@ -179,7 +189,7 @@ clean: down
 	@echo "Cleanup complete."
 	@echo
 
-clean-all: down clean
+clean-all:
 	sudo docker volume rm cilium-worker-n01 || true
 	sudo docker volume rm cilium-worker-n02 || true
 	sudo docker volume rm cilium-control-plane-n01 || true
@@ -194,7 +204,7 @@ act: clean-all
 
 # --- Maintain Devcontainer ---
 konductor:
-	git submodule update --init --recursive .github/konductor
+	git submodule update --init .github/konductor
 	git submodule update --remote --merge .github/konductor
 	rsync -av .github/konductor/.devcontainer/* .devcontainer
 	docker pull ghcr.io/containercraft/konductor:latest
@@ -206,8 +216,8 @@ stop:
 	@echo
 
 # --- Testing ---
-test-kind: login clean clean-all kind pulumi-up all-pods-ready clean clean-all
-test-talos: login clean clean-all talos pulumi-up all-pods-ready clean clean-all
+test-kind: login clean-all kind pulumi-up all-pods-ready clean-all
+test-talos: login clean-all talos pulumi-up all-pods-ready clean-all
 
 # --- Default Command ---
 all: help
