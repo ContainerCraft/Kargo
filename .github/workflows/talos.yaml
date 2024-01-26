@@ -23,16 +23,58 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Start Talos K8s Cluster
+      - id: help
         run: |
-          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make login talos
+          set -ex
+          make help
 
-
-      - name: Run Pulumi Up
+      - id: login
         run: |
-          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make up
+          set -ex
+          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make login
 
-      - name: Cleanup
+      - id: talos-config
+        run: |
+          set -ex
+          make talos-config
+
+      - id: talos-cluster
+        run: |
+          set -ex
+          make talos-cluster
+
+      - id: talos-ready
+        run: |
+          set -ex
+          make talos-ready
+
+      - id: all-pods-ready-talos
+        run: |
+          set -ex
+          make all-pods-ready
+
+      - id: pulumi-up
+        run: |
+          set -ex
+          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make pulumi-up
+
+      - id: all-pods-ready-pulumi
+        run: |
+          set -ex
+          make all-pods-ready
+
+      - id: pulumi-down
+        run: |
+          set -ex
+          export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make pulumi-down
+
+
+      - name: clean
+        run: |
+          make clean
+
+      - name: clean-all
         if: always()
         run: |
+          set -ex
           export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} ; make clean-all
