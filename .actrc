@@ -1,0 +1,6 @@
+--rm
+--env-file .env
+-e hack/act.json
+--container-options "--privileged"
+-s GITHUB_TOKEN=${GITHUB_TOKEN}
+-s PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}
