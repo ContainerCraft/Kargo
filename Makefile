@@ -108,7 +108,7 @@ talos-cluster:
 	@echo "Creating Talos Kubernetes Cluster..."
 	@$(eval ARCH := $(detect-arch))
 	@echo "Detected Architecture: $(ARCH)"
-	@sudo -E talosctl cluster create --wait=false --arch=$(ARCH) --workers 1 --controlplanes 1 --provisioner docker --state=".talos/state" --exposed-ports="80:8080/tcp,443:8443/tcp,7445:7445/tcp" --config-patch '[{"op": "add", "path": "/cluster/proxy", "value": {"disabled": true}}, {"op":"add", "path": "/cluster/network/cni", "value": {"name": "none"}}]'
+	@sudo -E talosctl cluster create --with-debug --wait=false --arch=$(ARCH) --workers 1 --controlplanes 1 --provisioner docker --state=".talos/state" --exposed-ports="80:8080/tcp,443:8443/tcp,2222:2222/tcp,7445:7445/tcp" --config-patch '[{"op": "add", "path": "/cluster/proxy", "value": {"disabled": true}}, {"op":"add", "path": "/cluster/network/cni", "value": {"name": "none"}}]'
 	@sudo -E talosctl config node 10.5.0.2
 	@sudo -E talosctl kubeconfig --force --force-context-name kargo --merge=false ${KUBECONFIG}
 	@sudo chown -R ${USER} .talos .kube .pulumi ${KUBECONFIG}
@@ -199,7 +199,7 @@ clean-all:
 # --- GitHub Actions ---
 act: clean-all
 	@echo "Testing GitHub Workflows locally."
-	export GITHUB_TOKEN="${GITHUB_TOKEN}"; export PULUMI_ACCESS_TOKEN="${PULUMI_ACCESS_TOKEN}"; PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} sudo --preserve-env act --rm --container-options "--privileged" --verbose --var PULUMI_ACCESS_TOKEN="${PULUMI_ACCESS_TOKEN}" --var GITHUB_TOKEN="${GITHUB_TOKEN}" --var ACTIONS_RUNTIME_TOKEN="${GITHUB_TOKEN}" --var GHA_GITHUB_TOKEN="${GITHUB_TOKEN}"
+	export GITHUB_TOKEN="${GITHUB_TOKEN}"; export PULUMI_ACCESS_TOKEN="${PULUMI_ACCESS_TOKEN}"; PULUMI_ACCESS_TOKEN="${PULUMI_ACCESS_TOKEN}" sudo --preserve-env act --rm --container-options "--privileged" --verbose --var PULUMI_ACCESS_TOKEN="${PULUMI_ACCESS_TOKEN}" --var GITHUB_TOKEN="${GITHUB_TOKEN}" --var ACTIONS_RUNTIME_TOKEN="${GITHUB_TOKEN}" --var GHA_GITHUB_TOKEN="${GITHUB_TOKEN}"
 	@echo "GitHub Workflow Test Complete."
 
 # --- Maintain Devcontainer ---
