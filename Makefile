@@ -6,6 +6,19 @@ GITHUB_REPO_ORG := $(shell echo ${GITHUB_REPOSITORY_STRING} | awk -F '/' '{print
 PULUMI_STACK := ${GITHUB_USER}/${GITHUB_REPO_NAME}/${ENV}
 PULUMI_ACCESS_TOKEN := ${PULUMI_ACCESS_TOKEN}
 
+# Escape special characters in PULUMI_ACCESS_TOKEN and GITHUB_TOKEN
+ESCAPED_PULUMI_ACCESS_TOKEN := $(shell echo "${PULUMI_ACCESS_TOKEN}" | sed -e 's/[\/&]/\\&/g')
+ESCAPED_GITHUB_TOKEN := $(shell echo "${GITHUB_TOKEN}" | sed -e 's/[\/&]/\\&/g')
+
+# Basic environment variables
+KUBECONFIG := ${PWD}/.kube/config
+TALOSCONFIG := ${PWD}/.talos/config
+
+# Basic sanity check to ensure PULUMI_ACCESS_TOKEN is set
+ifeq ($(PULUMI_ACCESS_TOKEN),)
+$(error PULUMI_ACCESS_TOKEN is not set)
+endif
+
 # --- Help ---
 # Provides a detailed help message displaying all available commands
 help:
@@ -33,15 +46,14 @@ detect-arch = $(shell uname -m | awk '{ if ($$1 == "x86_64") print "amd64"; else
 pulumi-login:
 	@echo "Logging in to Pulumi..."
 	direnv allow
-	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi login
-	pulumi install
-	@echo "Login successful."
+	@PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi login 2>&1 | sed 's/$(ESCAPED_PULUMI_ACCESS_TOKEN)/***PULUMI_ACCESS_TOKEN***/g' | sed 's/$(ESCAPED_GITHUB_TOKEN)/***GITHUB_TOKEN***/g'
+	@pulumi install
 	@echo
 
 # --- Pulumi Login ---
 # Login to Pulumi cloud services
 login: pulumi-login
-	@echo "Login complete."
+	@echo "Login successful."
 	@echo
 
 # --- Pulumi ESC ---
@@ -61,10 +73,10 @@ esc: login
 # Deploy Pulumi infrastructure
 pulumi-up:
 	@echo "Deploying Pulumi infrastructure..."
-	pulumi stack select --create ${PULUMI_STACK}
-	export KUBECONFIG=".kube/config"; export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}; pulumi up --yes --skip-preview --refresh --stack ${PULUMI_STACK}
-	sleep 15
-	kubectl get po -A
+	@pulumi stack select --create ${PULUMI_STACK}
+	@KUBECONFIG=.kube/config PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi up --yes --skip-preview --refresh --stack ${PULUMI_STACK} 2>&1 | sed 's/$(ESCAPED_PULUMI_ACCESS_TOKEN)/***PULUMI_ACCESS_TOKEN***/g' | sed 's/$(ESCAPED_GITHUB_TOKEN)/***GITHUB_TOKEN***/g' || true
+	@sleep 15
+	@kubectl get po -A
 	@echo "Deployment complete."
 	@echo
 
@@ -72,9 +84,9 @@ up: login pulumi-up all-pods-ready
 
 # --- Pulumi Down ---
 # Destroy Pulumi infrastructure
-pulumi-down: login
+pulumi-down: pulumi-login
 	@echo "Destroying Pulumi infrastructure..."
-	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK} || true
+	@PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK} 2>&1 | sed 's/$(ESCAPED_PULUMI_ACCESS_TOKEN)/***PULUMI_ACCESS_TOKEN***/g' | sed 's/$(ESCAPED_GITHUB_TOKEN)/***GITHUB_TOKEN***/g' || true
 	@echo "Infrastructure teardown complete."
 	@echo
 
@@ -94,28 +106,35 @@ all-pods-ready:
 
 # --- Generate Talos Config with Patches ---
 # Generates and validates Talos configuration with patches from the .talos/patch directory
-talos-config:
+talos-gen-config:
 	@echo "Generating Talos Config with Patches from .talos/patch directory..."
-	sudo -E talosctl gen secrets --force --output-file .talos/secrets/secrets.yaml
-	sudo -E talosctl gen config kargo https://10.5.0.2:6443 --force --with-secrets .talos/secrets/secrets.yaml --config-patch @.talos/patch/machine.yaml --kubernetes-version "1.29.0" --output .talos/manifest --with-examples=false --with-docs=false
-	sudo -E talosctl validate --mode container --config .talos/manifest/controlplane.yaml
-	sudo -E talosctl validate --mode container --config .talos/manifest/worker.yaml
+	@mkdir -p .kube .pulumi .talos
+	@touch ${KUBECONFIG} ${TALOSCONFIG}
+	@sudo --preserve-env talosctl gen secrets --force --output-file .talos/secrets/secrets.yaml
+	@sudo --preserve-env talosctl gen config kargo https://10.5.0.2:6443 --force --with-secrets .talos/secrets/secrets.yaml --config-patch @.talos/patch/machine.yaml --kubernetes-version "1.29.0" --output .talos/manifest --with-examples=false --with-docs=false
+	@sudo --preserve-env talosctl validate --mode container --config .talos/manifest/controlplane.yaml
+	@sudo --preserve-env talosctl validate --mode container --config .talos/manifest/worker.yaml
+	@cat .talos/manifest/talosconfig | tee .talos/config
 	@echo "Talos Config Generated in .talos/manifest directory."
 	@echo
 
 # --- Create Talos Kubernetes Cluster ---
 # Creates a Talos Kubernetes cluster in Docker with architecture detection and configuration patches
-#@set -ex; sudo -E talosctl cluster create --arch=$(ARCH) --provisioner docker --with-debug
+#@set -ex; sudo --preserve-env talosctl cluster create --arch=$(ARCH) --provisioner docker --with-debug
 # --exposed-ports="80:8080/tcp,443:8443/tcp,2232:2232/tcp,7445:7445/tcp"
 talos-cluster:
 	@echo "Creating Talos Kubernetes Cluster..."
 	@$(eval ARCH := $(detect-arch))
 	@echo "Detected Architecture: $(ARCH)"
-	@set -ex; sudo -E talosctl cluster create --with-debug --wait=false --arch=$(ARCH) --workers 1 --controlplanes 1 --provisioner docker --state=".talos/state" --config-patch '[{"op": "add", "path": "/cluster/proxy", "value": {"disabled": true}}, {"op":"add", "path": "/cluster/network/cni", "value": {"name": "none"}}]'
-	@set -ex; sudo -E talosctl config node 10.5.0.2
-	@set -ex; sudo -E talosctl kubeconfig --force --force-context-name kargo --merge=false ${KUBECONFIG}
-	@set -ex; sudo chown -R $(whoami) .talos .kube .pulumi ${KUBECONFIG} || sudo chown -R vscode .talos .kube .pulumi ${KUBECONFIG}
-	@set -ex; sudo -E talosctl cluster show
+	@sudo --preserve-env talosctl cluster create --with-debug --wait=false --arch=$(ARCH) --workers 1 --controlplanes 1 --provisioner docker --state=".talos/state" --config-patch '[{"op": "add", "path": "/cluster/proxy", "value": {"disabled": true}}, {"op":"add", "path": "/cluster/network/cni", "value": {"name": "none"}}]'
+	@sleep 10
+	@echo "Talos Cluster is provisioning..."
+
+talos-load-config:
+	@KUBECONFIG=${PWD}.kube/config TALOSCONFIG=${PWD}/.talos/config talosctl config node 10.5.0.2
+	@direnv allow; KUBECONFIG=${PWD}.kube/config TALOSCONFIG=${PWD}/.talos/config sudo chown -R $(whoami) .talos .kube .pulumi ${KUBECONFIG} || sudo chown -R runner .talos .kube .pulumi ${KUBECONFIG} ; cat ${KUBECONFIG}
+	@direnv allow; KUBECONFIG=${PWD}.kube/config TALOSCONFIG=${PWD}/.talos/config sudo --preserve-env talosctl kubeconfig --force --force-context-name kargo --merge=false ${KUBECONFIG}
+	@set -ex; sudo --preserve-env talosctl cluster show
 	@echo "Talos Kubernetes Cluster Created."
 	@echo
 
@@ -143,7 +162,7 @@ talos-ready:
 
 # --- Create and Configure Talos Cluster ---
 # Wrapper target to generate Talos config and create the cluster
-talos: pulumi-login clean clean-all talos-config talos-cluster talos-ready
+talos: pulumi-login clean clean-all talos-gen-config talos-cluster talos-load-config talos-ready
 	@echo "Talos Cluster Created."
 
 # --- Wait for Kind Ready ---
@@ -183,12 +202,10 @@ kind: login kind-cluster kind-ready
 # --- Cleanup ---
 clean: pulumi-down
 	@echo "Cleaning up..."
-	sudo -E kind delete cluster --name cilium || true
-	sudo -E talosctl cluster destroy || true
-	sudo -E talosctl config remove kargo --noconfirm || true
-	sudo -E talosctl config remove kargo-1 --noconfirm || true
-	rm -rf .kube/config || true
-	rm -rf .talos/config || true
+	sudo --preserve-env kind delete cluster --name cilium || true
+	sudo --preserve-env talosctl cluster destroy || true
+	sudo --preserve-env talosctl config remove kargo --noconfirm || true
+	sudo --preserve-env talosctl config remove kargo-1 --noconfirm || true
 	@echo "Cleanup complete."
 	@echo
 
@@ -199,13 +216,19 @@ clean-all:
 	@echo "Extended cleanup complete."
 	@echo
 
+## --- GitHub Actions ---
+#act: clean-all
+#	@echo "Testing GitHub Workflows locally."
+#	rm .env
+#	echo "GITHUB_TOKEN=${GITHUB_TOKEN}" >> .env
+#	echo "PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}" >> .env
+#	PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} sudo --preserve-env act 2>&1 | sed "s/${PULUMI_ACCESS_TOKEN}/***/g"
+#	@echo "GitHub Workflow Test Complete."
+
 # --- GitHub Actions ---
-act: clean-all
+act: clean clean-all
 	@echo "Testing GitHub Workflows locally."
-	rm .env
-	echo "GITHUB_TOKEN=${GITHUB_TOKEN}" >> .env
-	echo "PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}" >> .env
-	sudo --preserve-env act
+	@PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} sudo --preserve-env act 2>&1 | sed 's/$(ESCAPED_PULUMI_ACCESS_TOKEN)/***PULUMI_ACCESS_TOKEN***/g' | sed 's/$(ESCAPED_GITHUB_TOKEN)/***GITHUB_TOKEN***/g'
 	@echo "GitHub Workflow Test Complete."
 
 # --- Maintain Devcontainer ---
