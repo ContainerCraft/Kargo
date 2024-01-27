@@ -24,7 +24,7 @@ $(error GITHUB_TOKEN is not set)
 endif
 
 # --- Targets ---
-.PHONY: help detect-arch pulumi-login pulumi-up up talos-gen-config talos-cluster kind-cluster clean clean-all act konductor test-kind test-talos
+.PHONY: help detect-arch pulumi-login pulumi-up up talos-gen-config talos-cluster kind-cluster clean clean-all act konductor test-kind test-talos stop
 
 # --- Default Command ---
 all: help
@@ -47,6 +47,7 @@ help:
 	@echo "  act              - Test GitHub Actions locally."
 	@echo "  konductor        - Maintain .github/devcontainer submodule."
 	@echo "  test             - Run setup tests."
+	@echo "  stop             - Stop Github Codespaces."
 
 # --- Detect Architecture ---
 detect-arch:
@@ -214,3 +215,9 @@ test-kind: kind pulumi-up
 
 test-talos: talos pulumi-up
 	@echo "Talos test complete."
+
+# --- Stop Codespaces ---
+stop:
+	@echo "Stopping Codespaces..."
+	@gh codespace --codespace ${CODESPACE_NAME} stop
+	@echo "Codespaces stopped."
