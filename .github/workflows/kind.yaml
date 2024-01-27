@@ -39,7 +39,7 @@ jobs:
           direnv allow
           make kind-cluster
           sudo kind create cluster -v7 --wait 1m --retain --config=$KINDCONFIG
-          sudo kind get kubeconfig --name cilium | tee $KUBECONFIG
+          sudo kind get kubeconfig --name kind | tee $KUBECONFIG
           sudo chown -R $(id -u):$(id -g) $KUBECONFIG
 
 #     - id: wait-kind-ready
