@@ -4,24 +4,23 @@ LOWERCASE_GITHUB_REPOSITORY := $(shell echo ${GITHUB_REPOSITORY} | tr '[:upper:]
 REPO_NAME := $(shell echo ${LOWERCASE_GITHUB_REPOSITORY} | awk -F '/' '{print $$2}')
 REPO_ORG := $(shell echo ${LOWERCASE_GITHUB_REPOSITORY} | awk -F '/' '{print $$1}')
 PULUMI_STACK_IDENTIFIER := ${GITHUB_USER}/${REPO_NAME}/${DEPLOYMENT_ENVIRONMENT}
-PAT ?= ${PULUMI_ACCESS_TOKEN}
 
 # Escape special characters in sensitive tokens
-ESCAPED_PAT := $(shell echo "${PAT}" | sed -e 's/[\/&]/\\&/g')
+ESCAPED_PAT := $(shell echo "${PULUMI_ACCESS_TOKEN}" | sed -e 's/[\/&]/\\&/g')
 ESCAPED_GITHUB_TOKEN := $(shell echo "${GITHUB_TOKEN}" | sed -e 's/[\/&]/\\&/g')
 
 # Define file paths for configurations
 TALOS_CONFIG_FILE := ${PWD}/.talos/config
 KUBE_CONFIG_FILE := ${PWD}/.kube/config
 
-# Check if PAT is set
-ifeq ($(PAT),)
-	$(error PAT is not set)
+# Check if PULUMI_ACCESS_TOKEN is set
+ifeq ($(ESCAPED_PAT),)
+$(error PULUMI_ACCESS_TOKEN is not set)
 endif
 
 # Check if GITHUB_TOKEN is set
-ifeq ($(GITHUB_TOKEN),)
-	$(error GITHUB_TOKEN is not set)
+ifeq ($(ESCAPED_GITHUB_TOKEN),)
+$(error GITHUB_TOKEN is not set)
 endif
 
 # --- Targets ---
@@ -57,7 +56,7 @@ detect-arch:
 pulumi-login:
 	@echo "Logging into Pulumi..."
 	@direnv allow
-	@PULUMI_ACCESS_TOKEN=${PAT} pulumi login \
+	@PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi login \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
 	@pulumi install
 	@pulumi stack select --create ${PULUMI_STACK_IDENTIFIER}
@@ -66,17 +65,17 @@ pulumi-login:
 # --- Pulumi Deployment ---
 pulumi-up:
 	@echo "Deploying Pulumi infrastructure..."
-	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PAT} \
+	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
 		pulumi up --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
 	@echo "Deployment complete."
 
 pulumi-down:
 	@echo "Deploying Pulumi infrastructure..."
-	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PAT} \
+	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
 		pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || \
-	    KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PAT} PULUMI_K8S_DELETE_UNREACHABLE=true \
+	    KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} PULUMI_K8S_DELETE_UNREACHABLE=true \
 	    	pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
 	    	| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
 	@echo "Deployment complete."
@@ -187,14 +186,11 @@ clean-all: clean
 act:
 	@echo "Testing GitHub Workflows locally..."
 	@direnv allow
-	@GITHUB_TOKEN=${GITHUB_TOKEN} PULUMI_ACCESS_TOKEN=${PAT} sudo act \
-		-s PULUMI_ACCESS_TOKEN=${PAT} \
-		-s GITHUB_TOKEN=${GITHUB_TOKEN} \
-		--container-options "--privileged" \
-		-e hack/act.json \
-		--env-file .env \
-		--rm \
-		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
+	set -ex; GITHUB_TOKEN=${GITHUB_TOKEN} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
+		act --container-options "--privileged" --rm \
+			--var GITHUB_TOKEN=${GITHUB_TOKEN} \
+			--var PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
+			| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
 	@echo "GitHub Workflow Test Complete."
 
 # --- Maintain Devcontainer ---
