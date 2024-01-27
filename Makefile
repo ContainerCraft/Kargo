@@ -148,7 +148,7 @@ kind-cluster:
 	sudo kind create cluster --config hack/kind.yaml
 	sudo kind get kubeconfig --name cilium \
 	| tee ${KUBE_CONFIG_FILE} >/dev/null
-	sudo chown -R $${USER}:$(shell id -g) ${HOME}/.kube .kube
+	sudo chown -R $(shell id -u):$(shell id -g) ${HOME}/.kube .kube
 	pulumi config set kubernetes kind
 	echo "Kind Cluster ready."
 
@@ -160,14 +160,14 @@ kind-ready:
 	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done'
 	@echo "Kind Cluster is ready."
 
-kind: clean kind-cluster kind-ready
+kind: kind-cluster kind-ready
 
 # ----------------------------------------------------------------------------------------------
 # --- Maintenance ---
 # ----------------------------------------------------------------------------------------------
 
 # --- Cleanup ---
-clean: down
+clean: login down
 	@echo "Cleaning up resources..."
 	@sudo kind delete cluster --name cilium \
 		|| echo "Kind cluster not found."
@@ -186,7 +186,7 @@ clean-all: clean
 act:
 	@echo "Testing GitHub Workflows locally..."
 	@direnv allow
-	set -ex; GITHUB_TOKEN=${GITHUB_TOKEN} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
+	@set -ex; GITHUB_TOKEN=${GITHUB_TOKEN} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
 		act --container-options "--privileged" --rm \
 			--var GITHUB_TOKEN=${GITHUB_TOKEN} \
 			--var PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
