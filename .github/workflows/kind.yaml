@@ -31,16 +31,13 @@ jobs:
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ACTIONS_STEP_DEBUG: true
+          ACTIONS_STEP_DEBUG: false
           KUBECONFIG: .kube/config
           KINDCONFIG: ./hack/kind.yaml
         run: |
           set -ex;
           direnv allow
           make kind-cluster
-          sudo kind create cluster -v7 --wait 1m --retain --config=$KINDCONFIG
-          sudo kind get kubeconfig --name kind | tee $KUBECONFIG
-          sudo chown -R $(id -u):$(id -g) $KUBECONFIG
 
 #     - id: wait-kind-ready
 #       name: Wait for Kind Kubernetes API to be Ready
