@@ -28,11 +28,17 @@ jobs:
 
       - name: Create Kind Cluster
         id: create-kind-kubernetes
-        run: set -ex; make kind
+        run: make kind
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Wait for Kind Cluster Ready
         id: wait-kind-ready
         run: make kind-ready
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy Pulumi Infrastructure
         id: deploy
@@ -44,26 +50,28 @@ jobs:
       - name: Wait for All Pods to be Ready
         id: wait-all-pods
         run: make wait-all-pods
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Add any specific tests for your Kind cluster here
-      # - name: Run Tests
-      #   run: <your testing commands>
+      - name: Destroy Pulumi Infrastructure
+        id: destroy
+        run: make pulumi-down
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-#     - name: Destroy Pulumi Infrastructure
-#       id: destroy
-#       run: make pulumi-down
-#       env:
-#         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Clean Up Resources
+        id: clean
+        run: make clean
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-#     - name: Clean Up Resources
-#       id: clean
-#       run: make clean
-
-#     - name: Perform Extended Cleanup
-#       id: clean-all
-#       if: always()
-#       run: make clean-all
-#       env:
-#         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Perform Extended Cleanup
+        id: clean-all
+        if: always()
+        run: make clean-all
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
