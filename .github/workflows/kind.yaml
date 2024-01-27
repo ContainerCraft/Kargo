@@ -35,7 +35,6 @@ jobs:
           KUBECONFIG: .kube/config
           KINDCONFIG: ./hack/kind.yaml
         run: |
-          set -ex;
           direnv allow
           make kind-cluster
 
