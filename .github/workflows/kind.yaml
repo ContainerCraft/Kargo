@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         id: checkout
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Pulumi Login
         id: pulumi-login
@@ -47,12 +47,12 @@ jobs:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Wait for All Pods to be Ready
-        id: wait-all-pods
-        run: make wait-all-pods
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#     - name: Wait for All Pods to be Ready
+#       id: wait-all-pods
+#       run: make wait-all-pods
+#       env:
+#         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Destroy Pulumi Infrastructure
         id: destroy
