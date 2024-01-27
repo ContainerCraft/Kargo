@@ -1,0 +1,69 @@
+# This GitHub Workflow will run on every push to the repository
+# and will test the Kargo codebase on a Kind Kubernetes cluster.
+name: CI Testing - Konductor on Kind
+
+on: push
+
+jobs:
+  ci-kargo-kind:
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/containercraft/konductor:latest
+      options: --user runner --security-opt seccomp=unconfined
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        id: checkout
+        with:
+          fetch-depth: 0
+
+      - name: Pulumi Login
+        id: pulumi-login
+        run: make login
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Kind Cluster
+        id: create-kind-kubernetes
+        run: set -ex; make kind
+
+      - name: Wait for Kind Cluster Ready
+        id: wait-kind-ready
+        run: make kind-ready
+
+      - name: Deploy Pulumi Infrastructure
+        id: deploy
+        run: make pulumi-up
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for All Pods to be Ready
+        id: wait-all-pods
+        run: make wait-all-pods
+
+      # Add any specific tests for your Kind cluster here
+      # - name: Run Tests
+      #   run: <your testing commands>
+
+#     - name: Destroy Pulumi Infrastructure
+#       id: destroy
+#       run: make pulumi-down
+#       env:
+#         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#     - name: Clean Up Resources
+#       id: clean
+#       run: make clean
+
+#     - name: Perform Extended Cleanup
+#       id: clean-all
+#       if: always()
+#       run: make clean-all
+#       env:
+#         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
