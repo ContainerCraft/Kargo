@@ -146,11 +146,11 @@ kind-cluster:
 	@sudo docker volume create cilium-worker-n01
 	@sudo docker volume create cilium-worker-n02
 	@sudo docker volume create cilium-control-plane-n01
-	@sudo kind create cluster --wait 3m --retain --config=hack/kind.yaml
+	@sudo kind create cluster --wait 2m --retain --config=hack/kind.yaml
 	@sudo kind get clusters
-	@sudo kind get kubeconfig --name kind | tee ${KUBE_CONFIG_FILE}
-	@sudo kind get kubeconfig --name cilium | tee ${KUBE_CONFIG_FILE}
-	@sudo kind get kubeconfig --name kind-cilium | tee ${KUBE_CONFIG_FILE}
+#	@sudo kind get kubeconfig --name kind | tee ${KUBE_CONFIG_FILE}
+#	@sudo kind get kubeconfig --name cilium | tee ${KUBE_CONFIG_FILE}
+	@sudo kind get kubeconfig --name cilium | tee ${KUBE_CONFIG_FILE} 1>/dev/null
 	@sudo chown -R $(id -u):$(id -g) ${KUBE_CONFIG_FILE}
 	@sudo chown -R $(shell id -u):$(shell id -g) ${HOME}/.kube .kube
 	@pulumi config set kubernetes kind

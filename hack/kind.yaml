@@ -10,38 +10,38 @@ networking:
   serviceSubnet: "10.12.0.0/16"
   podSubnet: "10.242.0.0/16"
   apiServerPort: 6443
-#nodes:
-#- role: control-plane
-#  image: kindest/node:v1.29.0
-#  extraMounts: # Persistent image cache
-#  - hostPath: /var/lib/docker/volumes/cilium-control-plane-n01/_data
-#    containerPath: /var/lib/containerd
-#- role: worker
-#  image: kindest/node:v1.29.0
-#  extraMounts: # Persistent image cache
-#  - hostPath: /var/lib/docker/volumes/cilium-worker-n01/_data
-#    containerPath: /var/lib/containerd
-#- role: worker
-#  image: kindest/node:v1.29.0
-#  extraMounts: # Persistent image cache
-#  - hostPath: /var/lib/docker/volumes/cilium-worker-n02/_data
-#    containerPath: /var/lib/containerd
-#  # Expose ports on the host:
-#  # - 80/tcp
-#  # - 443/tcp
-#  extraPortMappings:
-#  - listenAddress: "0.0.0.0"
-#    protocol: TCP
-#    hostPort: 80
-#    containerPort: 80
-#  - listenAddress: "0.0.0.0"
-#    protocol: TCP
-#    hostPort: 443
-#    containerPort: 443
-#  kubeadmConfigPatches:
-#  - |
-#    # Label the worker node listening on service ports
-#    kind: JoinConfiguration
-#    nodeRegistration:
-#      kubeletExtraArgs:
-#        node-labels: "ingress-ready=true"
+nodes:
+- role: control-plane
+  image: kindest/node:v1.29.0
+  extraMounts: # Persistent image cache
+  - hostPath: /var/lib/docker/volumes/cilium-control-plane-n01/_data
+    containerPath: /var/lib/containerd
+- role: worker
+  image: kindest/node:v1.29.0
+  extraMounts: # Persistent image cache
+  - hostPath: /var/lib/docker/volumes/cilium-worker-n01/_data
+    containerPath: /var/lib/containerd
+- role: worker
+  image: kindest/node:v1.29.0
+  extraMounts: # Persistent image cache
+  - hostPath: /var/lib/docker/volumes/cilium-worker-n02/_data
+    containerPath: /var/lib/containerd
+  # Expose ports on the host:
+  # - 80/tcp
+  # - 443/tcp
+  extraPortMappings:
+  - listenAddress: "0.0.0.0"
+    protocol: TCP
+    hostPort: 80
+    containerPort: 80
+  - listenAddress: "0.0.0.0"
+    protocol: TCP
+    hostPort: 443
+    containerPort: 443
+  kubeadmConfigPatches:
+  - |
+    # Label the worker node listening on service ports
+    kind: JoinConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
