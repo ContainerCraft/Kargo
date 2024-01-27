@@ -54,30 +54,60 @@ cilium_helm_values = {
     "serviceAccounts": {
         "cilium": {"name": "cilium"},
         "operator": {"name": "cilium-operator"},
-    },
-    "securityContext": {
-        "capabilities": {
-            "ciliumAgent": [
-                "CHOWN",
-                "KILL",
-                "NET_ADMIN",
-                "NET_RAW",
-                "IPC_LOCK",
-                "SYS_ADMIN",
-                "SYS_RESOURCE",
-                "DAC_OVERRIDE",
-                "FOWNER",
-                "SETGID",
-                "SETUID"
-            ],
-            "cleanCiliumState": [
-                "NET_ADMIN",
-                "SYS_ADMIN",
-                "SYS_RESOURCE"
-            ]
-        },
-    },
+    }
 }
+#cilium_helm_values = {
+#    "cluster": {
+#        "name": "kargo.dev"
+#    },
+#    "cgroup": {
+#        "autoMount": {"enabled": False},
+#        "hostRoot": "/sys/fs/cgroup",
+#    },
+#    "namespace": "kube-system",
+#    "routingMode": "tunnel",
+#    "k8sServicePort": 7445,
+#    "tunnelProtocol": "vxlan",
+#    "k8sServiceHost": "localhost",
+#    "kubeProxyReplacement": "strict",
+#    "nativeRoutingCIDR": "10.2.0.0/16",
+#    "image": {"pullPolicy": "IfNotPresent"},
+#    "hostServices": {"enabled": False},
+#    "cluster": {"name": kubernetes_platform_project.project_name},
+#    "externalIPs": {"enabled": True},
+#    "gatewayAPI": {"enabled": False},
+#    "ipam": {"mode": "kubernetes"},
+#    "nodePort": {"enabled": True},
+#    "hostPort": {"enabled": True},
+#    "operator": {"replicas": 1},
+#    "cni": { "install": True },
+#    "serviceAccounts": {
+#        "cilium": {"name": "cilium"},
+#        "operator": {"name": "cilium-operator"},
+#    },
+#    "securityContext": {
+#        "capabilities": {
+#            "ciliumAgent": [
+#                "CHOWN",
+#                "KILL",
+#                "NET_ADMIN",
+#                "NET_RAW",
+#                "IPC_LOCK",
+#                "SYS_ADMIN",
+#                "SYS_RESOURCE",
+#                "DAC_OVERRIDE",
+#                "FOWNER",
+#                "SETGID",
+#                "SETUID"
+#            ],
+#            "cleanCiliumState": [
+#                "NET_ADMIN",
+#                "SYS_ADMIN",
+#                "SYS_RESOURCE"
+#            ]
+#        },
+#    },
+#}
 
 cilium_helm_release = helm.v3.Release(
     "cilium-release",

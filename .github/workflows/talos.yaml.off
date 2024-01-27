@@ -21,7 +21,7 @@ jobs:
 
       - id: help
         run: |
-          set -ex; make help
+          make help
 
       - id: login
         run: |
@@ -32,15 +32,15 @@ jobs:
 
       - id: talos-config
         run: |
-          set -ex; make talos-config
+          make talos-config
 
       - id: talos-cluster
         run: |
-          set -ex; make talos-cluster
+          make talos-cluster
 
       - id: talos-ready
         run: |
-          set -ex; make talos-ready
+          make talos-ready
 
       - id: pulumi-up
         run: |
@@ -51,7 +51,7 @@ jobs:
 
       - id: all-pods-ready
         run: |
-          set -ex; make all-pods-ready
+          make all-pods-ready
 
       - id: pulumi-down
         run: |
@@ -63,12 +63,12 @@ jobs:
 
       - name: clean
         run: |
-          set -ex; make clean
+          make clean
 
       - name: clean-all
         if: always()
         run: |
-          set -ex; PULUMI_ACCESS_TOKEN=${{ secrets.PULUMI_ACCESS_TOKEN }} make clean-all
+          PULUMI_ACCESS_TOKEN=${{ secrets.PULUMI_ACCESS_TOKEN }} make clean-all
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
