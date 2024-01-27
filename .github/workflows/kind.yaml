@@ -1,6 +1,6 @@
 # This GitHub Workflow will run on every push to the repository
 # and will test the Kargo codebase on a Kind Kubernetes cluster.
-name: CI Testing - Konductor on Kind
+name: CI Testing - Kargo on Kind
 
 on: push
 
