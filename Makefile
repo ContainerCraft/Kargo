@@ -155,6 +155,7 @@ kind-cluster:
 # --- Wait for Kind Cluster Ready ---
 kind-ready:
 	@echo "Waiting for Kind Cluster to be ready..."
+	@kubectl get all --all-namespaces --show-labels --kubeconfig ${KUBE_CONFIG_FILE} || true
 	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver to be ready..."; sleep 5; done'
 	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to be ready..."; sleep 5; done'
 	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done'
