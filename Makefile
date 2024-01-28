@@ -216,7 +216,7 @@ test-talos: talos pulumi-up
 	@echo "Talos test complete."
 
 # --- Stop Codespaces ---
-stop:
+stop: clean
 	@echo "Stopping Codespaces..."
 	@gh codespace --codespace ${CODESPACE_NAME} stop
 	@echo "Codespaces stopped."
