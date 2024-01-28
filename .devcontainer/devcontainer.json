@@ -5,12 +5,12 @@
 // - https://code.visualstudio.com/docs/getstarted/settings
 {
   "name": "konductor",
-  "image": "ghcr.io/containercraft/konductor",
-  //"dockerFile": ".github/docker/Dockerfile",
+  "dockerFile": ".github/docker/Dockerfile",
+  "workspaceFolder": "/home/vscode/kargo",
+  "shutdownAction": "stopContainer",
   "customizations": {
     "vscode": {
       "settings": {
-        // https://github.com/VSCodeVim/Vim
         "vim.disableExtension": true,
         "vim.easymotion": true,
         "vim.incsearch": true,
@@ -38,8 +38,6 @@
         "remoteUser": "vscode",
         "go.testTags": "all",
         "go.buildTags": "all",
-        "shutdownAction": "stopContainer",
-        "workspaceFolder": "/home/vscode",
         "editor.lineHeight": 15,
         "editor.lineNumbers": "relative",
         "updateRemoteUserUID": true,
