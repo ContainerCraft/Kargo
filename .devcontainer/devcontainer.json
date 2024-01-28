@@ -40,7 +40,7 @@
         "go.buildTags": "all",
         "shutdownAction": "stopContainer",
         "workspaceFolder": "/home/vscode",
-        "editor.lineHeight": 30,
+        "editor.lineHeight": 15,
         "editor.lineNumbers": "relative",
         "updateRemoteUserUID": true,
         "editor.fontLigatures": true,
@@ -59,18 +59,18 @@
         "terminal.integrated.fontFamily": "FiraMono Nerd Font Mono",
         "terminal.integrated.shell.linux": "/usr/bin/fish",
         "terminal.integrated.sendKeybindingsToShell": true,
+        "autoOpenPreviewPanel.openPreviewToTheSide": false,
         "files.trimTrailingWhitespace": false,
         "explorer.openEditors.visible": 1,
         "files.trimFinalNewlines": false,
         "workbench.startupEditor": "readme",
-        "workbench.colorTheme": "Cyberpunk",
+        "workbench.colorTheme": "Activate UMBRA protocol",
         "window.titleBarStyle": "custom",
         "2gua.rainbow-brackets": true,
         "initializeCommand": "echo 'Initializing...'",
         "postCreateCommand": "echo 'Post create...'",
         "postStartCommand": "echo 'Post start...'",
         "postAttachCommand": "echo 'Post attach...'"
-        //"autoOpenPreviewPanel.openPreviewToTheSide": false,
       },
       "extensions": [
         "golang.go",
@@ -88,9 +88,9 @@
         "github.vscode-pull-request-github",
         "ms-vscode-remote.remote-containers",
         "visualstudioexptteam.vscodeintellicode",
+        "chadonsom.auto-view-readme",
+        "matt-rudge.auto-open-preview-panel",
         "bierner.markdown-preview-github-styles"
-        //"matt-rudge.auto-open-preview-panel",
-        //"chadonsom.auto-view-readme",
       ]
     }
   },
