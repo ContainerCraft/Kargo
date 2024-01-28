@@ -110,7 +110,7 @@
           }
         },
         "vs-kubernetes": {
-          "vs-kubernetes.namespace": "all",
+          "vs-kubernetes.namespace": "",
           "vs-kubernetes.kubectl-path": "/usr/local/bin/kubectl",
           "vs-kubernetes.helm-path": "/usr/local/bin/helm",
           "vs-kubernetes.outputFormat": "yaml",
