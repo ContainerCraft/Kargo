@@ -17,26 +17,39 @@
         "vim.useSystemClipboard": true,
         "vim.useCtrlKeys": true,
         "vim.hlsearch": true,
+        "vim.cursorStylePerMode": {
+          "normal": "line",
+          "insert": "block",
+          "visual": "underline",
+          "visualline": "underline",
+          "visualblock": "underline",
+          "replace": "block"
+        },
         "vim.insertModeKeyBindings": [
           {
             "before": ["j", "j"],
-            "after": ["<Esc>"]
+            "after": ["<esc>"]
           }
         ],
-        "vim.handleKeys": {
-          "<C-a>": false,
-          "<C-f>": false
-        },
+        "vim.handleKeys": { "<C-a>": false, "<C-f>": false },
         "extensions.experimental.affinity": {
           "vscodevim.vim": 1
         },
+        "remoteUser": "vscode",
         "go.testTags": "all",
         "go.buildTags": "all",
-        "editor.minimap.enabled": false,
+        "shutdownAction": "stopContainer",
+        "workspaceFolder": "/home/vscode",
+        "editor.lineHeight": 30,
         "editor.lineNumbers": "relative",
-        "editor.quickSuggestionsDelay": 0,
+        "updateRemoteUserUID": true,
+        "editor.fontLigatures": true,
+        "editor.minimap.enabled": false,
         "editor.suggestSelection": "first",
         "editor.snippetSuggestions": "top",
+        "editor.quickSuggestionsDelay": 0,
+        "editor.inlineSuggest.enabled": true,
+        "editor.fontFamily": "FiraMono Nerd Font Mono",
         "editor.gotoLocation.multipleReferences": "goto",
         "editor.gotoLocation.multipleDefinitions": "goto",
         "editor.gotoLocation.multipleDeclarations": "goto",
@@ -45,13 +58,19 @@
         "editor.terminal.integrated.shell.linux": "/usr/bin/fish",
         "terminal.integrated.fontFamily": "FiraMono Nerd Font Mono",
         "terminal.integrated.shell.linux": "/usr/bin/fish",
-        "terminal.integrated.shellArgs.linux": ["-c", "connect"],
         "terminal.integrated.sendKeybindingsToShell": true,
-        "autoOpenPreviewPanel.openPreviewToTheSide": false,
-        "workbench.colorTheme": "Dracula Soft",
+        "files.trimTrailingWhitespace": false,
         "explorer.openEditors.visible": 1,
-        "files.trimTrailingWhitespace": true,
-        "files.trimFinalNewlines": true
+        "files.trimFinalNewlines": false,
+        "workbench.startupEditor": "readme",
+        "workbench.colorTheme": "Cyberpunk",
+        "window.titleBarStyle": "custom",
+        "2gua.rainbow-brackets": true,
+        "initializeCommand": "echo 'Initializing...'",
+        "postCreateCommand": "echo 'Post create...'",
+        "postStartCommand": "echo 'Post start...'",
+        "postAttachCommand": "echo 'Post attach...'"
+        //"autoOpenPreviewPanel.openPreviewToTheSide": false,
       },
       "extensions": [
         "golang.go",
@@ -63,15 +82,15 @@
         "esbenp.prettier-vscode",
         "carrie999.cyberpunk-2020",
         "ms-vsliveshare.vsliveshare",
-        "chadonsom.auto-view-readme",
         "ms-azuretools.vscode-docker",
         "github.vscode-github-actions",
         "ms-vscode.vscode-typescript-next",
         "github.vscode-pull-request-github",
-        "matt-rudge.auto-open-preview-panel",
         "ms-vscode-remote.remote-containers",
         "visualstudioexptteam.vscodeintellicode",
         "bierner.markdown-preview-github-styles"
+        //"matt-rudge.auto-open-preview-panel",
+        //"chadonsom.auto-view-readme",
       ]
     }
   },
