@@ -116,8 +116,8 @@
           "vs-kubernetes.outputFormat": "yaml",
           "vs-kubernetes.kubeconfig": "/home/vscode/Kargo/.kube/config",
           "vs-kubernetes.knownKubeconfigs": [
-              "/home/vscode/Kargo/.kube/config",
-              "/home/vscode/.kube/config"
+            "/home/vscode/Kargo/.kube/config",
+            "/home/vscode/.kube/config"
           ]
         },
         "vim": {
@@ -172,9 +172,12 @@
         },
         "terminal": {
           "integrated": {
+            // Cannot CWD in a bind mount with a relative path
+            // Accomodate for this by setting the CWD to $HOME as the workspace root
+            //"cwd": "/home/vscode/Kargo",
+            "cwd": "/home/vscode/",
             "hideOnStartup": false,
             "copyOnSelection": true,
-            "cwd": "/home/vscode/Kargo",
             "fontFamily": "FiraMono Nerd Font Mono",
             "fontSize": 14,
             "scrollback": 10000,
@@ -319,7 +322,7 @@
     "--privileged",
     "--network=host"
   ],
-  "postCreateCommand": "sudo chown $USER /workspaces/* 2>/dev/null || true; direnv allow 2>/dev/null || true",
+  "postCreateCommand": "sudo chown $USER /workspaces/* 2>/dev/null || true; ln -s /workspaces/Kargo /home/vscode/Kargo || true; direnv allow 2>/dev/null || true",
   "mounts": [
     "source=dind-var-lib-docker,target=/var/lib/docker,type=volume"
   ]
