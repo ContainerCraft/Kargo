@@ -142,18 +142,17 @@ talos: clean-all talos-cluster talos-ready wait-all-pods
 kind-cluster:
 	@echo "Creating Kind Cluster..."
 	@direnv allow
-	@mkdir -p ${HOME}/.kube .kube || true
-	@chmod 600 ${HOME}/.kube/config .kube/config || true
-	@touch ${HOME}/.kube/config .kube/config || true
+	@mkdir -p /home/vscode/.kube .kube || true
+	@touch /home/vscode/.kube/config .kube/config || true
+	@chmod 600 /home/vscode/.kube/config .kube/config || true
 	@sudo docker volume create cilium-worker-n01
 	@sudo docker volume create cilium-worker-n02
 	@sudo docker volume create cilium-control-plane-n01
-	@sudo kind create cluster --wait 2m --retain --config=hack/kind.yaml
+	@sudo kind create cluster --wait 1m --retain --config=hack/kind.yaml
 	@sudo kind get clusters
-	@sudo kind get kubeconfig --name cilium | tee /home/vscode/.kube/config 1>/dev/null
+	@sudo kind get kubeconfig --name cilium | tee /home/vscode/.kube/config 1>/dev/null || true
 	@sudo kind get kubeconfig --name cilium | tee ${KUBE_CONFIG_FILE} 1>/dev/null
 	@sudo chown -R $(id -u):$(id -g) ${KUBE_CONFIG_FILE}
-	@sudo chown -R $(shell id -u):$(shell id -g) ${HOME}/.kube .kube
 	@pulumi config set kubernetes kind
 	@echo "Created Kind Cluster."
 
