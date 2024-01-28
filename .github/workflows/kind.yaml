@@ -1,34 +1,34 @@
 # This GitHub Workflow will run on every push to the repository
 # and will test the Kargo codebase on a Kind Kubernetes cluster.
-name: CI Testing - Kargo on Kind
+name: CI - Kargo on Kind
 on:
   workflow_dispatch:
   push:
     branches:
       - main
     paths-ignore:
-      - 'Makefile'
-      - 'devcontainer/**'
-      - '.devcontainer/**'
-      - '.pulumi/**'
-      - '.talos/**'
-      - '.kube/**'
-      - 'docs/**'
-      - '**.md'
+      - "Makefile"
+      - "devcontainer/**"
+      - ".devcontainer/**"
+      - ".pulumi/**"
+      - ".talos/**"
+      - ".kube/**"
+      - "docs/**"
+      - "**.md"
   pull_request:
     branches:
       - main
     paths-ignore:
-      - 'Makefile'
-      - 'devcontainer/**'
-      - '.devcontainer/**'
-      - '.pulumi/**'
-      - '.talos/**'
-      - '.kube/**'
-      - 'docs/**'
-      - '**.md'
+      - "Makefile"
+      - "devcontainer/**"
+      - ".devcontainer/**"
+      - ".pulumi/**"
+      - ".talos/**"
+      - ".kube/**"
+      - "docs/**"
+      - "**.md"
   schedule:
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *"
 
 jobs:
   ci-kargo-kind:
@@ -64,13 +64,13 @@ jobs:
           direnv allow
           make kind-cluster
 
-#     - id: wait-kind-ready
-#       name: Wait for Kind Kubernetes API to be Ready
-#       env:
-#         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         ACTIONS_STEP_DEBUG: true
-#       run: make kind-ready
+      #     - id: wait-kind-ready
+      #       name: Wait for Kind Kubernetes API to be Ready
+      #       env:
+      #         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #         ACTIONS_STEP_DEBUG: true
+      #       run: make kind-ready
 
       - name: Deploy Pulumi Infrastructure
         id: deploy
@@ -79,12 +79,12 @@ jobs:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-#     - name: Wait for All Pods to be Ready
-#       id: wait-all-pods
-#       run: make wait-all-pods
-#       env:
-#         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     - name: Wait for All Pods to be Ready
+      #       id: wait-all-pods
+      #       run: make wait-all-pods
+      #       env:
+      #         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Destroy Pulumi Infrastructure
         id: destroy
