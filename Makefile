@@ -76,9 +76,9 @@ pulumi-down:
 	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
 		pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || \
-	    KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} PULUMI_K8S_DELETE_UNREACHABLE=true \
-	    	pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
-	    	| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
+		KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} PULUMI_K8S_DELETE_UNREACHABLE=true \
+			pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
+			| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
 	@echo "Deployment complete."
 
 login: pulumi-login
@@ -143,14 +143,14 @@ kind-cluster:
 	@echo "Creating Kind Cluster..."
 	@direnv allow
 	@mkdir -p ${HOME}/.kube .kube || true
+	@chmod 600 ${HOME}/.kube/config .kube/config || true
 	@touch ${HOME}/.kube/config .kube/config || true
 	@sudo docker volume create cilium-worker-n01
 	@sudo docker volume create cilium-worker-n02
 	@sudo docker volume create cilium-control-plane-n01
 	@sudo kind create cluster --wait 2m --retain --config=hack/kind.yaml
 	@sudo kind get clusters
-#	@sudo kind get kubeconfig --name kind | tee ${KUBE_CONFIG_FILE}
-#	@sudo kind get kubeconfig --name cilium | tee ${KUBE_CONFIG_FILE}
+	@sudo kind get kubeconfig --name cilium | tee /home/vscode/.kube/config 1>/dev/null
 	@sudo kind get kubeconfig --name cilium | tee ${KUBE_CONFIG_FILE} 1>/dev/null
 	@sudo chown -R $(id -u):$(id -g) ${KUBE_CONFIG_FILE}
 	@sudo chown -R $(shell id -u):$(shell id -g) ${HOME}/.kube .kube
@@ -166,7 +166,7 @@ kind-ready:
 	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done'
 	@echo "Kind Cluster is ready."
 
-kind: kind-cluster kind-ready
+kind: login kind-cluster kind-ready
 
 # ----------------------------------------------------------------------------------------------
 # --- Maintenance ---
