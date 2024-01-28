@@ -109,6 +109,17 @@
             "multipleTypeDefinitions": "goto"
           }
         },
+        "vs-kubernetes": {
+          "vs-kubernetes.namespace": "all",
+          "vs-kubernetes.kubectl-path": "/usr/local/bin/kubectl",
+          "vs-kubernetes.helm-path": "/usr/local/bin/helm",
+          "vs-kubernetes.outputFormat": "yaml",
+          "vs-kubernetes.kubeconfig": "/home/vscode/Kargo/.kube/config",
+          "vs-kubernetes.knownKubeconfigs": [
+              "/home/vscode/Kargo/.kube/config",
+              "/home/vscode/.kube/config"
+          ]
+        },
         "vim": {
           "disableExtension": true,
           "cursorStylePerMode": {
