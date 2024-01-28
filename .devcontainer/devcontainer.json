@@ -5,6 +5,7 @@
 //
 // This reference has all json properties and their descriptions:
 // - https://code.visualstudio.com/docs/getstarted/settings
+//
 // Discarded Opts for tracking:
 // - "workbench.tree.renderIndentGuides": "always",
 {
@@ -16,6 +17,10 @@
   "customizations": {
     "vscode": {
       "telemetry.enableTelemetry": "off",
+      "workbench.action.terminal.focusNext": {
+        "key": "ctrl+shift+down",
+        "mac": "cmd+shift+down"
+      },
       "extensions": [
         "golang.go",
         "vscodevim.vim",
@@ -26,14 +31,17 @@
         "redhat.vscode-yaml",
         "esbenp.prettier-vscode",
         "oderwat.indent-rainbow",
+        "okteto.kubernetes-context",
         "ms-vsliveshare.vsliveshare",
         "ms-azuretools.vscode-docker",
         "github.vscode-github-actions",
+        "ms-kubernetes-tools.kind-vscode",
         "ms-vscode.vscode-typescript-next",
         "github.vscode-pull-request-github",
         "ms-vscode-remote.remote-containers",
-        "visualstudioexptteam.vscodeintellicode",
         "bierner.markdown-preview-github-styles",
+        "visualstudioexptteam.vscodeintellicode",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
         "matt-rudge.auto-open-preview-panel",
         "chadonsom.auto-view-readme"
       ],
@@ -44,6 +52,11 @@
         "remoteUser": "vscode",
         "updateRemoteUserUID": true,
         "editor": {
+          "tabCompletion": "on",
+          "autoClosingBrackets": "always",
+          "autoClosingQuotes": "always",
+          "autoImportCompletions": true,
+          "autoIndent": true,
           "bracketPairColorization": {
             "enabled": true
           },
@@ -55,6 +68,7 @@
           "tabScrolling": "auto",
           "tabDecoration": true,
           "tabFocusMode": true,
+          "tabMovesFocus": false,
           "tabHistoryNavigation": true,
           "openPositioning": "right",
           "closeOnFileDelete": true,
@@ -73,7 +87,6 @@
           "fontSize": 14,
           "wordWrap": "on",
           "lineHeight": 20,
-          "autoIndent": true,
           "formatOnSave": true,
           "insertSpaces": true,
           "lineNumbers": "relative",
@@ -99,12 +112,12 @@
         "vim": {
           "disableExtension": true,
           "cursorStylePerMode": {
-            "normal": "line",
+            "normal": "outline",
             "insert": "block",
+            "replace": "block",
             "visual": "underline",
             "visualline": "underline",
-            "visualblock": "underline",
-            "replace": "block"
+            "visualblock": "underline"
           },
           "insertModeKeyBindings": [
             {
@@ -157,7 +170,8 @@
             "cursorBlinking": true,
             "cursorStyle": "outline",
             "cursorStyleInactive": "line",
-            "sendKeybindingsToShell": true,
+            "sendKeybindingsToShell": false,
+            "commandsToSkipShell": [],
             "scrollbar": {
               "alwaysConsumeMouseWheel": true
             },
@@ -230,6 +244,10 @@
         "remote": {
           "localPortHost": "127.0.0.1",
           "restoreForwardedPorts": true
+        },
+        "[makefile]": {
+          "editor.insertSpaces": false,
+          "editor.renderWhitespace": "selection"
         },
         "[yaml]": {
           "editor": {
