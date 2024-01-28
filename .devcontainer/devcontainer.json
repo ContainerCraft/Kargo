@@ -5,12 +5,13 @@
 // - https://code.visualstudio.com/docs/getstarted/settings
 {
   "name": "konductor",
-  "dockerFile": ".github/docker/Dockerfile",
-  "workspaceFolder": "/home/vscode/kargo",
+  "dockerFile": "../.github/docker/Dockerfile",
+  "workspaceFolder": "/home/vscode/",
   "shutdownAction": "stopContainer",
   "customizations": {
     "vscode": {
       "settings": {
+        "terminal.integrated.cwd": "/home/vscode/",
         "vim.disableExtension": true,
         "vim.easymotion": true,
         "vim.incsearch": true,
