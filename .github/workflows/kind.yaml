@@ -1,8 +1,34 @@
 # This GitHub Workflow will run on every push to the repository
 # and will test the Kargo codebase on a Kind Kubernetes cluster.
 name: CI Testing - Kargo on Kind
-
-on: push
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'Makefile'
+      - 'devcontainer/**'
+      - '.devcontainer/**'
+      - '.pulumi/**'
+      - '.talos/**'
+      - '.kube/**'
+      - 'docs/**'
+      - '**.md'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'Makefile'
+      - 'devcontainer/**'
+      - '.devcontainer/**'
+      - '.pulumi/**'
+      - '.talos/**'
+      - '.kube/**'
+      - 'docs/**'
+      - '**.md'
+  schedule:
+    - cron: '0 2 * * *'
 
 jobs:
   ci-kargo-kind:
