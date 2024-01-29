@@ -1,4 +1,0 @@
-# ~/.config/starship.toml
-
-[container]
-format = '[🐋 ]($style)'

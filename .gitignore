@@ -16,3 +16,4 @@ __pycache__/
 Pulumi.*.yaml
 .env
 .devcontainer/docker
+tmp.*
