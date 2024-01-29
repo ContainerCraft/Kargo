@@ -56,11 +56,11 @@ detect-arch:
 # --- Pulumi Login ---
 pulumi-login:
 	@echo "Logging into Pulumi..."
-	@direnv allow
+	@direnv allow || true
 	@PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi login \
-		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
-	@pulumi install
-	@pulumi stack select --create ${PULUMI_STACK_IDENTIFIER}
+		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
+	@pulumi install || true
+	@pulumi stack select --create ${PULUMI_STACK_IDENTIFIER} || true
 	@echo "Login successful."
 
 # --- Pulumi Deployment ---
@@ -78,7 +78,7 @@ pulumi-down:
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || \
 		KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} PULUMI_K8S_DELETE_UNREACHABLE=true \
 			pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
-			| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
+			| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
 	@echo "Deployment complete."
 
 login: pulumi-login
@@ -103,8 +103,9 @@ wait-all-pods:
 # --- Talos Configuration ---
 talos-gen-config:
 	@echo "Generating Talos Config..."
-	@mkdir -p .kube .pulumi .talos
-	@touch ${KUBE_CONFIG_FILE} ${TALOS_CONFIG_FILE}
+	@mkdir -p ${HOME}/.kube .kube .pulumi .talos
+	@touch ${HOME}/.kube/config ${KUBE_CONFIG_FILE} ${TALOS_CONFIG_FILE}
+	@chmod 600 ${HOME}/.kube/config ${KUBE_CONFIG_FILE} ${TALOS_CONFIG_FILE}
 	@sudo talosctl gen config kargo https://10.5.0.2:6443 \
 		--config-patch @.talos/patch/machine.yaml --output .talos/manifest
 	@sudo talosctl validate --mode container \
@@ -119,7 +120,7 @@ talos-cluster: detect-arch talos-gen-config
 		--workers 1 \
 		--controlplanes 1 \
 		--provisioner docker
-	@pulumi config set kubernetes talos
+	@pulumi config set kubernetes talos || true
 	@echo "Talos Cluster provisioning..."
 
 # --- Wait for Talos Cluster Ready ---
@@ -152,7 +153,7 @@ kind-cluster:
 	@sudo kind get clusters
 	@sudo kind get kubeconfig --name cilium | tee ${KUBE_CONFIG_FILE} 1>/dev/null
 	@sudo chown -R $(id -u):$(id -g) ${KUBE_CONFIG_FILE}
-	@pulumi config set kubernetes kind
+	@pulumi config set kubernetes kind || true
 	@echo "Created Kind Cluster."
 
 # --- Wait for Kind Cluster Ready ---
