@@ -15,12 +15,12 @@ KUBE_CONFIG_FILE := ${PWD}/.kube/config
 
 # Check if PULUMI_ACCESS_TOKEN is set
 ifeq ($(ESCAPED_PAT),)
-$(error PULUMI_ACCESS_TOKEN is not set)
+$(warning PULUMI_ACCESS_TOKEN is not set)
 endif
 
 # Check if GITHUB_TOKEN is set
 ifeq ($(ESCAPED_GITHUB_TOKEN),)
-$(error GITHUB_TOKEN is not set)
+$(warning GITHUB_TOKEN is not set)
 endif
 
 # --- Targets ---
