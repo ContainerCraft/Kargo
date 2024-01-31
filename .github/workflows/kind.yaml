@@ -86,10 +86,11 @@ jobs:
       - name: Wait for All Pods to be Ready
         id: wait-all-pods
         run: |
+          set -x
           direnv allow
           make wait-all-pods
         env:
-          ACTIONS_STEP_DEBUG: false
+          ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
