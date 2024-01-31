@@ -54,27 +54,25 @@ jobs:
 
       - name: Create Kind Cluster
         id: create-kind-kubernetes
-        env:
-          ACTIONS_STEP_DEBUG: true
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBECONFIG: /workspaces/Kargo/.kube/config
-          KINDCONFIG: /workspaces/Kargo/hack/kind.yaml
         run: |
           set -ex
           direnv allow
           make kind-cluster
-
-      - id: wait-kind-ready
-        name: Wait for Kind Kubernetes API to be Ready
         env:
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: wait-kind-ready
+        name: Wait for Kind Kubernetes API to be Ready
         run: |
           set -ex
           direnv allow
           make kind-ready
+        env:
+          ACTIONS_STEP_DEBUG: true
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy Pulumi Infrastructure
         id: deploy
@@ -86,8 +84,6 @@ jobs:
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBECONFIG: /workspaces/Kargo/.kube/config
-          KINDCONFIG: /workspaces/Kargo/hack/kind.yaml
 
       - name: Wait for All Pods to be Ready
         id: wait-all-pods
@@ -99,8 +95,6 @@ jobs:
           ACTIONS_STEP_DEBUG: false
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBECONFIG: /workspaces/Kargo/.kube/config
-          KINDCONFIG: /workspaces/Kargo/hack/kind.yaml
 
       - name: Destroy Pulumi Infrastructure
         id: destroy
@@ -111,8 +105,6 @@ jobs:
           ACTIONS_STEP_DEBUG: false
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBECONFIG: /workspaces/Kargo/.kube/config
-          KINDCONFIG: /workspaces/Kargo/hack/kind.yaml
 
       - name: Clean Up Resources
         id: clean
@@ -123,8 +115,6 @@ jobs:
           ACTIONS_STEP_DEBUG: false
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBECONFIG: /workspaces/Kargo/.kube/config
-          KINDCONFIG: /workspaces/Kargo/hack/kind.yaml
 
       - name: Perform Extended Cleanup
         id: clean-all
@@ -136,5 +126,3 @@ jobs:
           ACTIONS_STEP_DEBUG: false
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBECONFIG: /workspaces/Kargo/.kube/config
-          KINDCONFIG: /workspaces/Kargo/hack/kind.yaml
