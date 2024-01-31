@@ -171,8 +171,8 @@ kind-cluster:
 		&& chmod 600 ${KUBECONFIG} \
 		&& sudo chown -R $$(whoami):$$(whoami) ${KUBECONFIG}
 	@sudo kind create cluster --wait 1m --retain --config=hack/kind.yaml --kubeconfig ${KUBECONFIG}
-	@echo "Kind Kubernetes Clusters: $$(sudo kind get clusters)"
-	@kubectl get all --all-namespaces --kubeconfig ${KUBECONFIG}
+	@echo "Kind Kubernetes Clusters: $$(sudo kind get clusters || true)"
+	@kubectl get all --all-namespaces --kubeconfig ${KUBECONFIG} || true
 	@pulumi config set kubernetes kind || true
 	@echo "Created Kind Cluster."
 
