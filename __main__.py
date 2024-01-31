@@ -1,6 +1,7 @@
 import pulumi
 import pulumi_kubernetes as k8s
 from typing import Optional
+from src.lib.helm_chart_versions import get_latest_helm_chart_version
 
 import os
 
@@ -166,13 +167,18 @@ cilium_helm_values_talos = {
 # Choose the appropriate Helm values
 cilium_helm_values = cilium_helm_values_kind if kubernetes_distribution == 'kind' else cilium_helm_values_talos
 
+# Fetch the latest version of the Cilium helm chart
+cilium_chart_url = "https://raw.githubusercontent.com/cilium/charts/master/index.yaml"
+cilium_chart_name = "cilium"
+cilium_latest_version = get_latest_helm_chart_version(cilium_chart_url, cilium_chart_name)
+
 # Deploy Cilium using Helm chart
 cilium_helm_release = k8s.helm.v3.Release(
     "cilium-release",
     chart="cilium",
     name="cilium",
     repository_opts={"repo": "https://helm.cilium.io/"},
-    version="1.14.5",
+    version=cilium_latest_version,
     values=cilium_helm_values,
     namespace=cilium_helm_values["namespace"],
     wait_for_jobs=True,
