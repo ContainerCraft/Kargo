@@ -157,7 +157,7 @@ talos: clean-all talos-cluster talos-ready wait-all-pods
 kind-cluster:
 	@echo "Creating Kind Cluster..."
 	@direnv allow
-	@mkdir -p ${HOME}/.kube/config .kube || true
+	@mkdir -p ${HOME}/.kube .kube || true
 	@touch ${HOME}/.kube/config .kube/config || true
 	@chmod 600 ${HOME}/.kube/config .kube/config || true
 	@sudo docker volume create cilium-worker-n01
