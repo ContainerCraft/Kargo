@@ -1,32 +1,9 @@
 # --- Global Variables ---
-
-LOWERCASE_GITHUB_REPOSITORY := $(shell echo ${GITHUB_REPOSITORY} | tr '[:upper:]' '[:lower:]')
-REPO_NAME := $(shell echo ${LOWERCASE_GITHUB_REPOSITORY} | awk -F '/' '{print $$2}')
-REPO_ORG := $(shell echo ${LOWERCASE_GITHUB_REPOSITORY} | awk -F '/' '{print $$1}')
-
-PROJECT ?= $(or $(REPO_NAME),kargo)
-DEPLOYMENT ?= $(or $(ENVIRONMENT),dev)
-ORGANIZATION ?= $(or $(REPO_ORG), $(GITHUB_USER),organization)
-## Check if PULUMI_BACKEND_URL starts with 'file://'
-#ifeq ($(findstring file://,$(PULUMI_BACKEND_URL)),file://)
-#	ORGANIZATION = "organization"
-#	$(info ORGANIZATION: set to fallback string: ORGANIZATION=${ORGANIZATION})
-#else
-#	ORGANIZATION = $(or $(GITHUB_USER),organization)
-#	$(info GITHUB_USER is set to GITHUB_USER=${GITHUB_USER})
-#	$(info ORGANIZATION is set to ORGANIZATION=${ORGANIZATION})
-#endif
-
-# Set Pulumi stack identifier to <organization>/<project>/<deployment>
-PULUMI_STACK_IDENTIFIER := ${ORGANIZATION}/${PROJECT}/${DEPLOYMENT}
-
+KUBEDIR ?= .kube
+KUBECONFIG ?= ${KUBEDIR}/config
 # Escape special characters in sensitive tokens
 ESCAPED_PAT := $(shell echo "${PULUMI_ACCESS_TOKEN}" | sed -e 's/[\/&]/\\&/g')
 ESCAPED_GITHUB_TOKEN := $(shell echo "${GITHUB_TOKEN}" | sed -e 's/[\/&]/\\&/g')
-
-# Define file paths for configurations
-TALOS_CONFIG_FILE := ${PWD}/.talos/config
-KUBE_CONFIG_FILE := ${PWD}/.kube/config
 
 # Check if PULUMI_ACCESS_TOKEN is set
 ifeq ($(ESCAPED_PAT),)
@@ -37,6 +14,37 @@ endif
 ifeq ($(ESCAPED_GITHUB_TOKEN),)
 $(warning GITHUB_TOKEN is not set)
 endif
+
+LOWERCASE_GITHUB_REPOSITORY := $(shell echo ${GITHUB_REPOSITORY} | tr '[:upper:]' '[:lower:]')
+REPO_NAME := $(shell echo ${LOWERCASE_GITHUB_REPOSITORY} | awk -F '/' '{print $$2}')
+REPO_ORG := $(shell echo ${LOWERCASE_GITHUB_REPOSITORY} | awk -F '/' '{print $$1}')
+PROJECT ?= $(or $(REPO_NAME),kargo)
+STACK ?= $(or $(ENVIRONMENT),dev)
+
+##################################################################################
+# If PULUMI_BACKEND_URL starts with 'file://'; then
+#	Set ORGANIZATION to `organization` if PULUMI_BACKEND_URL starts with 'file://'
+#	Set Pulumi stack identifier to <organization>/<project>/<deployment>
+# Else
+#	Set ORGANIZATION to GITHUB_USER or fallback to 'organization'
+#	Set Pulumi stack identifier to `dev`
+ifeq ($(findstring file://,$(PULUMI_BACKEND_URL)),file://)
+	ORGANIZATION = "organization"
+	PULUMI_STACK_IDENTIFIER := $(or $(ORGANIZATION),organization)/$(or $(PROJECT),kargo)/$(or $(STACK),dev)
+$(info ORGANIZATION: set to fallback string: ORGANIZATION=${ORGANIZATION})
+$(info PROJECT: set to fallback string: PROJECT=${PROJECT})
+$(info STACK: set to fallback string: STACK=${STACK})
+else
+	ORGANIZATION = $(or $(GITHUB_ORG), $(GITHUB_USER),organization)
+	PULUMI_STACK_IDENTIFIER := 'dev'
+$(info ORGANIZATION: set to string: ORGANIZATION=${ORGANIZATION})
+$(info PROJECT: set to string: PROJECT=${PROJECT})
+$(info STACK: set to string: STACK=${STACK})
+endif
+
+##################################################################################
+# Set Pulumi organization to REPO Org name, GITHUB_USER, or fallback to 'organization'
+# ORGANIZATION ?= $(or $(REPO_ORG), $(GITHUB_USER),organization)
 
 # --- Targets ---
 .PHONY: help detect-arch pulumi-login pulumi-up up talos-gen-config talos-cluster kind-cluster clean clean-all act konductor test-kind test-talos stop
@@ -71,29 +79,26 @@ detect-arch:
 # --- Pulumi Login ---
 pulumi-login:
 	@echo "Logging into Pulumi..."
-	@direnv allow || true
-	@PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi login \
-		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
+	@pulumi login | sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
 	@pulumi install || true
-	@set -ex; pulumi stack select --create ${PULUMI_STACK_IDENTIFIER} || true
+	@pulumi stack select --create ${PULUMI_STACK_IDENTIFIER} || true
 	@echo "Login successful."
 
 # --- Pulumi Deployment ---
 pulumi-up:
 	@echo "Deploying Pulumi infrastructure..."
-	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
-		pulumi up --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
+	@pulumi up --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
 	@echo "Deployment complete."
 
 pulumi-down:
 	@echo "Deploying Pulumi infrastructure..."
-	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
-		pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
-		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || \
-		KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} PULUMI_K8S_DELETE_UNREACHABLE=true \
-			pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
-			| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
+	@set -ex; pulumi down --yes --skip-preview --refresh \
+	| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' \
+		|| PULUMI_K8S_DELETE_UNREACHABLE=true \
+		pulumi down --yes --skip-preview --refresh \
+		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' \
+			|| true
 	@echo "Deployment complete."
 
 login: pulumi-login
@@ -107,8 +112,9 @@ down: pulumi-login pulumi-down
 # --- Wait for All Pods Ready ---
 wait-all-pods:
 	@echo "Waiting for all pods in the cluster to be ready..."
-	@bash -c 'until [ "$$(kubectl get pods --all-namespaces --no-headers | grep -v "Running\|Completed\|Succeeded" | wc -l)" -eq 0 ]; do echo "Waiting for pods to be ready..."; sleep 5; done'
-	@kubectl get pods --all-namespaces --show-labels --kubeconfig ${KUBE_CONFIG_FILE}
+	@set -ex; kubectl get pods --all-namespaces --show-labels --kubeconfig ${KUBECONFIG}
+	@set -ex; bash -c 'set -ex; until [ "$$(kubectl get pods --all-namespaces --no-headers --kubeconfig ${KUBECONFIG} | grep -v 'Running\|Completed\|Succeeded' | wc -l)" -eq 0 ]; do echo "Waiting for pods to be ready..."; sleep 5; done'
+	@kubectl get pods --all-namespaces --show-labels --kubeconfig ${KUBECONFIG}
 	@echo "All pods in the cluster are ready."
 
 # ----------------------------------------------------------------------------------------------
@@ -119,8 +125,8 @@ wait-all-pods:
 talos-gen-config:
 	@echo "Generating Talos Config..."
 	@mkdir -p ${HOME}/.kube .kube .pulumi .talos
-	@touch ${HOME}/.kube/config ${KUBE_CONFIG_FILE} ${TALOS_CONFIG_FILE}
-	@chmod 600 ${HOME}/.kube/config ${KUBE_CONFIG_FILE} ${TALOS_CONFIG_FILE}
+	@touch ${KUBECONFIG} $${TALOSCONFIG}
+	@chmod 600 ${KUBECONFIG} $${TALOSCONFIG}
 	@sudo talosctl gen config kargo https://10.5.0.2:6443 \
 		--config-patch @.talos/patch/machine.yaml --output .talos/manifest
 	@sudo talosctl validate --mode container \
@@ -141,9 +147,9 @@ talos-cluster: detect-arch talos-gen-config
 # --- Wait for Talos Cluster Ready ---
 talos-ready:
 	@echo "Waiting for Talos Cluster to be ready..."
-	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l k8s-app=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to be ready..."; sleep 5; done'
-	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l k8s-app=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done'
-	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l k8s-app=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver to be ready..."; sleep 5; done'
+	@bash -c 'until kubectl wait --for=condition=Ready pod -l k8s-app=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to be ready..."; sleep 5; done'
+	@bash -c 'until kubectl wait --for=condition=Ready pod -l k8s-app=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done'
+	@bash -c 'until kubectl wait --for=condition=Ready pod -l k8s-app=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver to be ready..."; sleep 5; done'
 	@echo "Talos Cluster is ready."
 
 # --- Talos ---
@@ -157,30 +163,29 @@ talos: clean-all talos-cluster talos-ready wait-all-pods
 # --- Kind Cluster ---
 kind-cluster:
 	@echo "Creating Kind Cluster..."
-	@set -ex; direnv allow
 	@sudo docker volume create cilium-worker-n01
 	@sudo docker volume create cilium-worker-n02
 	@sudo docker volume create cilium-control-plane-n01
-	@set -ex; rm -rf ${KUBE_CONFIG_FILE} ${HOME}/.kube/config
-	@set -ex; mkdir -p ${KUBE_CONFIG_FILE} ${HOME}/.kube
-	@set -ex; touch ${KUBE_CONFIG_FILE} ${HOME}/.kube/config
-	@set -ex; chmod 600 ${KUBE_CONFIG_FILE} ${HOME}/.kube/config
-	@set -ex; sudo kind create cluster --wait 1m --retain --config=hack/kind.yaml
-	@set -ex; sudo kind get clusters
-	@set -ex; KUBECONFIG="${KUBE_CONFIG_FILE}" kubectl get all --all-namespaces --show-labels --kubeconfig ${KUBECONFIG}
-	@set -ex; KUBECONFIG="${HOME}/.kube/config" sudo kind get kubeconfig --name cilium | tee ${KUBECONFIG} 1>/dev/null
-	@set -ex; KUBECONFIG="${KUBE_CONFIG_FILE}" sudo kind get kubeconfig --name cilium | tee ${KUBECONFIG} 1>/dev/null
-	@set -ex; KUBECONFIG="${KUBE_CONFIG_FILE}" sudo chown -R $(id -u):$(id -g) ${KUBECONFIG} ${HOME}/.kube/config
-	@set -ex; pulumi config set kubernetes kind || true
+	@echo \
+		&& rm -rf ${KUBECONFIG} \
+		&& mkdir -p ${KUBEDIR} \
+		&& touch ${KUBECONFIG} \
+		&& chmod 600 ${KUBECONFIG} \
+		&& sudo chown -R $$(whoami):$$(whoami) ${KUBECONFIG}
+	@sudo kind create cluster --wait 1m --retain --config=hack/kind.yaml --kubeconfig ${KUBECONFIG}
+	@echo "Kind Kubernetes Clusters: $$(sudo kind get clusters)"
+	@kubectl get all --all-namespaces --show-labels --kubeconfig ${KUBECONFIG}
+	@pulumi config set kubernetes kind || true
 	@echo "Created Kind Cluster."
 
 # --- Wait for Kind Cluster Ready ---
 kind-ready:
 	@echo "Waiting for Kind Kubernetes API to be ready..."
-	@set -ex; kubectl get all --all-namespaces --show-labels --kubeconfig ${KUBE_CONFIG_FILE} || sleep 5
-	@bash -c "set -ex; until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver to be ready..."; sleep 5; done"
-	@bash -c "set -ex; until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to be ready..."; sleep 5; done"
-	@bash -c "set -ex; until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done"
+	@kubectl get all --all-namespaces --kubeconfig ${KUBECONFIG} || sleep 5
+	@bash -c "set -ex; until kubectl --kubeconfig ${KUBECONFIG} wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s; do echo 'Waiting for kube-apiserver to be ready...'; sleep 5; done"
+	@bash -c "set -ex; until kubectl --kubeconfig ${KUBECONFIG} wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s; do echo 'Waiting for kube-scheduler to be ready...'; sleep 5; done"
+	@bash -c "set -ex; until kubectl --kubeconfig ${KUBECONFIG} wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s; do echo 'Waiting for kube-controller-manager to be ready...'; sleep 5; done"
+	@kubectl get all --all-namespaces --kubeconfig ${KUBECONFIG} || true
 	@echo "Kind Cluster is ready."
 
 kind: login kind-cluster kind-ready
@@ -210,8 +215,7 @@ clean-all: clean
 # --- GitHub Actions Testing ---
 act: clean
 	@echo "Testing GitHub Workflows locally..."
-	@direnv allow
-	@GITHUB_TOKEN=${GITHUB_TOKEN} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
+	@export GITHUB_TOKEN=${GITHUB_TOKEN}; export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}; \
 		act --container-options "--privileged" --rm \
 			--var GITHUB_TOKEN=${GITHUB_TOKEN} \
 			--var PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \

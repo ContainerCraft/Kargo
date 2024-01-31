@@ -82,7 +82,7 @@
                     "hideCursorInOverviewRuler": true
                 },
                 "editor": {
-                    "tabSize": 2,
+                    "tabSize": 4,
                     "fontSize": 14,
                     "autoSave": "onFocusChange",
                     "wordWrap": "on",
@@ -266,6 +266,7 @@
                 }
             },
             "[makefile]": {
+                "editor.tabSize": 4,
                 "editor.insertSpaces": false,
                 "editor.renderWhitespace": "selection"
             },
@@ -279,7 +280,7 @@
                     "autoSave": "onFocusChange",
                     "formatOnSave": true,
                     "insertSpaces": true,
-                    "tabSize": 2,
+                    "tabSize": 4,
                     "minimap.enabled": true,
                     "scrollBeyondLastLine": true,
                     "scrollbar": {
