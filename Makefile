@@ -1,9 +1,23 @@
 # --- Global Variables ---
-DEPLOYMENT_ENVIRONMENT := dev
+
 LOWERCASE_GITHUB_REPOSITORY := $(shell echo ${GITHUB_REPOSITORY} | tr '[:upper:]' '[:lower:]')
 REPO_NAME := $(shell echo ${LOWERCASE_GITHUB_REPOSITORY} | awk -F '/' '{print $$2}')
 REPO_ORG := $(shell echo ${LOWERCASE_GITHUB_REPOSITORY} | awk -F '/' '{print $$1}')
-PULUMI_STACK_IDENTIFIER := ${GITHUB_USER}/${REPO_NAME}/${DEPLOYMENT_ENVIRONMENT}
+
+PROJECT ?= $(or $(REPO_NAME),kargo)
+DEPLOYMENT ?= $(or $(ENVIRONMENT),dev)
+
+# Check if PULUMI_BACKEND_URL starts with 'file://'
+ifeq ($(findstring file://,$(PULUMI_BACKEND_URL)),file://)
+    ORGANIZATION = organization
+    $(info ORGANIZATION: ${ORGANIZATION})
+else
+    ORGANIZATION = ${GITHUB_USER}
+    $(info ORGANIZATION is set to ${GITHUB_USER})
+endif
+
+# Set Pulumi stack identifier to <organization>/<project>/<deployment>
+PULUMI_STACK_IDENTIFIER := ${ORGANIZATION}/${PROJECT}/${DEPLOYMENT}
 
 # Escape special characters in sensitive tokens
 ESCAPED_PAT := $(shell echo "${PULUMI_ACCESS_TOKEN}" | sed -e 's/[\/&]/\\&/g')
@@ -60,7 +74,7 @@ pulumi-login:
 	@PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi login \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
 	@pulumi install || true
-	@pulumi stack select --create ${PULUMI_STACK_IDENTIFIER} || true
+	@set -ex; pulumi stack select --create ${PULUMI_STACK_IDENTIFIER} || true
 	@echo "Login successful."
 
 # --- Pulumi Deployment ---
@@ -143,15 +157,16 @@ talos: clean-all talos-cluster talos-ready wait-all-pods
 kind-cluster:
 	@echo "Creating Kind Cluster..."
 	@direnv allow
-	@mkdir -p .kube || true
-	@touch .kube/config || true
-	@chmod 600 .kube/config || true
+	@mkdir -p ${HOME}/.kube/config .kube || true
+	@touch ${HOME}/.kube/config .kube/config || true
+	@chmod 600 ${HOME}/.kube/config .kube/config || true
 	@sudo docker volume create cilium-worker-n01
 	@sudo docker volume create cilium-worker-n02
 	@sudo docker volume create cilium-control-plane-n01
 	@sudo kind create cluster --wait 1m --retain --config=hack/kind.yaml
 	@sudo kind get clusters
 	@sudo kind get kubeconfig --name cilium | tee ${KUBE_CONFIG_FILE} 1>/dev/null
+	@sudo kind get kubeconfig --name cilium | tee ${HOME}/.kube/config 1>/dev/null
 	@sudo chown -R $(id -u):$(id -g) ${KUBE_CONFIG_FILE}
 	@pulumi config set kubernetes kind || true
 	@echo "Created Kind Cluster."

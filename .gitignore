@@ -17,3 +17,4 @@ Pulumi.*.yaml
 .env
 .devcontainer/docker
 tmp.*
+tmp
