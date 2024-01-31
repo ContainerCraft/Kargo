@@ -189,13 +189,13 @@ kind-ready:
 	@direnv allow
 	@echo "Waiting for Kind Kubernetes API to be ready..."
 	@direnv allow
-	@echo ${KUBECONFIG}
-	@cat ${KUBECONFIG}
+	@echo $${KUBECONFIG}
+	@cat $${KUBECONFIG}
 	@printenv
-	@set -x; bash -c 'COUNT=0; until kubectl wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s --kubeconfig ${KUBECONFIG}; do echo "Waiting for kube-apiserver to be ready..."; sleep 8; ((COUNT++)); if [[ $$COUNT -ge 10 ]]; then echo "kube-apiserver is not ready after 12 attempts. Exiting with error."; exit 1; fi; done'
+	@set -x; bash -c 'set -x; COUNT=0; until kubectl wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s --kubeconfig $${KUBECONFIG}; do echo "Waiting for kube-apiserver to be ready..."; sleep 8; ((COUNT++)); if [[ $$COUNT -ge 10 ]]; then echo "kube-apiserver is not ready after 12 attempts. Exiting with error."; exit 1; fi; done'
 	@set -ex; kubectl wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s --kubeconfig .kube/config
-	@set -x; bash -c "until kubectl wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s --kubeconfig ${KUBECONFIG}; do echo 'Waiting for kube-scheduler to be ready...'; sleep 5; done"
-	@set -x; bash -c "until kubectl wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s --kubeconfig ${KUBECONFIG}; do echo 'Waiting for kube-controller-manager to be ready...'; sleep 5; done"
+	@set -x; bash -c "until kubectl wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s --kubeconfig $${KUBECONFIG}; do echo 'Waiting for kube-scheduler to be ready...'; sleep 5; done"
+	@set -x; bash -c "until kubectl wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s --kubeconfig $${KUBECONFIG}; do echo 'Waiting for kube-controller-manager to be ready...'; sleep 5; done"
 	@echo "Kind Cluster is ready."
 
 kind: login kind-cluster kind-ready
