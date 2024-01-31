@@ -156,28 +156,29 @@ talos: clean-all talos-cluster talos-ready wait-all-pods
 # --- Kind Cluster ---
 kind-cluster:
 	@echo "Creating Kind Cluster..."
-	@direnv allow
-	@mkdir -p ${HOME}/.kube .kube || true
-	@touch ${HOME}/.kube/config .kube/config || true
-	@chmod 600 ${HOME}/.kube/config .kube/config || true
+	@set -ex; direnv allow
+	@set -ex; rm -rf ${HOME}/.kube/config .kube/config || true
+	@set -ex; mkdir -p ${HOME}/.kube .kube || true
+	@set -ex; touch ${HOME}/.kube/config .kube/config || true
+	@set -ex; chmod 600 ${HOME}/.kube/config .kube/config || true
 	@sudo docker volume create cilium-worker-n01
 	@sudo docker volume create cilium-worker-n02
 	@sudo docker volume create cilium-control-plane-n01
-	@sudo kind create cluster --wait 1m --retain --config=hack/kind.yaml
-	@sudo kind get clusters
-	@sudo kind get kubeconfig --name cilium | tee ${KUBE_CONFIG_FILE} 1>/dev/null
-	@sudo kind get kubeconfig --name cilium | tee ${HOME}/.kube/config 1>/dev/null
-	@sudo chown -R $(id -u):$(id -g) ${KUBE_CONFIG_FILE}
-	@pulumi config set kubernetes kind || true
+	@set -ex; sudo kind create cluster --wait 1m --retain --config=hack/kind.yaml
+	@set -ex; sudo kind get clusters
+	@set -ex; KUBECONFIG=${KUBE_CONFIG_FILE} sudo kind get kubeconfig --name cilium | tee ${KUBECONFIG} 1>/dev/null
+	@set -ex; KUBECONFIG=${KUBE_CONFIG_FILE} sudo kind get kubeconfig --name cilium | tee ${HOME}/.kube/config 1>/dev/null
+	@set -ex; KUBECONFIG=${KUBE_CONFIG_FILE} sudo chown -R $(id -u):$(id -g) ${KUBECONFIG} ${HOME}/.kube/config
+	@set -ex; pulumi config set kubernetes kind || true
 	@echo "Created Kind Cluster."
 
 # --- Wait for Kind Cluster Ready ---
 kind-ready:
 	@echo "Waiting for Kind Kubernetes API to be ready..."
-	@kubectl get all --all-namespaces --show-labels --kubeconfig ${KUBE_CONFIG_FILE} || sleep 5
-	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver to be ready..."; sleep 5; done'
-	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to be ready..."; sleep 5; done'
-	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done'
+	@set -ex; kubectl get all --all-namespaces --show-labels --kubeconfig ${KUBE_CONFIG_FILE} || sleep 5
+	@bash -c 'set -ex; until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver to be ready..."; sleep 5; done'
+	@bash -c 'set -ex; until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to be ready..."; sleep 5; done'
+	@bash -c 'set -ex; until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done'
 	@echo "Kind Cluster is ready."
 
 kind: login kind-cluster kind-ready
@@ -205,7 +206,7 @@ clean-all: clean
 	@echo "Extended cleanup complete."
 
 # --- GitHub Actions Testing ---
-act:
+act: clean
 	@echo "Testing GitHub Workflows locally..."
 	@direnv allow
 	@GITHUB_TOKEN=${GITHUB_TOKEN} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
