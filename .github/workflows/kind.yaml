@@ -55,22 +55,24 @@ jobs:
       - name: Create Kind Cluster
         id: create-kind-kubernetes
         env:
-          ACTIONS_STEP_DEBUG: false
+          ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KUBECONFIG: /workspaces/Kargo/.kube/config
           KINDCONFIG: /workspaces/Kargo/hack/kind.yaml
         run: |
+          set -ex
           direnv allow
           make kind-cluster
 
       - id: wait-kind-ready
         name: Wait for Kind Kubernetes API to be Ready
         env:
-          ACTIONS_STEP_DEBUG: false
+          ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -ex
           direnv allow
           make kind-ready
 
@@ -94,7 +96,7 @@ jobs:
           direnv allow
           make wait-all-pods
         env:
-          ACTIONS_STEP_DEBUG: true
+          ACTIONS_STEP_DEBUG: false
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KUBECONFIG: /workspaces/Kargo/.kube/config
