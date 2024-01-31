@@ -9,11 +9,12 @@ DEPLOYMENT ?= $(or $(ENVIRONMENT),dev)
 
 # Check if PULUMI_BACKEND_URL starts with 'file://'
 ifeq ($(findstring file://,$(PULUMI_BACKEND_URL)),file://)
-    ORGANIZATION = organization
-    $(info ORGANIZATION: ${ORGANIZATION})
+	ORGANIZATION = "organization"
+	$(info ORGANIZATION: set to fallback string: ORGANIZATION=${ORGANIZATION})
 else
-    ORGANIZATION = ${GITHUB_USER}
-    $(info ORGANIZATION is set to ${GITHUB_USER})
+	ORGANIZATION = $(or $(GITHUB_USER),organization)
+	$(info GITHUB_USER is set to GITHUB_USER=${GITHUB_USER})
+	$(info ORGANIZATION is set to ORGANIZATION=${ORGANIZATION})
 endif
 
 # Set Pulumi stack identifier to <organization>/<project>/<deployment>
@@ -157,18 +158,19 @@ talos: clean-all talos-cluster talos-ready wait-all-pods
 kind-cluster:
 	@echo "Creating Kind Cluster..."
 	@set -ex; direnv allow
-	@set -ex; rm -rf ${HOME}/.kube/config .kube/config || true
-	@set -ex; mkdir -p ${HOME}/.kube .kube || true
-	@set -ex; touch ${HOME}/.kube/config .kube/config || true
-	@set -ex; chmod 600 ${HOME}/.kube/config .kube/config || true
 	@sudo docker volume create cilium-worker-n01
 	@sudo docker volume create cilium-worker-n02
 	@sudo docker volume create cilium-control-plane-n01
+	@set -ex; rm -rf ${KUBE_CONFIG_FILE} ${HOME}/.kube/config
+	@set -ex; mkdir -p ${KUBE_CONFIG_FILE} ${HOME}/.kube
+	@set -ex; touch ${KUBE_CONFIG_FILE} ${HOME}/.kube/config
+	@set -ex; chmod 600 ${KUBE_CONFIG_FILE} ${HOME}/.kube/config
 	@set -ex; sudo kind create cluster --wait 1m --retain --config=hack/kind.yaml
 	@set -ex; sudo kind get clusters
-	@set -ex; KUBECONFIG=${KUBE_CONFIG_FILE} sudo kind get kubeconfig --name cilium | tee ${KUBECONFIG} 1>/dev/null
-	@set -ex; KUBECONFIG=${KUBE_CONFIG_FILE} sudo kind get kubeconfig --name cilium | tee ${HOME}/.kube/config 1>/dev/null
-	@set -ex; KUBECONFIG=${KUBE_CONFIG_FILE} sudo chown -R $(id -u):$(id -g) ${KUBECONFIG} ${HOME}/.kube/config
+	@set -ex; KUBECONFIG="${KUBE_CONFIG_FILE}" kubectl get all --all-namespaces --show-labels --kubeconfig ${KUBECONFIG}
+	@set -ex; KUBECONFIG="${HOME}/.kube/config" sudo kind get kubeconfig --name cilium | tee ${KUBECONFIG} 1>/dev/null
+	@set -ex; KUBECONFIG="${KUBE_CONFIG_FILE}" sudo kind get kubeconfig --name cilium | tee ${KUBECONFIG} 1>/dev/null
+	@set -ex; KUBECONFIG="${KUBE_CONFIG_FILE}" sudo chown -R $(id -u):$(id -g) ${KUBECONFIG} ${HOME}/.kube/config
 	@set -ex; pulumi config set kubernetes kind || true
 	@echo "Created Kind Cluster."
 
@@ -176,9 +178,9 @@ kind-cluster:
 kind-ready:
 	@echo "Waiting for Kind Kubernetes API to be ready..."
 	@set -ex; kubectl get all --all-namespaces --show-labels --kubeconfig ${KUBE_CONFIG_FILE} || sleep 5
-	@bash -c 'set -ex; until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver to be ready..."; sleep 5; done'
-	@bash -c 'set -ex; until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to be ready..."; sleep 5; done'
-	@bash -c 'set -ex; until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done'
+	@bash -c "set -ex; until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver to be ready..."; sleep 5; done"
+	@bash -c "set -ex; until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to be ready..."; sleep 5; done"
+	@bash -c "set -ex; until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done"
 	@echo "Kind Cluster is ready."
 
 kind: login kind-cluster kind-ready
