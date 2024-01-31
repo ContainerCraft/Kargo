@@ -77,10 +77,11 @@ jobs:
       - name: Deploy Pulumi Infrastructure
         id: deploy
         run: |
+          set -ex
           direnv allow
           make pulumi-up
         env:
-          ACTIONS_STEP_DEBUG: false
+          ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KUBECONFIG: /workspaces/Kargo/.kube/config
@@ -89,10 +90,11 @@ jobs:
       - name: Wait for All Pods to be Ready
         id: wait-all-pods
         run: |
+          set -ex
           direnv allow
           make wait-all-pods
         env:
-          ACTIONS_STEP_DEBUG: false
+          ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KUBECONFIG: /workspaces/Kargo/.kube/config
