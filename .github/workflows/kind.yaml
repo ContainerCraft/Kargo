@@ -62,13 +62,13 @@ jobs:
           direnv allow
           make kind-cluster
 
-      #     - id: wait-kind-ready
-      #       name: Wait for Kind Kubernetes API to be Ready
-      #       env:
-      #         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #         ACTIONS_STEP_DEBUG: true
-      #       run: make kind-ready
+      - id: wait-kind-ready
+        name: Wait for Kind Kubernetes API to be Ready
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTIONS_STEP_DEBUG: true
+        run: make kind-ready
 
       - name: Deploy Pulumi Infrastructure
         id: deploy
