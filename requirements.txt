@@ -1,5 +1,7 @@
 pulumi>=3
-pulumi_kubernetes>=4.4.0beautifulsoup4
+pulumi_kubernetes>=4.7.1
+kubernetes>=4.7.1
+beautifulsoup4
 pyyaml
 packaging
 
