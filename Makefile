@@ -80,7 +80,7 @@ detect-arch:
 pulumi-login:
 	@echo "Logging into Pulumi..."
 	@pulumi login | sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
-	@pulumi install || true
+	@pulumi install | grep -v already || true
 	@pulumi stack select --create ${PULUMI_STACK_IDENTIFIER} || true
 	@echo "Login successful."
 
@@ -93,7 +93,7 @@ pulumi-up:
 
 pulumi-down:
 	@echo "Deploying Pulumi infrastructure..."
-	@set -ex; pulumi down --yes --skip-preview --refresh \
+	@pulumi down --yes --skip-preview --refresh \
 	| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' \
 		|| PULUMI_K8S_DELETE_UNREACHABLE=true \
 		pulumi down --yes --skip-preview --refresh \
@@ -112,8 +112,8 @@ down: pulumi-login pulumi-down
 # --- Wait for All Pods Ready ---
 wait-all-pods:
 	@echo "Waiting for all pods in the cluster to be ready..."
-	@set -ex; kubectl get pods --all-namespaces --show-labels --kubeconfig ${KUBECONFIG}
-	@set -ex; bash -c 'set -ex; until [ "$$(kubectl get pods --all-namespaces --no-headers --kubeconfig ${KUBECONFIG} | grep -v 'Running\|Completed\|Succeeded' | wc -l)" -eq 0 ]; do echo "Waiting for pods to be ready..."; sleep 5; done'
+	@kubectl get pods --all-namespaces --show-labels --kubeconfig ${KUBECONFIG}
+	@bash -c 'until [ "$$(kubectl get pods --all-namespaces --no-headers --kubeconfig ${KUBECONFIG} | grep -v 'Running\|Completed\|Succeeded' | wc -l)" -eq 0 ]; do echo "Waiting for pods to be ready..."; sleep 5; done'
 	@kubectl get pods --all-namespaces --show-labels --kubeconfig ${KUBECONFIG}
 	@echo "All pods in the cluster are ready."
 
@@ -182,9 +182,9 @@ kind-cluster:
 kind-ready:
 	@echo "Waiting for Kind Kubernetes API to be ready..."
 	@kubectl get all --all-namespaces --kubeconfig ${KUBECONFIG} || sleep 5
-	@bash -c "set -ex; until kubectl --kubeconfig ${KUBECONFIG} wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s; do echo 'Waiting for kube-apiserver to be ready...'; sleep 5; done"
-	@bash -c "set -ex; until kubectl --kubeconfig ${KUBECONFIG} wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s; do echo 'Waiting for kube-scheduler to be ready...'; sleep 5; done"
-	@bash -c "set -ex; until kubectl --kubeconfig ${KUBECONFIG} wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s; do echo 'Waiting for kube-controller-manager to be ready...'; sleep 5; done"
+	@bash -c "until kubectl --kubeconfig ${KUBECONFIG} wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s; do echo 'Waiting for kube-apiserver to be ready...'; sleep 5; done"
+	@bash -c "until kubectl --kubeconfig ${KUBECONFIG} wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s; do echo 'Waiting for kube-scheduler to be ready...'; sleep 5; done"
+	@bash -c "until kubectl --kubeconfig ${KUBECONFIG} wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s; do echo 'Waiting for kube-controller-manager to be ready...'; sleep 5; done"
 	@kubectl get all --all-namespaces --kubeconfig ${KUBECONFIG} || true
 	@echo "Kind Cluster is ready."
 
