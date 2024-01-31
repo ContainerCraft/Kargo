@@ -1,2 +1,5 @@
 pulumi>=3
-pulumi_kubernetes>=4.4.0
+pulumi_kubernetes>=4.4.0beautifulsoup4
+pyyaml
+packaging
+
