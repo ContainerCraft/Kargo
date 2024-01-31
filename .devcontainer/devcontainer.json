@@ -26,7 +26,10 @@
                 "postAttachCommand": "echo 'Post attach...'",
                 "window": {
                     "titleBarStyle": "custom",
-                    "title": "${localWorkspaceFolderBasename}${separator}${containerName}${separator}${profileName}${separator}${activeEditorShort}"
+                    "title": "${localWorkspaceFolderBasename}${separator}${containerName}${separator}${profileName}${separator}${activeEditorShort}",
+                    "density": {
+                        "editorTabHeight": "compact"
+                    }
                 },
                 "search": {
                     "defaultViewMode": "list"
