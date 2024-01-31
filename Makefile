@@ -78,6 +78,7 @@ detect-arch:
 
 # --- Pulumi Login ---
 pulumi-login:
+	@direnv allow
 	@echo "Logging into Pulumi..."
 	@pulumi login | sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
 	@pulumi install | grep -v already || true
@@ -86,12 +87,14 @@ pulumi-login:
 
 # --- Pulumi Deployment ---
 pulumi-up:
+	@direnv allow
 	@echo "Deploying Pulumi infrastructure..."
 	@pulumi up --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
 	@echo "Deployment complete."
 
 pulumi-down:
+	@direnv allow
 	@echo "Deploying Pulumi infrastructure..."
 	@pulumi down --yes --skip-preview --refresh \
 	| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' \
@@ -111,6 +114,7 @@ down: pulumi-login pulumi-down
 
 # --- Wait for All Pods Ready ---
 wait-all-pods:
+	@direnv allow
 	@echo "Waiting for all pods in the cluster to be ready..."
 	@bash -c "until [ \"$$(kubectl get pods --all-namespaces --no-headers --kubeconfig $${KUBECONFIG} | grep -vE 'Running|Completed|Succeeded' | wc -l)\" -eq 0 ]; do echo \"Waiting for pods to be ready...\"; sleep 5; done"
 	@echo "All pods in the cluster are ready."
@@ -121,6 +125,7 @@ wait-all-pods:
 
 # --- Talos Configuration ---
 talos-gen-config:
+	@direnv allow
 	@echo "Generating Talos Config..."
 	@mkdir -p ${HOME}/.kube .kube .pulumi .talos
 	@touch ${KUBECONFIG} $${TALOSCONFIG}
@@ -133,6 +138,7 @@ talos-gen-config:
 
 # --- Talos Cluster ---
 talos-cluster: detect-arch talos-gen-config
+	@direnv allow
 	@echo "Creating Talos Kubernetes Cluster..."
 	@sudo talosctl cluster create \
 		--arch=$$(make detect-arch) \
@@ -144,6 +150,7 @@ talos-cluster: detect-arch talos-gen-config
 
 # --- Wait for Talos Cluster Ready ---
 talos-ready:
+	@direnv allow
 	@echo "Waiting for Talos Cluster to be ready..."
 	@bash -c 'until kubectl wait --for=condition=Ready pod -l k8s-app=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to be ready..."; sleep 5; done'
 	@bash -c 'until kubectl wait --for=condition=Ready pod -l k8s-app=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done'
@@ -160,6 +167,7 @@ talos: clean-all talos-cluster talos-ready wait-all-pods
 
 # --- Kind Cluster ---
 kind-cluster:
+	@direnv allow
 	@echo "Creating Kind Cluster..."
 	@sudo docker volume create cilium-worker-n01
 	@sudo docker volume create cilium-worker-n02
@@ -178,10 +186,12 @@ kind-cluster:
 
 # --- Wait for Kind Cluster Ready ---
 kind-ready:
+	@direnv allow
 	@echo "Waiting for Kind Kubernetes API to be ready..."
-	@printenv
+	@direnv allow
 	@echo ${KUBECONFIG}
 	@cat ${KUBECONFIG}
+	@printenv
 	@set -x; bash -c 'COUNT=0; until kubectl wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s --kubeconfig ${KUBECONFIG}; do echo "Waiting for kube-apiserver to be ready..."; sleep 8; ((COUNT++)); if [[ $$COUNT -ge 10 ]]; then echo "kube-apiserver is not ready after 12 attempts. Exiting with error."; exit 1; fi; done'
 	@set -ex; kubectl wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s --kubeconfig .kube/config
 	@set -x; bash -c "until kubectl wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s --kubeconfig ${KUBECONFIG}; do echo 'Waiting for kube-scheduler to be ready...'; sleep 5; done"
@@ -196,6 +206,7 @@ kind: login kind-cluster kind-ready
 
 # --- Cleanup ---
 clean: login down
+	@direnv allow
 	@echo "Cleaning up resources..."
 	@sudo kind delete cluster --name cilium \
 		|| echo "Kind cluster not found."
@@ -206,6 +217,7 @@ clean: login down
 	@echo "Cleanup complete."
 
 clean-all: clean
+	@direnv allow
 	@echo "Performing extended cleanup..."
 	@sudo docker volume rm cilium-worker-n01 cilium-worker-n02 cilium-control-plane-n01 \
 		|| echo "Docker volumes not found."
@@ -214,6 +226,7 @@ clean-all: clean
 
 # --- GitHub Actions Testing ---
 act: clean
+	@direnv allow
 	@echo "Testing GitHub Workflows locally..."
 	@export GITHUB_TOKEN=${GITHUB_TOKEN}; export PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}; \
 		act --container-options "--privileged" --rm \
