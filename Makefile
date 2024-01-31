@@ -6,16 +6,16 @@ REPO_ORG := $(shell echo ${LOWERCASE_GITHUB_REPOSITORY} | awk -F '/' '{print $$1
 
 PROJECT ?= $(or $(REPO_NAME),kargo)
 DEPLOYMENT ?= $(or $(ENVIRONMENT),dev)
-
-# Check if PULUMI_BACKEND_URL starts with 'file://'
-ifeq ($(findstring file://,$(PULUMI_BACKEND_URL)),file://)
-	ORGANIZATION = "organization"
-	$(info ORGANIZATION: set to fallback string: ORGANIZATION=${ORGANIZATION})
-else
-	ORGANIZATION = $(or $(GITHUB_USER),organization)
-	$(info GITHUB_USER is set to GITHUB_USER=${GITHUB_USER})
-	$(info ORGANIZATION is set to ORGANIZATION=${ORGANIZATION})
-endif
+ORGANIZATION ?= $(or $(REPO_ORG), $(GITHUB_USER),organization)
+## Check if PULUMI_BACKEND_URL starts with 'file://'
+#ifeq ($(findstring file://,$(PULUMI_BACKEND_URL)),file://)
+#	ORGANIZATION = "organization"
+#	$(info ORGANIZATION: set to fallback string: ORGANIZATION=${ORGANIZATION})
+#else
+#	ORGANIZATION = $(or $(GITHUB_USER),organization)
+#	$(info GITHUB_USER is set to GITHUB_USER=${GITHUB_USER})
+#	$(info ORGANIZATION is set to ORGANIZATION=${ORGANIZATION})
+#endif
 
 # Set Pulumi stack identifier to <organization>/<project>/<deployment>
 PULUMI_STACK_IDENTIFIER := ${ORGANIZATION}/${PROJECT}/${DEPLOYMENT}
