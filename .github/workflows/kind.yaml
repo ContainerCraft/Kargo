@@ -69,7 +69,7 @@ jobs:
           direnv allow
           make kind-ready
         env:
-          ACTIONS_STEP_DEBUG: true
+          ACTIONS_STEP_DEBUG: false
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -79,14 +79,13 @@ jobs:
           direnv allow
           make pulumi-up
         env:
-          ACTIONS_STEP_DEBUG: true
+          ACTIONS_STEP_DEBUG: false
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Wait for All Pods to be Ready
         id: wait-all-pods
         run: |
-          set -ex
           direnv allow
           make wait-all-pods
         env:
