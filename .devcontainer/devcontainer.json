@@ -74,9 +74,9 @@
                     "fullScreen": true,
                     "hideMinimap": true,
                     "centerLayout": false,
-                    "hideStatusBar": true,
-                    "hideActivityBar": true,
-                    "hideLineNumbers": false,
+                    "hideStatusBar": false,
+                    "hideActivityBar": false,
+                    "hideLineNumbers": true,
                     "silentNotifications": true,
                     "hideLineDecorations": false,
                     "hideCursorInOverviewRuler": true

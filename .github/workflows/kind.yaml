@@ -43,7 +43,7 @@ jobs:
         uses: helm/kind-action@v1.8.0
         with:
           wait: 2m
-          cluster_name: cilium
+          cluster_name: kargo
           config: hack/kind.yaml
           ignore_failed_clean: true
 
@@ -72,7 +72,7 @@ jobs:
           docker ps --all
           echo "KUBECONFIG: $KUBECONFIG"
           kubectl config get-contexts --kubeconfig $KUBECONFIG
-          kubectl cluster-info --context kind-cilium --kubeconfig $KUBECONFIG
+          kubectl cluster-info --context kind-kargo --kubeconfig $KUBECONFIG
 
       - id: pulumi-up
         name: Deploy Pulumi IaC
