@@ -37,14 +37,10 @@ jobs:
       options: --user vscode --security-opt seccomp=unconfined
 
     steps:
-      - name: Create Kind Cluster
-        id: create-kind-kubernetes
+      - name: Set Workspace Permissions
+        id: chown-workspaces
         env:
           ACTIONS_STEP_DEBUG: true
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBEDIR: .kube
-          KUBECONFIG: .kube/config
         run: |
           set -x
           sudo chown -R $(whoami):$(whoami) /workspaces
