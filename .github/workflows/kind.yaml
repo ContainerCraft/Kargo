@@ -33,18 +33,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - id: checkout
+        name: ✨ Checkout ✨
         uses: actions/checkout@v4
-        id: checkout
         with:
           fetch-depth: 1
 
-      - uses: pulumi/actions@v5
-        id: pulumi-install
+      - id: pulumi-install
+        name: 📦️ Pulumi Install 📦️
+        uses: pulumi/actions@v5
 
-      - uses: pulumi/actions@v5
-        name: Pulumi Up
-        id: pulumi-up
+      - id: pulumi-up
+        name: 🚀 Pulumi Up 🚀
+        uses: pulumi/actions@v5
         env:
           KUBECONFIG: .kube/config
           ACTIONS_STEP_DEBUG: true
@@ -53,12 +54,13 @@ jobs:
         with:
           command: up
           work-dir: ./
-          cloud-url: file:///${{ github.action_path }}.pulumi
+          cloud-url: file://~
           refresh: true
           secrets-provider: passphrase
           stack-name: ci
 
-      - name: Kubernetes KinD Cluster
+      - id: kind-kubernetes
+        name: Kubernetes KinD Cluster
         uses: helm/kind-action@v1.8.0
         with:
           wait: 30s
@@ -66,18 +68,18 @@ jobs:
           config: hack/kind.yaml
           ignore_failed_clean: true
 
-      - name: Kubectl Get Pods
-        id: kubectl-get-pods
-        env:
-          KUBECONFIG: .kube/config
-          ACTIONS_STEP_DEBUG: true
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - id: kubectl-get-pods
+        name: Kubectl Get Pods
         run: |
           set -x
           sudo kind get kubeconfig --name kargo > .kube/config
           kubectl cluster-info --context kind-kargo
           kubectl get po --all-namespaces --context kind-kargo
+        env:
+          KUBECONFIG: .kube/config
+          ACTIONS_STEP_DEBUG: true
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 #     - id: pulumi-up
 #       name: Deploy Pulumi IaC
@@ -96,15 +98,15 @@ jobs:
 
       - id: pulumi-destroy
         name: Pulumi Destroy
+        run: |
+          source .envrc
+          pulumi down --skip-preview --refresh \
+            || PULUMI_K8S_DELETE_UNREACHABLE=true pulumi down --skip-preview --refresh
         env:
           KUBECONFIG: .kube/config
           ACTIONS_STEP_DEBUG: false
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          source .envrc
-          pulumi down --skip-preview --refresh \
-            || PULUMI_K8S_DELETE_UNREACHABLE=true pulumi down --skip-preview --refresh
 
 #     - name: Cleanup
 #       id: clean-all
