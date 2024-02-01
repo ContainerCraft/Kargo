@@ -6,7 +6,7 @@ from src.lib.helm_chart_versions import get_latest_helm_chart_version
 import os
 
 # Initialize Pulumi configuration
-kubeconfig = os.getenv("KUBECONFIG")
+kubeconfig = os.getenv("KUBECONFIG") or "~/.kube/config"
 config = pulumi.Config()
 
 # Try to get the 'kargo:kubernetes.distribution' config value
