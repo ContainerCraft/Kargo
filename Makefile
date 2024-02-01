@@ -193,6 +193,8 @@ clean: login down
 		|| echo "Kind cluster not found."
 	@sudo kind delete cluster --name kind \
 		|| echo "Kind cluster not found."
+	@sudo kind delete cluster --name kargo \
+		|| echo "Kind cluster not found."
 	@sudo talosctl cluster destroy \
 		|| echo "Talos cluster not found."
 	@echo "Cleanup complete."
