@@ -20,7 +20,7 @@ kubeconfig_context = "default-context"
 
 # Determine the appropriate Kubernetes context based on the distribution type
 if kubernetes_distribution == 'kind':
-    kubeconfig_context = "kind-cilium"
+    kubeconfig_context = "kind-kargo"
 elif kubernetes_distribution == 'talos':
     kubeconfig_context = "admin@talos-default"
 
@@ -86,7 +86,7 @@ kubernetes_endpoint_ip = KubernetesApiEndpointIp("k8s-api-ip")
 # Helm Values for Kind Kubernetes
 cilium_helm_values_kind = {
     "cluster": {
-        "name": "kind-cilium"
+        "name": "kargo.dev"
     },
     "ipam": {
         "mode": "kubernetes"

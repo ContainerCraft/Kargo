@@ -57,7 +57,8 @@ jobs:
           KUBEDIR: .kube
         run: |
           set -x
-          kubectl get po --all-namespaces
+          kubectl cluster-info --context kind-kargo --kubeconfig .kube/config
+          kubectl get po --all-namespaces --context kind-kargo --kubeconfig .kube/config
 
       - name: Create Kind Cluster
         id: create-kind-kubernetes
@@ -69,7 +70,6 @@ jobs:
           KUBEDIR: .kube
         run: |
           set -x
-          docker ps --all
           echo "KUBECONFIG: $KUBECONFIG"
           kubectl config get-contexts --kubeconfig $KUBECONFIG
           kubectl cluster-info --context kind-kargo --kubeconfig $KUBECONFIG
@@ -83,6 +83,7 @@ jobs:
           KUBECONFIG: .kube/config
         run: |
           set -x
+          direnv allow
           pulumi login
           pulumi install
           pulumi stack select --create dev
