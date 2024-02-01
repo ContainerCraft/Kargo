@@ -46,6 +46,9 @@ jobs:
       - id: kind-kubernetes
         name: 🔨 Kubernetes KinD Cluster 🔨
         uses: helm/kind-action@v1.8.0
+        env:
+          ACTIONS_STEP_DEBUG: true
+          KUBECONFIG: .kube/config
         with:
           wait: 30s
           cluster_name: kargo
@@ -56,12 +59,12 @@ jobs:
         name: 🚀 Pulumi Up 🚀
         uses: pulumi/actions@v5
         env:
-          KUBECONFIG: .kube/config
           ACTIONS_STEP_DEBUG: true
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          KUBECONFIG: .kube/config
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PULUMI_BACKEND_URL: file://./.pulumi
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           PULUMI_CONFIG_PASSPHRASE: foobarbaz
+          PULUMI_BACKEND_URL: file://./.pulumi
         with:
           command: up
           work-dir: ./
