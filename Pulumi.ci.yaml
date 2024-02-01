@@ -1,0 +1,2 @@
+config:
+  kargo:kubernetes: kind

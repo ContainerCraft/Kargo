@@ -39,6 +39,9 @@ jobs:
         with:
           fetch-depth: 1
 
+      - uses: pulumi/actions@v5
+        id: pulumi-install
+
       - name: Kubernetes KinD Cluster
         uses: helm/kind-action@v1.8.0
         with:
@@ -73,20 +76,30 @@ jobs:
           kubectl config get-contexts
           kubectl cluster-info --context kind-kargo
 
-      - id: pulumi-up
-        name: Deploy Pulumi IaC
-        env:
-          KUBECONFIG: .kube/config
-          ACTIONS_STEP_DEBUG: true
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          source .envrc
-          pulumi login
-          pulumi install
-          pulumi stack select --create dev
-          pulumi config set kubernetes kind
-          pulumi up --refresh --skip-preview
+      - uses: pulumi/actions@v5
+        id: pulumi-up
+        with:
+          command: up
+          work-dir: ./
+          cloud-url: file://$GITHUB_WORKSPACE/.pulumi
+          refresh: true
+          secrets-provider: passphrase
+          stack-name: ci
+
+#     - id: pulumi-up
+#       name: Deploy Pulumi IaC
+#       env:
+#         KUBECONFIG: .kube/config
+#         ACTIONS_STEP_DEBUG: true
+#         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       run: |
+#         source .envrc
+#         pulumi login
+#         pulumi install
+#         pulumi stack select --create dev
+#         pulumi config set kubernetes kind
+#         pulumi up --refresh --skip-preview
 
       - id: pulumi-destroy
         name: Wait for Kind Kubernetes API to be Ready
