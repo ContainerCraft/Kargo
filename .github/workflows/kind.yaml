@@ -76,8 +76,7 @@ jobs:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -x
-          direnv allow
+          source .envrc
           pulumi login
           pulumi install
           pulumi stack select --create dev
