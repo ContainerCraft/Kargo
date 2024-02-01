@@ -71,6 +71,9 @@ jobs:
           stack-name: organization/kargo/ci
           upsert: true
 
+      - name: Wait for pods
+        uses: CodingNagger/minikube-wait-action@v1.0.1
+
       - id: kubectl-get-pods
         name: Kubectl Get Pods
         run: |
