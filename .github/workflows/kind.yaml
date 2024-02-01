@@ -34,7 +34,13 @@ jobs:
 
     container:
       image: ghcr.io/containercraft/konductor:latest
-      options: --user runner --security-opt seccomp=unconfined
+      options: --user root --security-opt seccomp=unconfined
+      env:
+        ACTIONS_STEP_DEBUG: true
+        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        KUBEDIR: .kube
+        KUBECONFIG: .kube/config
 
     steps:
       - name: Set Workspace Permissions
@@ -43,7 +49,9 @@ jobs:
           ACTIONS_STEP_DEBUG: true
         run: |
           set -x
-          sudo chown -R $(whoami):$(whoami) /__w $HOME
+          #chown -R $(whoami):$(whoami) /__w $HOME
+          ip a
+          docker ps --all
           ip a
 
       - name: Checkout
@@ -52,22 +60,17 @@ jobs:
         with:
           fetch-depth: 1
 
+      #sudo kind create cluster --retain --config=hack/kind.yaml --kubeconfig $KUBECONFIG
       - name: Create Kind Cluster
         id: create-kind-kubernetes
-        env:
-          ACTIONS_STEP_DEBUG: true
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBEDIR: .kube
-          KUBECONFIG: .kube/config
         run: |
           set -x
           direnv allow
           mkdir -p ${KUBEDIR} && touch ${KUBECONFIG} && sudo chmod 600 ${KUBECONFIG}
-          sudo chown -R $(whoami):$(whoami) $KUBECONFIG
-          sudo kind create cluster --retain --config=hack/kind.yaml --kubeconfig $KUBECONFIG
-          sudo docker ps --all
-          sudo kubectl cluster-info --context kind-cilium --kubeconfig $KUBECONFIG
+          #chown -R $(whoami):$(whoami) $KUBECONFIG
+          kind create cluster
+          docker ps --all
+          kubectl cluster-info --context kind-cilium --kubeconfig $KUBECONFIG
           kubectl cluster-info --context kind-cilium --kubeconfig $KUBECONFIG
 
       - id: pulumi-up
