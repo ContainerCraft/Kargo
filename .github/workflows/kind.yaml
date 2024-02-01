@@ -70,11 +70,10 @@ jobs:
           set -x
           direnv allow
           mkdir -p ${KUBEDIR} && touch ${KUBECONFIG} && sudo chmod 600 ${KUBECONFIG}
-          #chown -R $(whoami):$(whoami) $KUBECONFIG
-          kind create cluster
-          #sudo kind create cluster --retain --config=hack/kind.yaml --kubeconfig $KUBECONFIG
+          sudo kind create cluster --retain --config=hack/kind.yaml --kubeconfig $KUBECONFIG
           docker ps --all
-          kubectl cluster-info --context kind-cilium --kubeconfig $KUBECONFIG
+          echo "KUBECONFIG: $KUBECONFIG"
+          kubectl config get-contexts
           kubectl cluster-info --context kind-cilium --kubeconfig $KUBECONFIG
 
       - id: pulumi-up
