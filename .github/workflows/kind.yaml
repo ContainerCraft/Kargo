@@ -43,13 +43,8 @@ jobs:
           ACTIONS_STEP_DEBUG: true
         run: |
           set -x
-          printenv
-          sudo chown -R $(whoami):$(whoami) \
-            /__w \
-            /__w/Kargo \
-            $HOME
-
-
+          sudo chown -R $(whoami):$(whoami) /__w $HOME
+          ip a
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -71,6 +66,8 @@ jobs:
           mkdir -p ${KUBEDIR} && touch ${KUBECONFIG} && sudo chmod 600 ${KUBECONFIG}
           sudo chown -R $(whoami):$(whoami) $KUBECONFIG
           sudo kind create cluster --retain --config=hack/kind.yaml --kubeconfig $KUBECONFIG
+          sudo docker ps --all
+          sudo kubectl cluster-info --context kind-cilium --kubeconfig $KUBECONFIG
           kubectl cluster-info --context kind-cilium --kubeconfig $KUBECONFIG
 
       - id: pulumi-up
