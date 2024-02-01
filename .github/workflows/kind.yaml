@@ -44,7 +44,7 @@ jobs:
         uses: pulumi/actions@v5
 
       - id: kind-kubernetes
-        name: Kubernetes KinD Cluster
+        name: 🔨 Kubernetes KinD Cluster 🔨
         uses: helm/kind-action@v1.8.0
         with:
           wait: 30s
@@ -69,11 +69,13 @@ jobs:
           refresh: true
           secrets-provider: passphrase
           stack-name: organization/kargo/ci
+          upsert: true
 
       - id: kubectl-get-pods
         name: Kubectl Get Pods
         run: |
           set -x
+          sleep 30
           sudo kind get kubeconfig --name kargo > .kube/config
           kubectl cluster-info --context kind-kargo
           kubectl get po --all-namespaces --context kind-kargo
@@ -98,17 +100,17 @@ jobs:
 #         pulumi config set kubernetes kind
 #         pulumi up --refresh --skip-preview
 
-      - id: pulumi-destroy
-        name: Pulumi Destroy
-        run: |
-          source .envrc
-          pulumi down --skip-preview --refresh \
-            || PULUMI_K8S_DELETE_UNREACHABLE=true pulumi down --skip-preview --refresh
-        env:
-          KUBECONFIG: .kube/config
-          ACTIONS_STEP_DEBUG: false
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - id: pulumi-destroy
+#        name: 💣 Pulumi Destroy 💣
+#        run: |
+#          source .envrc
+#          pulumi down --skip-preview --refresh \
+#            || PULUMI_K8S_DELETE_UNREACHABLE=true pulumi down --skip-preview --refresh
+#        env:
+#          KUBECONFIG: .kube/config
+#          ACTIONS_STEP_DEBUG: false
+#          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 #     - name: Cleanup
 #       id: clean-all
