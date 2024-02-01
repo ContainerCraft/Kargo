@@ -160,13 +160,13 @@ kind-cluster:
 	@mkdir -p ${HOME}/.kube .kube || true
 	@touch ${HOME}/.kube/config .kube/config || true
 	@chmod 600 ${HOME}/.kube/config .kube/config || true
-	@sudo docker volume create cilium-worker-n01
-	@sudo docker volume create cilium-worker-n02
-	@sudo docker volume create cilium-control-plane-n01
+	@sudo docker volume create kargo-worker-n01
+	@sudo docker volume create kargo-worker-n02
+	@sudo docker volume create kargo-control-plane-n01
 	@sudo kind create cluster --wait 1m --retain --config=hack/kind.yaml
 	@sudo kind get clusters
-	@sudo kind get kubeconfig --name cilium | tee ${KUBE_CONFIG_FILE} 1>/dev/null
-	@sudo kind get kubeconfig --name cilium | tee ${HOME}/.kube/config 1>/dev/null
+	@sudo kind get kubeconfig --name kargo | tee ${KUBE_CONFIG_FILE} 1>/dev/null
+	@sudo kind get kubeconfig --name kargo | tee ${HOME}/.kube/config 1>/dev/null
 	@sudo chown -R $(id -u):$(id -g) ${KUBE_CONFIG_FILE}
 	@pulumi config set kubernetes kind || true
 	@echo "Created Kind Cluster."
@@ -189,11 +189,9 @@ kind: login kind-cluster kind-ready
 # --- Cleanup ---
 clean: login down
 	@echo "Cleaning up resources..."
-	@sudo kind delete cluster --name cilium \
+	@sudo kind delete cluster --name kargo \
 		|| echo "Kind cluster not found."
 	@sudo kind delete cluster --name kind \
-		|| echo "Kind cluster not found."
-	@sudo kind delete cluster --name kargo \
 		|| echo "Kind cluster not found."
 	@sudo talosctl cluster destroy \
 		|| echo "Talos cluster not found."
@@ -201,7 +199,7 @@ clean: login down
 
 clean-all: clean
 	@echo "Performing extended cleanup..."
-	@sudo docker volume rm cilium-worker-n01 cilium-worker-n02 cilium-control-plane-n01 \
+	@sudo docker volume rm kargo-worker-n01 kargo-worker-n02 kargo-control-plane-n01 \
 		|| echo "Docker volumes not found."
 	@rm -rf Pulumi.*.yaml
 	@echo "Extended cleanup complete."
