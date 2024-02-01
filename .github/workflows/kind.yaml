@@ -34,7 +34,7 @@ jobs:
 
     container:
       image: ghcr.io/containercraft/konductor:latest
-      options: --user runner --security-opt seccomp=unconfined
+      options: --user vscode --security-opt seccomp=unconfined
 
     steps:
       - name: Checkout
@@ -45,72 +45,83 @@ jobs:
 
       - name: Create Kind Cluster
         id: create-kind-kubernetes
-        run: |
-          direnv allow
-          make kind-cluster
-        env:
-          ACTIONS_STEP_DEBUG: false
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - id: wait-kind-ready
-        name: Wait for Kind Kubernetes API to be Ready
-        run: |
-          set -x
-          direnv allow
-          make kind-ready
         env:
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Deploy Pulumi Infrastructure
-        id: deploy
         run: |
           direnv allow
-          make pulumi-up
-        env:
-          ACTIONS_STEP_DEBUG: false
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          mkdir -p .kube
+          touch .kube/config
+          sudo chmod 600 .kube/config
+          sudo chown -R $(whoami):$(whoami) .kube/config
+          export COUNT=0
+          bash -c "until [[ $(kubectl get ns --kubeconfig .kube/config) ]]; \
+            do ((COUNT++)); \
+              if [[ $$COUNT -ge 10 ]]; then \
+                echo 'kube api is not responsive after 12 attempts. Exiting with error.'; \
+                exit 1; \
+              fi; \
+            done"
 
-      #      - name: Wait for All Pods to be Ready
-      #        id: wait-all-pods
-      #        run: |
-      #          direnv allow
-      #          make wait-all-pods
-      #        env:
-      #          ACTIONS_STEP_DEBUG: false
-      #          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Destroy Pulumi Infrastructure
-        id: destroy
-        run: |
-          direnv allow
-          make pulumi-down
-        env:
-          ACTIONS_STEP_DEBUG: false
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Clean Up Resources
-        id: clean
-        run: |
-          direnv allow
-          make clean
-        env:
-          ACTIONS_STEP_DEBUG: false
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Perform Extended Cleanup
-        id: clean-all
-        if: always()
-        run: |
-          direnv allow
-          make clean-all
-        env:
-          ACTIONS_STEP_DEBUG: false
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - id: wait-kind-ready
+#        name: Wait for Kind Kubernetes API to be Ready
+#        run: |
+#          set -x
+#          direnv allow
+#          make kind-ready
+#        env:
+#          ACTIONS_STEP_DEBUG: true
+#          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Deploy Pulumi Infrastructure
+#        id: deploy
+#        run: |
+#          direnv allow
+#          make pulumi-up
+#        env:
+#          ACTIONS_STEP_DEBUG: false
+#          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
+#      #      - name: Wait for All Pods to be Ready
+#      #        id: wait-all-pods
+#      #        run: |
+#      #          direnv allow
+#      #          make wait-all-pods
+#      #        env:
+#      #          ACTIONS_STEP_DEBUG: false
+#      #          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#      #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Destroy Pulumi Infrastructure
+#        id: destroy
+#        run: |
+#          direnv allow
+#          make pulumi-down
+#        env:
+#          ACTIONS_STEP_DEBUG: false
+#          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Clean Up Resources
+#        id: clean
+#        run: |
+#          direnv allow
+#          make clean
+#        env:
+#          ACTIONS_STEP_DEBUG: false
+#          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Perform Extended Cleanup
+#        id: clean-all
+#        if: always()
+#        run: |
+#          direnv allow
+#          make clean-all
+#        env:
+#          ACTIONS_STEP_DEBUG: false
+#          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
