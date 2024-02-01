@@ -42,7 +42,7 @@ jobs:
       - name: Kubernetes KinD Cluster
         uses: helm/kind-action@v1.8.0
         with:
-          wait: 2m
+          wait: 30s
           cluster_name: kargo
           config: hack/kind.yaml
           ignore_failed_clean: true
@@ -50,6 +50,7 @@ jobs:
       - name: Kubectl Get Pods
         id: kubectl-get-pods
         env:
+          KUBECONFIG: .kube/config
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -61,17 +62,20 @@ jobs:
       - name: Create Kind Cluster
         id: create-kind-kubernetes
         env:
+          KUBECONFIG: .kube/config
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -x
+          source .envrc
           kubectl config get-contexts
           kubectl cluster-info --context kind-kargo
 
       - id: pulumi-up
         name: Deploy Pulumi IaC
         env:
+          KUBECONFIG: .kube/config
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -86,19 +90,22 @@ jobs:
       - id: pulumi-destroy
         name: Wait for Kind Kubernetes API to be Ready
         env:
+          KUBECONFIG: .kube/config
           ACTIONS_STEP_DEBUG: false
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          source .envrc
           pulumi down --skip-preview --refresh \
             || PULUMI_K8S_DELETE_UNREACHABLE=true pulumi down --skip-preview --refresh
 
-      - name: Cleanup
-        id: clean-all
-        if: always()
-        run: |
-          make clean-all
-        env:
-          ACTIONS_STEP_DEBUG: false
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#     - name: Cleanup
+#       id: clean-all
+#       if: always()
+#       run: |
+#         make clean-all
+#       env:
+#         KUBECONFIG: /tmp/kubeconfig
+#         ACTIONS_STEP_DEBUG: false
+#         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
