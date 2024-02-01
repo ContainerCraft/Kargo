@@ -46,82 +46,51 @@ jobs:
       - name: Create Kind Cluster
         id: create-kind-kubernetes
         env:
-          ACTIONS_STEP_DEBUG: true
+          ACTIONS_STEP_DEBUG: false
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KUBEDIR: .kube
+          KUBECONFIG: .kube/config
         run: |
           direnv allow
-          mkdir -p .kube
-          touch .kube/config
-          sudo chmod 600 .kube/config
-          sudo chown -R $(whoami):$(whoami) .kube/config
-          export COUNT=0
-          bash -c "until [[ $(kubectl get ns --kubeconfig .kube/config) ]]; \
-            do ((COUNT++)); \
-              if [[ $$COUNT -ge 10 ]]; then \
-                echo 'kube api is not responsive after 12 attempts. Exiting with error.'; \
-                exit 1; \
-              fi; \
-            done"
+          mkdir -p ${KUBEDIR} && touch ${KUBECONFIG} && sudo chmod 600 ${HOME}/.kube/config
+          sudo chown -R $(whoami):$(whoami) $KUBECONFIG
+          sudo kind create cluster --retain --config=hack/kind.yaml --kubeconfig $KUBECONFIG
+          kubectl cluster-info --context kind-cilium --kubeconfig $KUBECONFIG
 
-#      - id: wait-kind-ready
-#        name: Wait for Kind Kubernetes API to be Ready
-#        run: |
-#          set -x
-#          direnv allow
-#          make kind-ready
-#        env:
-#          ACTIONS_STEP_DEBUG: true
-#          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Deploy Pulumi Infrastructure
-#        id: deploy
-#        run: |
-#          direnv allow
-#          make pulumi-up
-#        env:
-#          ACTIONS_STEP_DEBUG: false
-#          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#
-#      #      - name: Wait for All Pods to be Ready
-#      #        id: wait-all-pods
-#      #        run: |
-#      #          direnv allow
-#      #          make wait-all-pods
-#      #        env:
-#      #          ACTIONS_STEP_DEBUG: false
-#      #          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-#      #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Destroy Pulumi Infrastructure
-#        id: destroy
-#        run: |
-#          direnv allow
-#          make pulumi-down
-#        env:
-#          ACTIONS_STEP_DEBUG: false
-#          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Clean Up Resources
-#        id: clean
-#        run: |
-#          direnv allow
-#          make clean
-#        env:
-#          ACTIONS_STEP_DEBUG: false
-#          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Perform Extended Cleanup
-#        id: clean-all
-#        if: always()
-#        run: |
-#          direnv allow
-#          make clean-all
-#        env:
-#          ACTIONS_STEP_DEBUG: false
-#          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - id: pulumi-up
+        name: Deploy Pulumi IaC
+        env:
+          ACTIONS_STEP_DEBUG: false
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KUBECONFIG: .kube/config
+        run: |
+          direnv allow
+          pulumi login
+          pulumi install
+          pulumi stack select --create dev
+          pulumi config set kubernetes kind
+          pulumi up --refresh --skip-preview
+
+      - id: pulumi-destroy
+        name: Wait for Kind Kubernetes API to be Ready
+        env:
+          ACTIONS_STEP_DEBUG: false
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KUBECONFIG: .kube/config
+        run: |
+          pulumi down --skip-preview --refresh \
+            || PULUMI_K8S_DELETE_UNREACHABLE=true pulumi down --skip-preview --refresh
+
+      - name: Cleanup
+        id: clean-all
+        if: always()
+        run: |
+          direnv allow
+          make clean-all
+        env:
+          ACTIONS_STEP_DEBUG: false
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
