@@ -34,7 +34,7 @@ jobs:
 
     container:
       image: ghcr.io/containercraft/konductor:latest
-      options: --user root --security-opt seccomp=unconfined
+      options: --user root --security-opt seccomp=unconfined --network host
 
     steps:
       - name: Set Workspace Permissions
@@ -73,7 +73,7 @@ jobs:
           sudo kind create cluster --retain --config=hack/kind.yaml --kubeconfig $KUBECONFIG
           docker ps --all
           echo "KUBECONFIG: $KUBECONFIG"
-          kubectl config get-contexts
+          kubectl config get-contexts --kubeconfig $KUBECONFIG
           kubectl cluster-info --context kind-cilium --kubeconfig $KUBECONFIG
 
       - id: pulumi-up
