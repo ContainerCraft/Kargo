@@ -34,7 +34,7 @@ jobs:
 
     container:
       image: ghcr.io/containercraft/konductor:latest
-      options: --user vscode --security-opt seccomp=unconfined
+      options: --user runner --security-opt seccomp=unconfined
 
     steps:
       - name: Set Workspace Permissions
@@ -44,7 +44,12 @@ jobs:
         run: |
           set -x
           printenv
-          sudo chown -R $(whoami):$(whoami) ../../
+          sudo chown -R $(whoami):$(whoami) \
+            /__w \
+            /__w/Kargo \
+            /home/runner/work
+
+
 
       - name: Checkout
         uses: actions/checkout@v4
