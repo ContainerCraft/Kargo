@@ -43,16 +43,6 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Pulumi Login
-        id: pulumi-login
-        run: |
-          direnv allow
-          make login
-        env:
-          ACTIONS_STEP_DEBUG: false
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Create Kind Cluster
         id: create-kind-kubernetes
         run: |
@@ -84,15 +74,15 @@ jobs:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Wait for All Pods to be Ready
-        id: wait-all-pods
-        run: |
-          direnv allow
-          make wait-all-pods
-        env:
-          ACTIONS_STEP_DEBUG: false
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #      - name: Wait for All Pods to be Ready
+      #        id: wait-all-pods
+      #        run: |
+      #          direnv allow
+      #          make wait-all-pods
+      #        env:
+      #          ACTIONS_STEP_DEBUG: false
+      #          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Destroy Pulumi Infrastructure
         id: destroy
