@@ -33,6 +33,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        id: checkout
+        with:
+          fetch-depth: 1
+
       - name: Kubernetes KinD Cluster
         uses: helm/kind-action@v1.8.0
         with:
@@ -52,12 +58,6 @@ jobs:
         run: |
           set -x
           kubectl get po --all-namespaces
-
-      - name: Checkout
-        uses: actions/checkout@v4
-        id: checkout
-        with:
-          fetch-depth: 1
 
       - name: Create Kind Cluster
         id: create-kind-kubernetes
