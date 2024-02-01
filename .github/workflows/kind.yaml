@@ -43,7 +43,8 @@ jobs:
           ACTIONS_STEP_DEBUG: true
         run: |
           set -x
-          sudo chown -R $(whoami):$(whoami) /workspaces
+          printenv
+          sudo chown -R $(whoami):$(whoami) ../../
 
       - name: Checkout
         uses: actions/checkout@v4
