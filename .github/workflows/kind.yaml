@@ -56,7 +56,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -x
-          sudo kind get kubeconfig --name kargo --internal > .kube/config
+          sudo kind get kubeconfig --name kargo > .kube/config
           kubectl cluster-info --context kind-kargo
           kubectl get po --all-namespaces --context kind-kargo
 
