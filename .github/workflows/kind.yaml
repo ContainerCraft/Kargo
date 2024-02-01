@@ -43,6 +43,15 @@ jobs:
         name: 📦️ Pulumi Install 📦️
         uses: pulumi/actions@v5
 
+      - id: kind-kubernetes
+        name: Kubernetes KinD Cluster
+        uses: helm/kind-action@v1.8.0
+        with:
+          wait: 30s
+          cluster_name: kargo
+          config: hack/kind.yaml
+          ignore_failed_clean: true
+
       - id: pulumi-up
         name: 🚀 Pulumi Up 🚀
         uses: pulumi/actions@v5
@@ -57,16 +66,7 @@ jobs:
           cloud-url: file://~
           refresh: true
           secrets-provider: passphrase
-          stack-name: ci
-
-      - id: kind-kubernetes
-        name: Kubernetes KinD Cluster
-        uses: helm/kind-action@v1.8.0
-        with:
-          wait: 30s
-          cluster_name: kargo
-          config: hack/kind.yaml
-          ignore_failed_clean: true
+          stack-name: organization/kargo/ci
 
       - id: kubectl-get-pods
         name: Kubectl Get Pods
