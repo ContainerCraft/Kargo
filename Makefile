@@ -89,17 +89,17 @@ pulumi-login:
 pulumi-up:
 	@direnv allow
 	@echo "Deploying Pulumi infrastructure..."
-	@pulumi up --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
+	@direnv allow; export KUBECONFIG=.kube/config; pulumi up --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
 	@echo "Deployment complete."
 
 pulumi-down:
 	@direnv allow
 	@echo "Deploying Pulumi infrastructure..."
-	@pulumi down --yes --skip-preview --refresh \
+	@direnv allow; export KUBECONFIG=.kube/config; pulumi down --yes --skip-preview --refresh \
 	| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' \
 		|| PULUMI_K8S_DELETE_UNREACHABLE=true \
-		pulumi down --yes --skip-preview --refresh \
+		export KUBECONFIG=.kube/config; pulumi down --yes --skip-preview --refresh \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' \
 			|| true
 	@echo "Deployment complete."
@@ -116,7 +116,7 @@ down: pulumi-login pulumi-down
 wait-all-pods:
 	@direnv allow
 	@echo "Waiting for all pods in the cluster to be ready..."
-	@bash -c "until [ \"$$(kubectl get pods --all-namespaces --no-headers --kubeconfig $${KUBECONFIG} | grep -vE 'Running|Completed|Succeeded' | wc -l)\" -eq 0 ]; do echo \"Waiting for pods to be ready...\"; sleep 5; done"
+	@bash -c "until [ \"$$(kubectl get pods --all-namespaces --no-headers --kubeconfig .kube/config | grep -vE 'Running|Completed|Succeeded' | wc -l)\" -eq 0 ]; do echo \"Waiting for pods to be ready...\"; sleep 5; done"
 	@echo "All pods in the cluster are ready."
 
 # ----------------------------------------------------------------------------------------------
@@ -128,8 +128,8 @@ talos-gen-config:
 	@direnv allow
 	@echo "Generating Talos Config..."
 	@mkdir -p ${HOME}/.kube .kube .pulumi .talos
-	@touch ${KUBECONFIG} $${TALOSCONFIG}
-	@chmod 600 ${KUBECONFIG} $${TALOSCONFIG}
+	@touch .kube/config $${TALOSCONFIG}
+	@chmod 600 .kube/config $${TALOSCONFIG}
 	@sudo talosctl gen config kargo https://10.5.0.2:6443 \
 		--config-patch @.talos/patch/machine.yaml --output .talos/manifest
 	@sudo talosctl validate --mode container \
@@ -166,36 +166,46 @@ talos: clean-all talos-cluster talos-ready wait-all-pods
 # ----------------------------------------------------------------------------------------------
 
 # --- Kind Cluster ---
-kind-cluster:
-	@direnv allow
-	@echo "Creating Kind Cluster..."
-	@sudo docker volume create cilium-worker-n01
-	@sudo docker volume create cilium-worker-n02
-	@sudo docker volume create cilium-control-plane-n01
-	@echo \
-		&& rm -rf ${KUBECONFIG} \
+kind-cluster: login
+	@set -x; printenv
+	@set -x;  echo '---------------------------------------------------------------------------------------------'
+	@set -x;  echo '---------------------------------------------------------------------------------------------'
+	@set -x;  echo '---------------------------------------------------------------------------------------------'
+	@set -x; direnv allow 2>&1; printenv
+	@set -x; echo .kube/config
+	@set -x; direnv allow; echo .kube/config
+	@set -x; echo "Creating Kind Cluster..."
+	@set -x; direnv allow
+	@set -x; sudo docker volume create cilium-worker-n01
+	@set -x; sudo docker volume create cilium-worker-n02
+	@set -x; sudo docker volume create cilium-control-plane-n01
+	@set -x; echo \
+		&& rm -rf .kube/config \
 		&& mkdir -p ${KUBEDIR} \
-		&& touch ${KUBECONFIG} \
-		&& chmod 600 ${KUBECONFIG} \
-		&& sudo chown -R $$(whoami):$$(whoami) ${KUBECONFIG}
-	@sudo kind create cluster --retain --config=hack/kind.yaml --kubeconfig ${KUBECONFIG}
-	@echo "Kind Kubernetes Clusters: $$(sudo kind get clusters || true)"
-	@kubectl get all --all-namespaces --kubeconfig ${KUBECONFIG} || true
-	@pulumi config set kubernetes kind || true
-	@echo "Created Kind Cluster."
+		&& touch .kube/config \
+		&& chmod 600 .kube/config \
+		&& sudo chown -R $$(whoami):$$(whoami) .kube/config
+	@set -x; pwd
+	@set -x; ls -lah
+	@set -x; ls -lah .kube
+	@set -x; cat .kube/config
+	@set -x; sudo kind create cluster --retain --config=hack/kind.yaml --kubeconfig .kube/config
+	@set -x; cat .kube/config
+	@set -x; echo "Kind Kubernetes Clusters: $$(sudo kind get clusters || true)"
+	@set -x; echo .kube/config
+	@set -x; cat .kube/config
+	@echo "Waiting for Kind Kubernetes API to be ready..."
+	@set -x; set -x; bash -c 'direnv allow; set -x; COUNT=0; until kubectl get ns --kubeconfig .kube/config; do echo "Waiting for kube api to be responsive..."; sleep 10; ((COUNT++)); if [[ $$COUNT -ge 10 ]]; then echo "kube api is not responsive after 12 attempts. Exiting with error."; exit 1; fi; done'
+	@set -x; kubectl get all --all-namespaces --kubeconfig .kube/config || true
+	@set -x; bash -c 'direnv allow; set -x; COUNT=0; export KUBECONFIG=.kube/config; until kubectl wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s --kubeconfig .kube/config; do echo "Waiting for kube-apiserver to be ready..."; sleep 8; ((COUNT++)); if [[ $$COUNT -ge 10 ]]; then echo "kube-apiserver is not ready after 12 attempts. Exiting with error."; exit 1; fi; done'
+	@set -x; bash -c "until kubectl wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s --kubeconfig .kube/config; do echo 'Waiting for kube-scheduler to be ready...'; sleep 5; done"
+	@set -x; bash -c "until kubectl wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s --kubeconfig .kube/config; do echo 'Waiting for kube-controller-manager to be ready...'; sleep 5; done"
+	@set -ex; direnv allow; kubectl wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s --kubeconfig .kube/config
+	@set -x; pulumi config set kubernetes kind || true
+	@set -x; echo "Created Kind Cluster."
 
 # --- Wait for Kind Cluster Ready ---
 kind-ready:
-	@direnv allow
-	@echo "Waiting for Kind Kubernetes API to be ready..."
-	@direnv allow
-	@echo $${KUBECONFIG}
-	@cat $${KUBECONFIG}
-	@printenv
-	@set -x; bash -c 'set -x; COUNT=0; until kubectl wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s --kubeconfig $${KUBECONFIG}; do echo "Waiting for kube-apiserver to be ready..."; sleep 8; ((COUNT++)); if [[ $$COUNT -ge 10 ]]; then echo "kube-apiserver is not ready after 12 attempts. Exiting with error."; exit 1; fi; done'
-	@set -ex; kubectl wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s --kubeconfig .kube/config
-	@set -x; bash -c "until kubectl wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s --kubeconfig $${KUBECONFIG}; do echo 'Waiting for kube-scheduler to be ready...'; sleep 5; done"
-	@set -x; bash -c "until kubectl wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s --kubeconfig $${KUBECONFIG}; do echo 'Waiting for kube-controller-manager to be ready...'; sleep 5; done"
 	@echo "Kind Cluster is ready."
 
 kind: login kind-cluster kind-ready
