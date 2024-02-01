@@ -60,7 +60,7 @@ jobs:
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PULUMI_BACKEND_URL: file://./.pulumi}
+          PULUMI_BACKEND_URL: file://./.pulumi
           PULUMI_CONFIG_PASSPHRASE: foobarbaz
         with:
           command: up
