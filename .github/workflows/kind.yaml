@@ -53,12 +53,10 @@ jobs:
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBECONFIG: .kube/config
-          KUBEDIR: .kube
         run: |
           set -x
-          kubectl cluster-info --context kind-kargo --kubeconfig .kube/config
-          kubectl get po --all-namespaces --context kind-kargo --kubeconfig .kube/config
+          kubectl cluster-info --context kind-kargo
+          kubectl get po --all-namespaces --context kind-kargo
 
       - name: Create Kind Cluster
         id: create-kind-kubernetes
@@ -66,13 +64,10 @@ jobs:
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBECONFIG: .kube/config
-          KUBEDIR: .kube
         run: |
           set -x
-          echo "KUBECONFIG: $KUBECONFIG"
-          kubectl config get-contexts --kubeconfig $KUBECONFIG
-          kubectl cluster-info --context kind-kargo --kubeconfig $KUBECONFIG
+          kubectl config get-contexts
+          kubectl cluster-info --context kind-kargo
 
       - id: pulumi-up
         name: Deploy Pulumi IaC
@@ -80,7 +75,6 @@ jobs:
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBECONFIG: .kube/config
         run: |
           set -x
           direnv allow
@@ -96,7 +90,6 @@ jobs:
           ACTIONS_STEP_DEBUG: false
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBECONFIG: .kube/config
         run: |
           pulumi down --skip-preview --refresh \
             || PULUMI_K8S_DELETE_UNREACHABLE=true pulumi down --skip-preview --refresh
