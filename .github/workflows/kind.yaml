@@ -34,7 +34,7 @@ jobs:
 
     container:
       image: ghcr.io/containercraft/konductor:latest
-      options: --user root --security-opt seccomp=unconfined --network host
+      options: --user root --privileged --security-opt seccomp=unconfined --network host
 
     steps:
       - name: Set Workspace Permissions
