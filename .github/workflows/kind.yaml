@@ -63,25 +63,18 @@ jobs:
           kubectl cluster-info --context kind-kargo
           kubectl get po --all-namespaces --context kind-kargo
 
-      - name: Create Kind Cluster
-        id: create-kind-kubernetes
+      - uses: pulumi/actions@v5
+        name: Pulumi Up
+        id: pulumi-up
         env:
           KUBECONFIG: .kube/config
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -x
-          source .envrc
-          kubectl config get-contexts
-          kubectl cluster-info --context kind-kargo
-
-      - uses: pulumi/actions@v5
-        id: pulumi-up
         with:
           command: up
           work-dir: ./
-          cloud-url: file://$GITHUB_WORKSPACE/.pulumi
+          cloud-url: file://.pulumi
           refresh: true
           secrets-provider: passphrase
           stack-name: ci
