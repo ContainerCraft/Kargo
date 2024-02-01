@@ -42,6 +42,22 @@ jobs:
       - uses: pulumi/actions@v5
         id: pulumi-install
 
+      - uses: pulumi/actions@v5
+        name: Pulumi Up
+        id: pulumi-up
+        env:
+          KUBECONFIG: .kube/config
+          ACTIONS_STEP_DEBUG: true
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          command: up
+          work-dir: ./
+          cloud-url: file:///${{ github.action_path }}.pulumi
+          refresh: true
+          secrets-provider: passphrase
+          stack-name: ci
+
       - name: Kubernetes KinD Cluster
         uses: helm/kind-action@v1.8.0
         with:
@@ -63,22 +79,6 @@ jobs:
           kubectl cluster-info --context kind-kargo
           kubectl get po --all-namespaces --context kind-kargo
 
-      - uses: pulumi/actions@v5
-        name: Pulumi Up
-        id: pulumi-up
-        env:
-          KUBECONFIG: .kube/config
-          ACTIONS_STEP_DEBUG: true
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          command: up
-          work-dir: ./
-          cloud-url: file://.pulumi
-          refresh: true
-          secrets-provider: passphrase
-          stack-name: ci
-
 #     - id: pulumi-up
 #       name: Deploy Pulumi IaC
 #       env:
@@ -95,7 +95,7 @@ jobs:
 #         pulumi up --refresh --skip-preview
 
       - id: pulumi-destroy
-        name: Wait for Kind Kubernetes API to be Ready
+        name: Pulumi Destroy
         env:
           KUBECONFIG: .kube/config
           ACTIONS_STEP_DEBUG: false
