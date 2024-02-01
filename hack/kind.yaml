@@ -1,30 +1,30 @@
 apiVersion: "kind.x-k8s.io/v1alpha4"
 kind: Cluster
-name: cilium
+name: kargo
 networking:
   ######################################################################
   # The following is required for Cilium to work with kind
+  podSubnet: "10.242.0.0/16"
+  serviceSubnet: "10.12.0.0/16"
   kubeProxyMode: none # disable kube-proxy
   disableDefaultCNI: true # disable kindnet
-  apiServerAddress: "127.0.0.1"
-  serviceSubnet: "10.12.0.0/16"
-  podSubnet: "10.242.0.0/16"
-  apiServerPort: 6443
+  apiServerPort: 16443
+# apiServerAddress: "127.0.0.1"
 nodes:
 - role: control-plane
   image: kindest/node:v1.29.0
   extraMounts: # Persistent image cache
-  - hostPath: /var/lib/docker/volumes/cilium-control-plane-n01/_data
+  - hostPath: /var/lib/docker/volumes/kargo-control-plane-n01/_data
     containerPath: /var/lib/containerd
 - role: worker
   image: kindest/node:v1.29.0
   extraMounts: # Persistent image cache
-  - hostPath: /var/lib/docker/volumes/cilium-worker-n01/_data
+  - hostPath: /var/lib/docker/volumes/kargo-worker-n01/_data
     containerPath: /var/lib/containerd
 - role: worker
   image: kindest/node:v1.29.0
   extraMounts: # Persistent image cache
-  - hostPath: /var/lib/docker/volumes/cilium-worker-n02/_data
+  - hostPath: /var/lib/docker/volumes/kargo-worker-n02/_data
     containerPath: /var/lib/containerd
   # Expose ports on the host:
   # - 80/tcp
