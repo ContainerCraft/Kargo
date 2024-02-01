@@ -32,25 +32,26 @@ jobs:
   ci-kargo-kind:
     runs-on: ubuntu-latest
 
-    container:
-      image: ghcr.io/containercraft/konductor:latest
-      options: --user root --privileged --security-opt seccomp=unconfined --network host
-
     steps:
-      - name: Set Workspace Permissions
-        id: chown-workspaces
+      - name: Kubernetes KinD Cluster
+        uses: helm/kind-action@v1.8.0
+        with:
+          wait: 2m
+          cluster_name: cilium
+          config: hack/kind.yaml
+          ignore_failed_clean: true
+
+      - name: Kubectl Get Pods
+        id: kubectl-get-pods
         env:
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBEDIR: .kube
           KUBECONFIG: .kube/config
+          KUBEDIR: .kube
         run: |
           set -x
-          #chown -R $(whoami):$(whoami) /__w $HOME
-          ip a
-          docker ps --all
-          ip a
+          kubectl get po --all-namespaces
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -64,13 +65,10 @@ jobs:
           ACTIONS_STEP_DEBUG: true
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBEDIR: .kube
           KUBECONFIG: .kube/config
+          KUBEDIR: .kube
         run: |
           set -x
-          direnv allow
-          mkdir -p ${KUBEDIR} && touch ${KUBECONFIG} && sudo chmod 600 ${KUBECONFIG}
-          sudo kind create cluster --retain --config=hack/kind.yaml --kubeconfig $KUBECONFIG
           docker ps --all
           echo "KUBECONFIG: $KUBECONFIG"
           kubectl config get-contexts --kubeconfig $KUBECONFIG
@@ -85,7 +83,6 @@ jobs:
           KUBECONFIG: .kube/config
         run: |
           set -x
-          direnv allow
           pulumi login
           pulumi install
           pulumi stack select --create dev
@@ -107,7 +104,6 @@ jobs:
         id: clean-all
         if: always()
         run: |
-          direnv allow
           make clean-all
         env:
           ACTIONS_STEP_DEBUG: false
