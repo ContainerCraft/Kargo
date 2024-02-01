@@ -189,7 +189,7 @@ kind-cluster: login
 	@set -x; ls -lah
 	@set -x; ls -lah .kube
 	@set -x; cat .kube/config
-	@set -x; sudo kind create cluster --retain --config=hack/kind.yaml --kubeconfig .kube/config
+	@set -x; sudo kind create cluster --wait 2m --retain --config=hack/kind.yaml --kubeconfig .kube/config
 	@set -x; cat .kube/config
 	@set -x; echo "Kind Kubernetes Clusters: $$(sudo kind get clusters || true)"
 	@set -x; echo .kube/config
