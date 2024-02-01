@@ -208,11 +208,10 @@ clean-all: clean
 act:
 	@echo "Testing GitHub Workflows locally..."
 	@direnv allow
-	@GITHUB_TOKEN=${GITHUB_TOKEN} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
-		act --container-options "--privileged" --rm \
-			--var GITHUB_TOKEN=${GITHUB_TOKEN} \
-			--var PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
-			| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
+	@act --container-options "--privileged" --rm \
+		--var GITHUB_TOKEN=${GITHUB_TOKEN} \
+		--var PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
+		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
 	@echo "GitHub Workflow Test Complete."
 
 # --- Maintain Devcontainer ---
