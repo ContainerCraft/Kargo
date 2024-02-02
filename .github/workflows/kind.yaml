@@ -75,7 +75,7 @@ jobs:
           work-dir: ./
 
       - name: 🕚 Wait for pods 🕛
-        uses: CodingNagger/minikube-wait-action@v1.0.1
+        uses: CodingNagger/minikube-wait-action@v1.1.1
         env:
           ACTIONS_STEP_DEBUG: true
           KUBECONFIG: .kube/config
