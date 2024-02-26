@@ -1,0 +1,144 @@
+version: v1alpha1
+debug: false
+persist: true
+machine:
+    type: controlplane
+    token: n85asw.oxfuyp76mmf428l1
+    ca:
+        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQakNCOGFBREFnRUNBaEJIZm1vNkVpVzVCREsvOXg5enM5cnlNQVVHQXl0bGNEQVFNUTR3REFZRFZRUUsKRXdWMFlXeHZjekFlRncweU5EQXlNall4TnpReU1ERmFGdzB6TkRBeU1qTXhOelF5TURGYU1CQXhEakFNQmdOVgpCQW9UQlhSaGJHOXpNQ293QlFZREsyVndBeUVBK00vWGtuV3ZPTUFMZGd5bGZJNzQySEhKTkJBaDNTSTc1UG9GCm95NnkyYXFqWVRCZk1BNEdBMVVkRHdFQi93UUVBd0lDaERBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUkKS3dZQkJRVUhBd0l3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVVlFIOUVMKzFHNzBjaG81KwpJUmFvSndNcjNmUXdCUVlESzJWd0EwRUFLa084SHpScWZDZDArVGFpcFdSZ2FLR1d1TGpkNkNreEZaUGpCWTR3CjNjZm1JbTVrY0JveXJnc3Z6L3oyMFNLcjd1MTg1TlVJUlh2ZlYydDN3MGdUQlE9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+        key: LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJR0g2WGhYUFh1TTIyazVwR2w3UUFyS1FsdEdOSnhGZTBySFBHaUxFYVQybgotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K
+    certSANs:
+        - 192.168.1.50
+        - 192.168.1.51
+        - 192.168.1.52
+        - 192.168.1.53
+        - api.turing.kargo.dev
+    kubelet:
+        image: ghcr.io/siderolabs/kubelet:v1.29.0
+        defaultRuntimeSeccompProfileEnabled: true
+        disableManifestsDirectory: true
+    network:
+        nameservers:
+            - 8.8.8.8
+            - 1.1.1.1
+        extraHostEntries:
+            - ip: 192.168.1.51
+              aliases:
+                - api
+                - api.turing.kargo.dev
+            - ip: 192.168.1.51
+              aliases:
+                - 51
+                - 51.turing.kargo.dev
+        interfaces:
+            - interface: br0
+              mtu: 1500
+              addresses:
+              - 192.168.1.51/24
+              routes:
+              - network: 0.0.0.0/0
+                gateway: 192.168.1.1
+                metric: 1024
+              bridge:
+                stp:
+                    enabled: true
+                interfaces:
+                - enxe69ff8d7c455
+              vip:
+                ip: 192.168.1.50
+        #interfaces:
+        #    - interface: enxe69ff8d7c455
+        #      addresses:
+        #        - 192.168.1.51/24
+        #      routes:
+        #        - network: 0.0.0.0/0
+        #          gateway: 192.168.1.1
+        #          metric: 1024
+        #      mtu: 1500
+    install:
+        disk: /dev/mmcblk0
+        image: ghcr.io/siderolabs/installer:v1.6.3
+        wipe: true
+        extraKernelArgs:
+            - net.ifnames=0
+            - talos.platform=metal
+            - reboot=k
+    registries: {}
+    features:
+        rbac: true
+        stableHostname: true
+        apidCheckExtKeyUsage: true
+        diskQuotaSupport: true
+        kubePrism:
+            enabled: true
+            port: 7445
+cluster:
+    id: hysx1lQbkuIfMhhPZ2-LuGVBAOAC0Jb2iAVzPx4K4Fw=
+    secret: sCY0Kq/2CrzvDhCEuVE3ioEui6Woz3NjjkWwac0G/pw=
+    controlPlane:
+        endpoint: https://api.turing.kargo.dev:6443
+    clusterName: turing
+    network:
+        dnsDomain: cluster.local
+        podSubnets:
+            - 10.244.0.0/16
+        serviceSubnets:
+            - 10.96.0.0/12
+    token: 8dl1n7.ur2n075feam1c6bx
+    secretboxEncryptionSecret: TI24q1y/mI4GWuhjSiq1yVozkHKPPWYxFH4ry/TAFgE=
+    ca:
+        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpVENDQVMrZ0F3SUJBZ0lRTDEzN2dTS0JDQ0pNSnBvcHFYVjBYVEFLQmdncWhrak9QUVFEQWpBVk1STXcKRVFZRFZRUUtFd3ByZFdKbGNtNWxkR1Z6TUI0WERUSTBNREl5TmpFM05ESXdNVm9YRFRNME1ESXlNekUzTkRJdwpNVm93RlRFVE1CRUdBMVVFQ2hNS2EzVmlaWEp1WlhSbGN6QlpNQk1HQnlxR1NNNDlBZ0VHQ0NxR1NNNDlBd0VICkEwSUFCRDZhNTVLM25mOVZJcG4xTlFkOHhoRG4yL2d5dW9HSGs0MWtuT0oyaXh6UE1JRTNLcCtmL0VmLzVXdWsKNm8xRW1SaVNOSGFBOG43czRHS1M1TTJzRFZTallUQmZNQTRHQTFVZER3RUIvd1FFQXdJQ2hEQWRCZ05WSFNVRQpGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFCkZnUVVqN3dDRTE3V1JlMzdXZEFHK0NtaFIwQlNZZUl3Q2dZSUtvWkl6ajBFQXdJRFNBQXdSUUloQUxTOEJ1ZWkKVHhNWWZsRUZiMkg3RFNrTGpENGxPWENLVXh6TGYrTUNiSFdtQWlCZUNPeHVINlVRa0JWbjB3U215enlHb2pSQwpVcFVuU3NTLytUbnhERysvWXc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+        key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUtkb2xrdk9wYXpqZW0rRm1NYmFtYVRzQllyMTJac1lCMG9WT3dmSkxZSWJvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFUHBybmtyZWQvMVVpbWZVMUIzekdFT2ZiK0RLNmdZZVRqV1NjNG5hTEhNOHdnVGNxbjUvOApSLy9sYTZUcWpVU1pHSkkwZG9EeWZ1emdZcExremF3TlZBPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+    aggregatorCA:
+        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJZVENDQVFhZ0F3SUJBZ0lSQUlab3FSeEhVazZmTWlyckFoQm5pcmd3Q2dZSUtvWkl6ajBFQXdJd0FEQWUKRncweU5EQXlNall4TnpReU1ERmFGdzB6TkRBeU1qTXhOelF5TURGYU1BQXdXVEFUQmdjcWhrak9QUUlCQmdncQpoa2pPUFFNQkJ3TkNBQVNMNDBVSEZlU2EvL1NEcVc1bTRIYU9QcWk1em9pSmpNRk85ajBlRkZjVzFrYUN0aHhWCm1GZHFTc2N1MXJlT0R1eTNpQ1hVNDdLS09UKzZqNk9vZlZpVm8yRXdYekFPQmdOVkhROEJBZjhFQkFNQ0FvUXcKSFFZRFZSMGxCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01BOEdBMVVkRXdFQi93UUZNQU1CQWY4dwpIUVlEVlIwT0JCWUVGQnRpL1lEb1plSWE4YWg5eDFDWisxbndWUURFTUFvR0NDcUdTTTQ5QkFNQ0Ewa0FNRVlDCklRRHBaK01YZWx1Q1lRTXB4WXRrSFNUWVlPYjhYZ1BWZTJWNi9CdFNhLzBBQndJaEFNc0haU2ZDVWlGOEFPVXAKazVsY2x0NS9SUnZzZ0orRmIyUzBGNFBzVUFMdAotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+        key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUhiSTY4Ni9YWTFjbWlUU1RHWmxBZTVJQWZBUHdKbnZJZGw0aUNwZXY0UVFvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFaStORkJ4WGttdi8wZzZsdVp1QjJqajZvdWM2SWlZekJUdlk5SGhSWEZ0WkdnclljVlpoWApha3JITHRhM2pnN3N0NGdsMU9PeWlqay91bytqcUgxWWxRPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+    serviceAccount:
+        key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUtYYVpEMUdDeXZwZTA0d2Ryd3BiaTY5Ui8zT2NYL0krMGpteWR4RENJYy9vQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFNjhEKzhUalBsMzhhZmJYRng1cFYySEVndVNQYS96ald0Z2ZLdjNvNXVPSTN0RXBvRVR6RgpNSFNVS0swVjNnUEpDR0ZSZmZJT0xRT1YzMHliSE8vRlhBPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+    apiServer:
+        image: registry.k8s.io/kube-apiserver:v1.29.0
+        certSANs:
+            - api.turing.kargo.dev
+            - 192.168.1.50
+            - 192.168.1.51
+            - 192.168.1.52
+            - 192.168.1.53
+            - api.turing.kargo.dev
+        disablePodSecurityPolicy: true
+        admissionControl:
+            - name: PodSecurity
+              configuration:
+                apiVersion: pod-security.admission.config.k8s.io/v1alpha1
+                defaults:
+                    audit: restricted
+                    audit-version: latest
+                    enforce: baseline
+                    enforce-version: latest
+                    warn: restricted
+                    warn-version: latest
+                exemptions:
+                    namespaces:
+                        - kube-system
+                    runtimeClasses: []
+                    usernames: []
+                kind: PodSecurityConfiguration
+        auditPolicy:
+            apiVersion: audit.k8s.io/v1
+            kind: Policy
+            rules:
+                - level: Metadata
+    controllerManager:
+        image: registry.k8s.io/kube-controller-manager:v1.29.0
+    proxy:
+        image: registry.k8s.io/kube-proxy:v1.29.0
+    scheduler:
+        image: registry.k8s.io/kube-scheduler:v1.29.0
+    discovery:
+        enabled: true
+        registries:
+            kubernetes:
+                disabled: true
+            service: {}
+    etcd:
+        ca:
+            crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJmakNDQVNPZ0F3SUJBZ0lRVVUvK0twWmM4Ny9reWYxdzhDbjZDakFLQmdncWhrak9QUVFEQWpBUE1RMHcKQ3dZRFZRUUtFd1JsZEdOa01CNFhEVEkwTURJeU5qRTNOREl3TVZvWERUTTBNREl5TXpFM05ESXdNVm93RHpFTgpNQXNHQTFVRUNoTUVaWFJqWkRCWk1CTUdCeXFHU000OUFnRUdDQ3FHU000OUF3RUhBMElBQkxsRFNuNDl3L1A2CmJMcUlFVHUyR0ZuZSsyV2lDaHlmY3dXODh1dHVQU3hmRHRVQ2xWbjhrNGRCazF1V1RsLzlIeFhnaFVucm04djUKelB4NWtNNmczd2VqWVRCZk1BNEdBMVVkRHdFQi93UUVBd0lDaERBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjRApBUVlJS3dZQkJRVUhBd0l3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVZXRDZDMvUHdXMTkrCm1PMEpZMkNHdElIYzduUXdDZ1lJS29aSXpqMEVBd0lEU1FBd1JnSWhBTGdmWE42OXV6NkJDNWg3T2RLUFRUTGUKbnlKZXpuSi9JMGJMMU1WWTZSbGxBaUVBN0t6eENkM3BCK1J6b0M5MGx1eGZsd3FwRDh2aldGWnRBbjYzSStzVQp1cUk9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+            key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSVBQUmtvRkJWeG9nRDRRNUp2R2JpTUZmeDlqTTIvS2RGTmQ1UDUyZkpYUmNvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFdVVOS2ZqM0Q4L3BzdW9nUk83WVlXZDc3WmFJS0hKOXpCYnp5NjI0OUxGOE8xUUtWV2Z5VApoMEdUVzVaT1gvMGZGZUNGU2V1Ynkvbk0vSG1RenFEZkJ3PT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=

@@ -24,8 +24,8 @@ machine:
     defaultRuntimeSeccompProfileEnabled: true
     disableManifestsDirectory: true
     clusterDNS:
-    - 8.8.8.8
     - 1.1.1.1
+    - 8.8.8.8
     - 192.168.1.1
     extraArgs:
       rotate-server-certificates: true

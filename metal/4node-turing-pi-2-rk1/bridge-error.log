@@ -1,0 +1,143 @@
+# tpi uart --node 1 get | tee -a /mnt/sdcard/uart.1.log
+ntered allmulticast mode
+[ 2959.461379] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: entered promiscuous mode
+[ 2959.470244] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2959.491054] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to initialize vlan filtering on this port
+[ 2959.502379] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: left allmulticast mode
+[ 2959.511273] [talos] controller failed {"component": "controller-runtime", "controller": "network.LinkSpecController", "error": "1 error occurred:\n\t* error enslaving/unslaving link \"enxe69ff8d7c455\" under \"br0\": netlink receive: device or resource busy\n\n"}
+[ 2959.537450] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2959.559030] [talos] no suitable node IP found, please make sure .machine.kubelet.nodeIP filters and pod/service subnets are set up correctly {"component": "controller-runtime", "controller": "k8s.NodeIPController"}
+[ 2959.580378] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2959.615797] [talos] created route {"component": "controller-runtime", "controller": "network.RouteSpecController", "destination": "default", "gateway": "192.168.1.1", "table": "main", "link": "br0", "priority": 1024, "family": "inet4"}
+[ 2959.847167] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Register MEM_TYPE_PAGE_POOL RxQ-0
+[ 2959.858785] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Register MEM_TYPE_PAGE_POOL RxQ-1
+[ 2960.079112] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: PHY [stmmac-0:01] driver [RTL8211F Gigabit Ethernet] (irq=POLL)
+[ 2960.101853] dwmac4: Master AXI performs any burst length
+[ 2960.107867] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: No Safety Features support found
+[ 2960.117488] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: IEEE 1588-2008 Advanced Timestamp supported
+[ 2960.128660] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: registered PTP clock
+[ 2960.137395] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: FPE workqueue start
+[ 2960.145745] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: configuring for phy/rgmii-rxid link mode
+[ 2960.183288] 8021q: adding VLAN 0 to HW filter on device enxe69ff8d7c455
+[ 2960.226561] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: FPE workqueue stop
+[ 2960.235050] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2960.245134] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to kill vid 0081/0
+[ 2960.254837] br0: port 1(enxe69ff8d7c455) entered blocking state
+[ 2960.261506] br0: port 1(enxe69ff8d7c455) entered disabled state
+[ 2960.268233] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: entered allmulticast mode
+[ 2960.277549] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2960.311121] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to initialize vlan filtering on this port
+[ 2960.322402] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: left allmulticast mode
+[ 2960.331300] [talos] controller failed {"component": "controller-runtime", "controller": "network.LinkSpecController", "error": "1 error occurred:\n\t* error enslaving/unslaving link \"enxe69ff8d7c455\" under \"br0\": netlink receive: device or resource busy\n\n"}
+[ 2960.357419] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2960.386990] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2960.744730] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Register MEM_TYPE_PAGE_POOL RxQ-0
+[ 2960.757024] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Register MEM_TYPE_PAGE_POOL RxQ-1
+[ 2961.006935] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: PHY [stmmac-0:01] driver [RTL8211F Gigabit Ethernet] (irq=POLL)
+[ 2961.029732] dwmac4: Master AXI performs any burst length
+[ 2961.035737] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: No Safety Features support found
+[ 2961.045360] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: IEEE 1588-2008 Advanced Timestamp supported
+[ 2961.056420] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: registered PTP clock
+[ 2961.065131] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: FPE workqueue start
+[ 2961.073485] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: configuring for phy/rgmii-rxid link mode
+[ 2961.111284] 8021q: adding VLAN 0 to HW filter on device enxe69ff8d7c455
+[ 2961.154211] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: FPE workqueue stop
+[ 2961.162664] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2961.172749] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to kill vid 0081/0
+[ 2961.182040] br0: port 1(enxe69ff8d7c455) entered blocking state
+[ 2961.188704] br0: port 1(enxe69ff8d7c455) entered disabled state
+[ 2961.195371] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: entered allmulticast mode
+[ 2961.204423] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2961.226934] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to initialize vlan filtering on this port
+[ 2961.238292] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: left allmulticast mode
+[ 2961.247200] [talos] controller failed {"component": "controller-runtime", "controller": "network.LinkSpecController", "error": "1 error occurred:\n\t* error enslaving/unslaving link \"enxe69ff8d7c455\" under \"br0\": netlink receive: device or resource busy\n\n"}
+[ 2961.273360] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2961.304887] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2961.922102] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Register MEM_TYPE_PAGE_POOL RxQ-0
+[ 2961.934300] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Register MEM_TYPE_PAGE_POOL RxQ-1
+[ 2962.146906] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: PHY [stmmac-0:01] driver [RTL8211F Gigabit Ethernet] (irq=POLL)
+[ 2962.169643] dwmac4: Master AXI performs any burst length
+[ 2962.175681] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: No Safety Features support found
+[ 2962.185277] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: IEEE 1588-2008 Advanced Timestamp supported
+[ 2962.196427] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: registered PTP clock
+[ 2962.205208] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: FPE workqueue start
+[ 2962.213567] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: configuring for phy/rgmii-rxid link mode
+[ 2962.251072] 8021q: adding VLAN 0 to HW filter on device enxe69ff8d7c455
+[ 2962.283286] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: FPE workqueue stop
+[ 2962.291760] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2962.301844] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to kill vid 0081/0
+[ 2962.311155] br0: port 1(enxe69ff8d7c455) entered blocking state
+[ 2962.317799] br0: port 1(enxe69ff8d7c455) entered disabled state
+[ 2962.324464] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: entered allmulticast mode
+[ 2962.333519] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2962.374871] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to initialize vlan filtering on this port
+[ 2962.386449] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: left allmulticast mode
+[ 2962.395408] [talos] controller failed {"component": "controller-runtime", "controller": "network.LinkSpecController", "error": "1 error occurred:\n\t* error enslaving/unslaving link \"enxe69ff8d7c455\" under \"br0\": netlink receive: device or resource busy\n\n"}
+[ 2962.421701] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2962.459681] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2964.466490] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Register MEM_TYPE_PAGE_POOL RxQ-0
+[ 2964.478141] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Register MEM_TYPE_PAGE_POOL RxQ-1
+[ 2964.686756] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: PHY [stmmac-0:01] driver [RTL8211F Gigabit Ethernet] (irq=POLL)
+[ 2964.709445] dwmac4: Master AXI performs any burst length
+[ 2964.715442] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: No Safety Features support found
+[ 2964.725000] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: IEEE 1588-2008 Advanced Timestamp supported
+[ 2964.736018] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: registered PTP clock
+[ 2964.744685] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: FPE workqueue start
+[ 2964.753001] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: configuring for phy/rgmii-rxid link mode
+[ 2964.790780] 8021q: adding VLAN 0 to HW filter on device enxe69ff8d7c455
+[ 2964.831530] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: FPE workqueue stop
+[ 2964.839868] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2964.849901] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to kill vid 0081/0
+[ 2964.859024] br0: port 1(enxe69ff8d7c455) entered blocking state
+[ 2964.865673] br0: port 1(enxe69ff8d7c455) entered disabled state
+[ 2964.872350] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: entered allmulticast mode
+[ 2964.881396] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2964.902700] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to initialize vlan filtering on this port
+[ 2964.913992] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: left allmulticast mode
+[ 2964.922921] [talos] controller failed {"component": "controller-runtime", "controller": "network.LinkSpecController", "error": "1 error occurred:\n\t* error enslaving/unslaving link \"enxe69ff8d7c455\" under \"br0\": netlink receive: device or resource busy\n\n"}
+[ 2964.949099] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2964.982024] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2966.333412] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Register MEM_TYPE_PAGE_POOL RxQ-0
+[ 2966.345058] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Register MEM_TYPE_PAGE_POOL RxQ-1
+[ 2966.586635] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: PHY [stmmac-0:01] driver [RTL8211F Gigabit Ethernet] (irq=POLL)
+[ 2966.609337] dwmac4: Master AXI performs any burst length
+[ 2966.615316] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: No Safety Features support found
+[ 2966.624883] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: IEEE 1588-2008 Advanced Timestamp supported
+[ 2966.635898] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: registered PTP clock
+[ 2966.644677] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: FPE workqueue start
+[ 2966.652996] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: configuring for phy/rgmii-rxid link mode
+[ 2966.690771] 8021q: adding VLAN 0 to HW filter on device enxe69ff8d7c455
+[ 2966.731519] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: FPE workqueue stop
+[ 2966.739865] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2966.749900] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to kill vid 0081/0
+[ 2966.759118] br0: port 1(enxe69ff8d7c455) entered blocking state
+[ 2966.765774] br0: port 1(enxe69ff8d7c455) entered disabled state
+[ 2966.772438] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: entered allmulticast mode
+[ 2966.781487] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2966.818594] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to initialize vlan filtering on this port
+[ 2966.829899] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: left allmulticast mode
+[ 2966.839027] [talos] controller failed {"component": "controller-runtime", "controller": "network.LinkSpecController", "error": "1 error occurred:\n\t* error enslaving/unslaving link \"enxe69ff8d7c455\" under \"br0\": netlink receive: device or resource busy\n\n"}
+[ 2966.865350] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2966.896941] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2971.763559] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Register MEM_TYPE_PAGE_POOL RxQ-0
+[ 2971.775833] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Register MEM_TYPE_PAGE_POOL RxQ-1
+[ 2971.986284] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: PHY [stmmac-0:01] driver [RTL8211F Gigabit Ethernet] (irq=POLL)
+[ 2972.006101] dwmac4: Master AXI performs any burst length
+[ 2972.012106] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: No Safety Features support found
+[ 2972.021731] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: IEEE 1588-2008 Advanced Timestamp supported
+[ 2972.032796] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: registered PTP clock
+[ 2972.041512] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: FPE workqueue start
+[ 2972.049856] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: configuring for phy/rgmii-rxid link mode
+[ 2972.086504] 8021q: adding VLAN 0 to HW filter on device enxe69ff8d7c455
+[ 2972.125073] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: FPE workqueue stop
+[ 2972.133392] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2972.143429] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to kill vid 0081/0
+[ 2972.155160] br0: port 1(enxe69ff8d7c455) entered blocking state
+[ 2972.161822] br0: port 1(enxe69ff8d7c455) entered disabled state
+[ 2972.168488] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: entered allmulticast mode
+[ 2972.177532] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: Timeout accessing MAC_VLAN_Tag_Filter
+[ 2972.206253] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: failed to initialize vlan filtering on this port
+[ 2972.217538] rk_gmac-dwmac fe1c0000.ethernet enxe69ff8d7c455: left allmulticast mode
+[ 2972.226422] [talos] controller failed {"component": "controller-runtime", "controller": "network.LinkSpecController", "error": "1 error occurred:\n\t* error enslaving/unslaving link \"enxe69ff8d7c455\" under \"br0\": netlink receive: device or resource busy\n\n"}
+[ 2972.252586] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}
+[ 2972.284350] [talos] error querying ethtool link state {"component": "controller-runtime", "controller": "network.LinkStatusController", "link": "enxe69ff8d7c455", "error": "netlink receive: device or resource busy"}

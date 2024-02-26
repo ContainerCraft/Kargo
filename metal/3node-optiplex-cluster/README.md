@@ -1,16 +1,9 @@
 # Kargo Platform Development Pathfinding Journal
 
 > Note: All commands are run from the git repository opened in VSCode Konductor Devcontainer
-> *unless otherwise specified
+> \*unless otherwise specified
 
 ## Pathfinding Build Log
-
-```bash
-# konductor devcontainer additional requirements
-# consider upstreaming these to the konductor devcontainer
-#
-# ~$ sudo apt-get install -y inetutils-ping # for ping command > now upstreamed
-```
 
 ### 0. Write Ubuntu Desktop iso to USB device
 
@@ -24,7 +17,7 @@ sfdisk --delete --wipe always /dev/nvme0n1
 
 ### 1. Download latest talos iso
 
-> Note: *download this iso to the host machine which you will write USB devices from*
+> Note: _download this iso to the host machine which you will write USB devices from_
 
 ```bash
 export VERSION=$(curl -sL https://api.github.com/repos/siderolabs/talos/releases/latest | jq --raw-output .tag_name); echo $VERSION
@@ -33,7 +26,7 @@ curl --output ~/Downloads/talos-$VERSION-metal-amd64.iso -sL "https://github.com
 
 ### 2. Write talos iso to USB device & Boot the node(s) from talos USB
 
-> Note: *I used balenaEtcher to write the iso to a USB device*
+> Note: _I used balenaEtcher to write the iso to a USB device_
 
 ![Alt text](.assets/01-talos-console.png)
 
@@ -136,7 +129,6 @@ talosctl --nodes 192.168.1.41 kubeconfig .kube/config --force
 sed -i 's/api.kube.kargo.io/192.168.1.40/g' .kube/config
 ```
 
-
 ### 7. Check your cluster status
 
 ```bash
@@ -214,4 +206,3 @@ talosctl reset --debug \
     --graceful=false \
     --reboot
 ```
-
