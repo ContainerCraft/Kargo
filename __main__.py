@@ -15,8 +15,8 @@ kubernetes_distribution = config.get('kubernetes')
 # Log the detected configuration
 pulumi.log.info(f"Detected Configuration: kubernetes = {kubernetes_distribution}")
 
-# Define a default value for kubeconfig_context
-kubeconfig_context = "default-context"
+# Set `kubeconfig_context` to the pulumi config value of kubecontext or use the default value `kind`
+kubeconfig_context = config.get('kubecontext') or 'kind'
 
 # Determine the appropriate Kubernetes context based on the distribution type
 if kubernetes_distribution == 'kind':
