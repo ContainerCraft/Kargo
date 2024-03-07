@@ -63,6 +63,8 @@ Kind is also used by the Kargo maintainers and contributors to develop and test 
 
 [Talos](https://talos.dev/) is a modern OS for Kubernetes. Talos is designed to be secure, immutable, and minimal. Talos is the recommended platform for running Kargo in a production-like homelab environment. Find out more about why in our [FAQ](FAQ.md).
 
+The Talos documentation and deployment automation is still a work in progress under discovery in the [./metal directory](./metal/3node-optiplex-cluster) of this repository. Find the README with current build notes and example configs there.
+
 ### How to Run Kargo on Kind
 
 > NOTE: the following assumes you have already installed VSCode, the Remote Containers extension, and Docker Desktop.
