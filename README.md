@@ -6,10 +6,9 @@
 
 Join the conversation on the [ContainerCraft Community Discord Kargo Channel](https://discord.gg/BAMwwqys).
 
-> NOTE: This project is in pre-alpha pathfinding mode. See the [inaugural Twitter/X Thread post](https://x.com/usrbinkat/status/1749186949590794551) by [@usrbinkat](https://twitter.com/usrbinkat)
->
 > Kargo Project opened in the [Konductor Devcontainer](https://github.com/ContainerCraft/Konductor) with Github Codespaces.
 > ![Screenshot of Kargo open in Konductor Devcontainer](.github/images/konductor-codespaces.png?raw=true "Kargo Konductor Codespaces")
+> NOTE: This project is in pre-alpha pathfinding mode. See the [inaugural Twitter/X Thread post](https://x.com/usrbinkat/status/1749186949590794551) by [@usrbinkat](https://twitter.com/usrbinkat)
 
 ## About
 
@@ -17,17 +16,17 @@ Kargo is a community project to build the first Platform Engineered Homelab for 
 
 For more information, see the [Kargo Project FAQ](FAQ.md).
 
-## Goals
+### Goals
 
 * Eliminate the barrier to entry for learning Kubernetes and Cloud Native technologies
 * Provide a common platform for the community to collaborate and share knowledge
 * Enable anyone to experience the power of owning a local cloud platform
 * Accelerate the time-to-achievement for new projects and ideas
-* Invest in a common library of reusable middleware and application IaC for Kargo
+* Develop a community library of sharable middleware and application IaC for use on Kargo
 * Select enterprise grade technologies and practices to build a valuable learning platform
 * Be the best hypervisor and container platform for the Homelab community
 
-## Non-Goals
+### Non-Goals
 
 * Kargo is not a production platform
 * Kargo will not try to be everything for everyone
@@ -36,9 +35,7 @@ For more information, see the [Kargo Project FAQ](FAQ.md).
 
 ### Prerequisites
 
-Success with Kargo depends on two things, the server side infrastructure, and the client side tooling.
-
-Kargo is the server side platform, and the client side tooling is distributed via the [ContainerCraft Konductor](https://github.com/ContainerCraft/Konductor) devcontainer.
+Success with Kargo depends on two things, the server side infrastructure, and the client side tooling. Kargo is the server side platform, and the client side tooling is distributed via the [ContainerCraft Konductor](https://github.com/ContainerCraft/Konductor) devcontainer.
 
 #### Client Side Cloud Dependencies
 
@@ -76,7 +73,7 @@ Kind is also used by the Kargo maintainers and contributors to develop and test 
 4. Once the devcontainer is open, run the following command to start Kargo on Kind:
 
 ```bash
-make kind-up
+make kind
 ```
 
 5. Once the Kind cluster is running, you can validate access the Kubernetes API with the following command:
@@ -100,3 +97,25 @@ pulumi config set kubernetes kind
 pulumi config set kubecontext kind-kargo
 pulumi up
 ```
+
+## Contributing
+
+Kargo is a community project and we welcome contributions from everyone. Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information on how to get involved. (CONTRIBUTING.md)
+
+To get started, join the conversation on the [ContainerCraft Community Discord Kargo Channel](https://discord.gg/BAMwwqys).
+
+### Developing Kargo
+
+Manually testing with the kargo on kind workflow is a great way to get started with Kargo development.
+
+Additionally, Konductor and the Kargo repository are built with support for [act](https://nektosact.com/), a tool for running Github Action Runner pipelines locally. This is a great way to test your code changes for CI before committing to git.
+
+The following commands are useful for testing Kargo CI locally:
+
+```bash
+make act
+```
+
+Running CI in GitHub Codespaces currently takes approximately 3 minutes when using the `act` tool. A successful run will conclude something like this:
+
+![Successful act kargo on kind pipeline run](.github/images/gha-act-kargo-on-kind.png)

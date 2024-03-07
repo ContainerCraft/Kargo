@@ -43,7 +43,7 @@ jobs:
         name: 🔨 Kind Kubernetes 🔨
         uses: helm/kind-action@v1.9.0
         env:
-          ACTIONS_STEP_DEBUG: true
+          ACTIONS_STEP_DEBUG: false
           KUBECONFIG: .kube/config
         with:
           wait: 30s
@@ -75,7 +75,7 @@ jobs:
         name: 🚀 Pulumi Up 🚀
         uses: pulumi/actions@v5
         env:
-          ACTIONS_STEP_DEBUG: true
+          ACTIONS_STEP_DEBUG: false
           KUBECONFIG: .kube/config
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
@@ -93,7 +93,7 @@ jobs:
       - name: 🕚 Wait for pods 🕛
         uses: CodingNagger/minikube-wait-action@v1.1.1
         env:
-          ACTIONS_STEP_DEBUG: true
+          ACTIONS_STEP_DEBUG: false
           KUBECONFIG: .kube/config
         with:
           max-retry-attempts: 12
@@ -104,7 +104,7 @@ jobs:
         uses: pulumi/actions@v5
         if: always()
         env:
-          ACTIONS_STEP_DEBUG: true
+          ACTIONS_STEP_DEBUG: false
           KUBECONFIG: .kube/config
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
