@@ -26,14 +26,6 @@ def deploy_kubevirt(k8s_provider: k8s.Provider):
         opts=pulumi.ResourceOptions(provider=k8s_provider)
     )
 
-    # Deploy the KubeVirt Custom Resource (default)
-    kubevirt_cr_url = f'https://github.com/kubevirt/kubevirt/releases/download/{kubevirt_version}/kubevirt-cr.yaml'
-    k8s.yaml.ConfigFile(
-        'kubevirt-cr',
-        file=kubevirt_cr_url,
-        opts=pulumi.ResourceOptions(provider=k8s_provider)
-    )
-
     # Define and deploy the detailed KubeVirt custom resource
     kubevirt_detailed_manifest = {
         "apiVersion": "kubevirt.io/v1",

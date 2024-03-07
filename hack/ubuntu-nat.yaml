@@ -1,0 +1,109 @@
+---
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachine
+metadata:
+  name: ubuntu-nat
+  namespace: default
+  labels:
+    app: kargo
+spec:
+  running: true
+  template:
+    spec:
+      domain:
+        clock:
+          utc: {}
+          timer: {}
+        cpu:
+          cores: 1
+          sockets: 1
+          threads: 2
+          model: host-passthrough
+          dedicatedCpuPlacement: false
+        devices:
+          rng: {}
+          autoattachPodInterface: false
+          autoattachSerialConsole: true
+          autoattachGraphicsDevice: true
+          networkInterfaceMultiqueue: false
+          disks:
+            - name: containerdisk
+              bootOrder: 1
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+          - name: enp1s0
+            model: virtio
+            bridge: {}
+        features:
+          acpi:
+            enabled: true
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: true
+        machine:
+          type: q35
+        resources:
+          limits:
+            memory: 1G
+          requests:
+            memory: 1G
+            devices.kubevirt.io/kvm: "1"
+      hostname: ubuntu-nat
+      networks:
+      - name: enp1s0
+        pod: {}
+      terminationGracePeriodSeconds: 0
+      #accessCredentials:
+      #- sshPublicKey:
+      #    source:
+      #      secret:
+      #        secretName: kargo-sshpubkey-kc2user
+      #    propagationMethod:
+      #      qemuGuestAgent:
+      #        users:
+      #        - "kc2user"
+      volumes:
+        - name: containerdisk
+          containerDisk:
+            image: docker.io/containercraft/ubuntu:22.04
+            imagePullPolicy: Always
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            networkData: |
+              version: 2
+              ethernets:
+                enp1s0:
+                  dhcp4: true
+                  dhcp6: false
+                  dhcp-identifier: mac
+            userData: |
+              #cloud-config
+              ssh_pwauth: true
+              disable_root: true
+              chpasswd:
+                list: |
+                   kc2user:kc2user
+                expire: False
+              users:
+                - name: kc2user
+                  shell: /bin/bash
+                  lock_passwd: false
+                  sudo: ['ALL=(ALL) NOPASSWD:ALL']
+                  groups: sudo,lxd,libvirt,microk8s,xrdp,docker,ssl-cert
+              growpart:
+                mode: auto
+                devices: ['/']
+                ignore_growroot_disabled: true
+              package_upgrade: false
+              packages:
+                - docker.io
+              runcmd:
+                - "echo H4sIAAAAAAACA7WRwU7DMAyG73mKaHe6dRrTyKsghELibWYhjhy3gBDvTkIXtRJC4oJP8R/ntz/HUTziyeiPTxVBXokv2agb7SZZ6RKYxl0XrRi9Eh5gNYvWe4acje7vtl2/P3S3h65fb3f6X6L13c99I0UosofsGJMgxTJkHTDaFzA6vPkn3pRU3hNcbxLTM7gC4+FohyAqC7E9wWMiCkv2upLfrdvrUsE4AhcFWRXzIwb4i42HEV2trFQg5810av5VacL0LwucGhNSRPedM5E0g2TlbPS6ZQVrOe781mO+/OC5rqfs9v5BuTBkqWxxCEF9AXZkJoMrAgAA | base64 -d | gzip -d | lxd init --preseed"
+                - "screenfetch"
