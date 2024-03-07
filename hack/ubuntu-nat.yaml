@@ -2,7 +2,7 @@
 apiVersion: kubevirt.io/v1alpha3
 kind: VirtualMachine
 metadata:
-  name: ubuntu-nat
+  name: ubuntu
   namespace: default
   labels:
     app: kargo
@@ -16,7 +16,6 @@ spec:
           timer: {}
         cpu:
           cores: 1
-          #model: host-passthrough
           dedicatedCpuPlacement: false
         memory:
           guest: 1024M
@@ -52,20 +51,11 @@ spec:
         resources:
           requests:
             memory: 1024M
-      hostname: ubuntu-nat
+      hostname: ubuntu
       networks:
         - name: enp1s0
           pod: {}
       terminationGracePeriodSeconds: 0
-      #accessCredentials:
-      #- sshPublicKey:
-      #    source:
-      #      secret:
-      #        secretName: kargo-sshpubkey-kc2user
-      #    propagationMethod:
-      #      qemuGuestAgent:
-      #        users:
-      #        - "kc2user"
       volumes:
         - name: containerdisk
           containerDisk:
@@ -99,9 +89,6 @@ spec:
                 devices: ['/']
                 ignore_growroot_disabled: true
               package_upgrade: false
-              #packages:
-              #  - docker.io
-              #  - neofetch
               runcmd:
                 - "echo H4sIAAAAAAACA7WRwU7DMAyG73mKaHe6dRrTyKsghELibWYhjhy3gBDvTkIXtRJC4oJP8R/ntz/HUTziyeiPTxVBXokv2agb7SZZ6RKYxl0XrRi9Eh5gNYvWe4acje7vtl2/P3S3h65fb3f6X6L13c99I0UosofsGJMgxTJkHTDaFzA6vPkn3pRU3hNcbxLTM7gC4+FohyAqC7E9wWMiCkv2upLfrdvrUsE4AhcFWRXzIwb4i42HEV2trFQg5810av5VacL0LwucGhNSRPedM5E0g2TlbPS6ZQVrOe781mO+/OC5rqfs9v5BuTBkqWxxCEF9AXZkJoMrAgAA | base64 -d | gzip -d | lxd init --preseed"
                 - "screenfetch"
