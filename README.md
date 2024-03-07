@@ -119,7 +119,7 @@ virtctl ssh kc2@ubuntu
 
 ## Contributing
 
-Kargo is a community project and we welcome contributions from everyone. Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information on how to get involved. (CONTRIBUTING.md)
+Kargo is a community project and we welcome contributions from everyone. Please see [CONTRIBUTING.md](https://github.com/ContainerCraft/Kargo/issues/22) for more information on how to get involved.
 
 To get started, join the conversation on the [ContainerCraft Community Discord Kargo Channel](https://discord.gg/BAMwwqys).
 
