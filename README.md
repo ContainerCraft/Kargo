@@ -4,7 +4,7 @@
 
 [![CI - Kargo on Kind](https://github.com/ContainerCraft/Kargo/actions/workflows/kind.yaml/badge.svg)](https://github.com/ContainerCraft/Kargo/actions/workflows/kind.yaml)
 
-Join the conversation on the [ContainerCraft Community Discord Kargo Channel](https://discord.gg/BAMwwqys).
+Join the conversation on the [ContainerCraft Community Discord Kargo Channel](https://discord.gg/Hx3BssYAmB).
 
 > Kargo Project opened in the [Konductor Devcontainer](https://github.com/ContainerCraft/Konductor) with Github Codespaces.
 > ![Screenshot of Kargo open in Konductor Devcontainer](.github/images/konductor-codespaces.png?raw=true "Kargo Konductor Codespaces")
@@ -121,7 +121,7 @@ virtctl ssh kc2@ubuntu
 
 Kargo is a community project and we welcome contributions from everyone. Please see [CONTRIBUTING.md](https://github.com/ContainerCraft/Kargo/issues/22) for more information on how to get involved.
 
-To get started, join the conversation on the [ContainerCraft Community Discord Kargo Channel](https://discord.gg/BAMwwqys).
+To get started, join the conversation on the [ContainerCraft Community Discord Kargo Channel](https://discord.gg/Hx3BssYAmB).
 
 ### Developing Kargo
 
