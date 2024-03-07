@@ -5,7 +5,7 @@ REPO_NAME := $(shell echo ${LOWERCASE_GITHUB_REPOSITORY} | awk -F '/' '{print $$
 REPO_ORG := $(shell echo ${LOWERCASE_GITHUB_REPOSITORY} | awk -F '/' '{print $$1}')
 
 PROJECT ?= $(or $(REPO_NAME),kargo)
-DEPLOYMENT ?= $(or $(ENVIRONMENT),dev)
+DEPLOYMENT ?= $(or $(ENVIRONMENT),ci)
 
 # Check if PULUMI_BACKEND_URL starts with 'file://'
 ifeq ($(findstring file://,$(PULUMI_BACKEND_URL)),file://)

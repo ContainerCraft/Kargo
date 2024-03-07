@@ -55,6 +55,22 @@ jobs:
         name: 📦️ Pulumi Install 📦️
         uses: pulumi/actions@v5
 
+      - id: pulumi-config
+        name: 🛠️ Pulumi Config 🛠️
+        env:
+          ACTIONS_STEP_DEBUG: true
+          KUBECONFIG: .kube/config
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_CONFIG_PASSPHRASE: foobarbaz
+          PULUMI_BACKEND_URL: file://./.pulumi
+        run: |
+          pulumi login
+          pulumi install
+          pulumi stack select --create /kargo/ci
+          pulumi config set kubernetes kind
+          pulumi config set kubecontext kind-kargo
+
       - id: pulumi-up
         name: 🚀 Pulumi Up 🚀
         uses: pulumi/actions@v5
@@ -69,7 +85,7 @@ jobs:
           command: up
           refresh: true
           upsert: true
-          stack-name: organization/kargo/ci
+          stack-name: /kargo/ci
           secrets-provider: passphrase
           cloud-url: file://./.pulumi
           work-dir: ./
