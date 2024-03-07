@@ -1,2 +1,3 @@
 config:
+  kargo:kubecontext: kind-kargo
   kargo:kubernetes: kind
