@@ -4,6 +4,20 @@ from typing import Optional
 from ..lib.helm_chart_versions import get_latest_helm_chart_version
 
 def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, kubernetes_endpoint_ip_string: str, namespace: str):
+    """
+    Deploy Cilium using the Helm chart.
+
+    Args:
+        name (str): The name of the release.
+        k8s_provider (Provider): The Kubernetes provider.
+        kubernetes_distribution (str): The Kubernetes distribution.
+        project_name (str): The name of the project.
+        kubernetes_endpoint_ip_string (str): The IP address of the Kubernetes endpoint.
+        namespace (str): The namespace to deploy Cilium to.
+
+    Returns:
+        pulumi.helm.v3.Release: The deployed Cilium Helm release.
+    """
     # Determine Helm values based on the Kubernetes distribution
     helm_values = get_helm_values(kubernetes_distribution, project_name, kubernetes_endpoint_ip_string)
 
@@ -27,6 +41,20 @@ def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, proj
     )
 
 def get_helm_values(kubernetes_distribution: str, project_name: str, kubernetes_endpoint_ip_string: str):
+    """
+    Get the Helm values for installing Cilium based on the specified Kubernetes distribution.
+
+    Args:
+        kubernetes_distribution (str): The Kubernetes distribution (e.g., 'kind', 'talos').
+        project_name (str): The name of the project.
+        kubernetes_endpoint_ip_string (str): The IP address of the Kubernetes endpoint.
+
+    Returns:
+        dict: The Helm values for installing Cilium.
+
+    Raises:
+        ValueError: If the specified Kubernetes distribution is not supported.
+    """
     common_values = {
         "cluster": {"name": project_name},
         "ipam": {"mode": "kubernetes"},

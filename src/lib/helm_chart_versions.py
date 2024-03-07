@@ -16,6 +16,20 @@ def is_stable_version(version_str):
         return False
 
 def get_latest_helm_chart_version(url, chart_name):
+    """
+    Fetches the latest stable version of a Helm chart from a given URL.
+
+    Args:
+        url (str): The URL of the Helm chart repository.
+        chart_name (str): The name of the Helm chart.
+
+    Returns:
+        str: The latest stable version of the Helm chart, or an error message if the chart is not found or an error occurs during fetching.
+
+    Raises:
+        requests.RequestException: If an error occurs during the HTTP request.
+
+    """
     try:
         logging.info(f"Fetching URL: {url}")
         response = requests.get(url)
