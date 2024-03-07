@@ -4,7 +4,7 @@ import requests
 from pulumi_kubernetes.apiextensions import CustomResource
 from pulumi_kubernetes.meta.v1 import ObjectMetaArgs
 
-def deploy_kubevirt(k8s_provider: k8s.Provider):
+def deploy_kubevirt(k8s_provider: k8s.Provider, kubernetes_distribution: str):
     """
     Fetches the latest stable version of KubeVirt, deploys the KubeVirt operator,
     the default KubeVirt custom resource, and a detailed KubeVirt custom resource
@@ -25,6 +25,9 @@ def deploy_kubevirt(k8s_provider: k8s.Provider):
         file=kubevirt_operator_url,
         opts=pulumi.ResourceOptions(provider=k8s_provider)
     )
+
+    # Determine useEmulation based on the kubernetes_distribution
+    use_emulation = True if kubernetes_distribution == "kind" else False
 
     # Define and deploy the detailed KubeVirt custom resource
     kubevirt_detailed_manifest = {
@@ -48,8 +51,10 @@ def deploy_kubevirt(k8s_provider: k8s.Provider):
                     "family": "CCIO"
                 },
                 "developerConfiguration": {
+                    "useEmulation": use_emulation,
                     "featureGates": [
-                        "HostDevices"
+                        "HostDevices",
+                        "AutoResourceLimitsGate"
                     ]
                 },
                 "permittedHostDevices": {

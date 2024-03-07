@@ -98,6 +98,23 @@ pulumi config set kubecontext kind-kargo
 pulumi up
 ```
 
+7. Test with a VM!
+
+> NOTE: user:password is `kc2:kc2`
+```bash
+kubectl apply -f hack/ubuntu-nat.yaml
+```
+
+This vm will take a while to start in emulator mode if testing on Kind. You can check the status of the VM with the following command:
+
+```bash
+# Connect to the console of the VM
+virtctl console ubuntu-nat
+
+# use ssh to connect to the VM
+virtctl ssh kc2@ubuntu-nat
+```
+
 ## Contributing
 
 Kargo is a community project and we welcome contributions from everyone. Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information on how to get involved. (CONTRIBUTING.md)

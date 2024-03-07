@@ -48,7 +48,7 @@ def main():
     )
 
     # Deploy KubeVirt
-    kubevirt_version = deploy_kubevirt(k8s_provider)
+    kubevirt_version = deploy_kubevirt(k8s_provider, kubernetes_distribution)
 
     # Export deployment details
     pulumi.export('helm_release_name', cilium_helm_release.resource_names)
