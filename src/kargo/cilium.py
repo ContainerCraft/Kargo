@@ -26,8 +26,8 @@ def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, proj
     cilium_chart_name = "cilium"
     cilium_latest_version = get_latest_helm_chart_version(cilium_chart_url, cilium_chart_name)
 
-    # Statically limit the Cilium version to 1.14.5 until
-    cilium_latest_version = "1.14.5"
+    # Statically limit the Cilium version to 1.14.7 until resolved
+    cilium_latest_version = "1.14.7"
 
     # Deploy Cilium using the Helm chart
     return helm.v3.Release(
@@ -89,7 +89,7 @@ def get_helm_values(kubernetes_distribution: str, project_name: str, kubernetes_
             "image": {"pullPolicy": "IfNotPresent"},
             "hostServices": {"enabled": False},
             "externalIPs": {"enabled": True},
-            "gatewayAPI": {"enabled": True},
+            "gatewayAPI": {"enabled": False},
             "nodePort": {"enabled": True},
             "hostPort": {"enabled": True},
             "operator": {"replicas": 1},
