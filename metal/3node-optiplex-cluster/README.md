@@ -51,25 +51,25 @@ direnv allow
 # Find the IP Address of your node on the talos console top right information list
 
 # Query the network links of your node(s) and save the output to a yaml file
-talosctl --nodes 192.168.1.164 get links --insecure | tee links.list
-talosctl --nodes 192.168.1.166 get links --insecure | tee links.list
-talosctl --nodes 192.168.1.169 get links --insecure | tee links.list
+talosctl --nodes 192.168.1.164 get links --insecure | tee 41.links.list
+talosctl --nodes 192.168.1.166 get links --insecure | tee 42.links.list
+talosctl --nodes 192.168.1.169 get links --insecure | tee 43.links.list
 
 # Find the disk configuration of your node(s)
-talosctl --nodes 192.168.1.164 disks --insecure | tee disks.list
-talosctl --nodes 192.168.1.164 disks --insecure | tee disks.list
-talosctl --nodes 192.168.1.164 disks --insecure | tee disks.list
+talosctl --nodes 192.168.1.164 disks --insecure | tee 41.disks.list
+talosctl --nodes 192.168.1.166 disks --insecure | tee 42.disks.list
+talosctl --nodes 192.168.1.169 disks --insecure | tee 43.disks.list
 
 # Generate your talos kubernetes secrets
-talosctl gen secrets --talos-version v1.6.2 --output-file secrets.yaml
+talosctl gen secrets --talos-version v1.6.3 --output-file secrets.yaml
 
 # Generate the talos machine boilerplate configuration files
 # Populate the install disk flag with the block device of your choice following the disks.list from earlier
-talosctl gen config kargo "https://api.kube.kargo.io:6443" \
-    --additional-sans "192.168.1.40,192.168.1.41,192.168.1.42,192.168.1.43,api.kube.kargo.io" \
+talosctl gen config kargo "https://api.kube.optiplexprime.kargo.io:6443" \
+    --additional-sans "192.168.1.40,192.168.1.41,192.168.1.42,192.168.1.43,api.kube.optiplexprime.kargo.io" \
     --with-secrets ./secrets.yaml \
-    --kubernetes-version "1.28.0" \
-    --talos-version "v1.6.2" \
+    --kubernetes-version "1.29.0" \
+    --talos-version "v1.6.3" \
     --install-disk /dev/nvme0n1 \
     --persist \
     --output .

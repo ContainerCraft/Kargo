@@ -1,0 +1,10 @@
+NODE   NAMESPACE   TYPE         ID          VERSION   TYPE       KIND     HW ADDR                                           OPER STATE   LINK STATE
+       network     LinkStatus   bond0       1         ether      bond     da:49:31:4a:a6:5e                                 down         false
+       network     LinkStatus   dummy0      1         ether      dummy    f2:15:44:73:b7:4e                                 down         false
+       network     LinkStatus   enp0s31f6   2         ether               d8:9e:f3:40:33:c8                                 down         false
+       network     LinkStatus   enp3s0      3         ether               fc:34:97:1e:79:d4                                 up           true
+       network     LinkStatus   ip6tnl0     1         tunnel6    ip6tnl   00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00   down         false
+       network     LinkStatus   lo          2         loopback            00:00:00:00:00:00                                 unknown      true
+       network     LinkStatus   sit0        1         sit        sit      00:00:00:00                                       down         false
+       network     LinkStatus   teql0       1         void                                                                  down         false
+       network     LinkStatus   tunl0       1         ipip       ipip     00:00:00:00                                       down         false
