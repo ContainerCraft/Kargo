@@ -18,18 +18,18 @@ For more information, see the [Kargo Project FAQ](FAQ.md).
 
 ### Goals
 
-* Eliminate the barrier to entry for learning Kubernetes and Cloud Native technologies
-* Provide a common platform for the community to collaborate and share knowledge
-* Enable anyone to experience the power of owning a local cloud platform
-* Accelerate the time-to-achievement for new projects and ideas
-* Develop a community library of sharable middleware and application IaC for use on Kargo
-* Select enterprise grade technologies and practices to build a valuable learning platform
-* Be the best hypervisor and container platform for the Homelab community
+- Eliminate the barrier to entry for learning Kubernetes and Cloud Native technologies
+- Provide a common platform for the community to collaborate and share knowledge
+- Enable anyone to experience the power of owning a local cloud platform
+- Accelerate the time-to-achievement for new projects and ideas
+- Develop a community library of sharable middleware and application IaC for use on Kargo
+- Select enterprise grade technologies and practices to build a valuable learning platform
+- Be the best hypervisor and container platform for the Homelab community
 
 ### Non-Goals
 
-* Kargo is not a production platform
-* Kargo will not try to be everything for everyone
+- Kargo is not a production platform
+- Kargo will not try to be everything for everyone
 
 ## Getting Started
 
@@ -45,9 +45,11 @@ If running in Github Codespaces, all you need is a browser and a Github account!
 
 If running locally on your own machine, you will need the following:
 
-* [Visual Studio Code](https://code.visualstudio.com/)
-* [Visual Studio Code Remote - Containers Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-* [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- [Visual Studio Code](https://code.visualstudio.com/)
+- [Visual Studio Code Remote - Containers Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- [Pulumi Cloud Login & Access Token from app.pulumi.com](https://app.pulumi.com/)
+  - [Pulumi Cloud PAT Docs](https://www.pulumi.com/docs/pulumi-cloud/access-management/access-tokens/)
 
 #### Server Side Dependencies
 
@@ -72,19 +74,7 @@ The Talos documentation and deployment automation is still a work in progress un
 1. Clone the Kargo repository to your local machine
 2. Open the Kargo repository in VSCode
 3. When prompted, click "Reopen in Container" to open the Kargo repository in the Konductor devcontainer
-4. Once the devcontainer is open, run the following command to start Kargo on Kind:
-
-```bash
-make kind
-```
-
-5. Once the Kind cluster is running, you can validate access the Kubernetes API with the following command:
-
-```bash
-kubectl cluster-info
-```
-
-6. Deploy the Kargo platform to the Kind cluster with the following commands:
+4. Login to Pulumi and configure a new pulumi stack for Kargo
 
 > NOTE: substitute your kubecontext name for `kind-kargo` if you are using a different kubecontext.
 
@@ -94,9 +84,27 @@ pulumi login
 pulumi install
 pulumi stack select --create kind-kargo
 
-# Configure & Deploy Kargo
+# Configure Kargo Stack
 pulumi config set kubernetes kind
 pulumi config set kubecontext kind-kargo
+```
+
+5. Start a local Kind cluster
+
+```bash
+make kind
+```
+
+6. Once the Kind cluster is running, you can validate access the Kubernetes API with the following command:
+
+```bash
+kubectl cluster-info
+```
+
+7. Deploy the Kargo platform to the Kind cluster with the following commands:
+
+```bash
+# Deploy Kargo
 pulumi up
 ```
 
