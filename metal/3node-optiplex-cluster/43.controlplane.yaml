@@ -18,9 +18,9 @@ machine:
         - 192.168.1.41
         - 192.168.1.42
         - 192.168.1.43
-        - api.kube.kargo.dev
+        - api.kube.optiplexprime.kargo.dev
     kubelet:
-        image: ghcr.io/siderolabs/kubelet:v1.28.0
+        image: ghcr.io/siderolabs/kubelet:v1.29.0
         defaultRuntimeSeccompProfileEnabled: true
         disableManifestsDirectory: true
         clusterDNS:
@@ -34,7 +34,7 @@ machine:
     network:
         kubespan:
             enabled: false
-        hostname: cp3.kube.kargo.dev
+        hostname: cp3.kube.optiplexprime.kargo.dev
         nameservers:
             - 192.168.1.1
             - 8.8.8.8
@@ -43,19 +43,19 @@ machine:
             - ip: 192.168.1.40
               aliases:
                 - api
-                - api.kube.kargo.dev
+                - api.kube.optiplexprime.kargo.dev
             - ip: 192.168.1.41
               aliases:
                 - cp1
-                - cp1.kube.kargo.dev
+                - cp1.kube.optiplexprime.kargo.dev
             - ip: 192.168.1.42
               aliases:
                 - cp2
-                - cp2.kube.kargo.dev
+                - cp2.kube.optiplexprime.kargo.dev
             - ip: 192.168.1.43
               aliases:
                 - cp3
-                - cp3.kube.kargo.dev
+                - cp3.kube.optiplexprime.kargo.dev
         interfaces:
             - interface: br0
               mtu: 1500
@@ -74,8 +74,8 @@ machine:
               vip:
                   ip: 192.168.1.40
     install:
-        disk: /dev/nvme0n1
-        image: ghcr.io/siderolabs/installer:v1.6.2
+        disk: /dev/sda
+        image: ghcr.io/siderolabs/installer:v1.6.3
         wipe: true
         extraKernelArgs:
             - talos.platform=metal
@@ -140,13 +140,13 @@ cluster:
     serviceAccount:
         key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSURqc2tBeS9WeFJuRTFTUGxIblJoRUcvdnNjMFd1WjUxdVBGNUJvbmpDVENvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFeFRCdEFoT3hMMnJnaVFPdEYrVTRoR05QMkV6bWZScXBPT01iRTJhSjRWNkMva1JlbHNtKwpaOTZ2d3RzODBWWnhSM0tZajVtL3BxV0gra3FvcUU2SWR3PT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
     apiServer:
-        image: registry.k8s.io/kube-apiserver:v1.28.0
+        image: registry.k8s.io/kube-apiserver:v1.29.0
         certSANs:
             - 192.168.1.40
             - 192.168.1.41
             - 192.168.1.42
             - 192.168.1.43
-            - api.kube.kargo.dev
+            - api.kube.optiplexprime.kargo.dev
         disablePodSecurityPolicy: true
         admissionControl:
             - name: PodSecurity
@@ -171,9 +171,9 @@ cluster:
             rules:
                 - level: Metadata
     controllerManager:
-        image: registry.k8s.io/kube-controller-manager:v1.28.0
+        image: registry.k8s.io/kube-controller-manager:v1.29.0
     scheduler:
-        image: registry.k8s.io/kube-scheduler:v1.28.0
+        image: registry.k8s.io/kube-scheduler:v1.29.0
     discovery:
         enabled: true
         registries:
