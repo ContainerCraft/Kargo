@@ -5,17 +5,25 @@
 
 ## Pathfinding Build Log
 
-### 0. Write Ubuntu Desktop iso to USB device
+### 1. Wipe all block device partitions and partition tables
 
+> Note: _I used the following commands to wipe all partitions and partition tables from the host disks from a live Ubuntu Desktop USB session, use what ever methods you prefer to accomplish this task_
+
+1. Write Ubuntu Desktop iso to USB device
 1. Boot Ubuntu Desktop
 1. Use gparted, gnome disks, wipefs, or sfdisk, or other disk utility to delete all partitions on all host disks
 
 ```bash
+# Execute these commands from a live Ubuntu Desktop USB session
+# Warning this will erase all data from each disk
+# These commands show wiping a single NVMe device, repeat for all of your system disks
 wipefs --all --force /dev/nvme0n1
 sfdisk --delete --wipe always /dev/nvme0n1
 ```
 
-### 1. Download latest talos iso
+### 2. Install Talos on the Host Machine(s)
+
+#### 1. Download Talos ISO
 
 > Note: _download this iso to the host machine which you will write USB devices from_
 
@@ -24,13 +32,13 @@ export VERSION=$(curl -sL https://api.github.com/repos/siderolabs/talos/releases
 curl --output ~/Downloads/talos-$VERSION-metal-amd64.iso -sL "https://github.com/siderolabs/talos/releases/download/$VERSION/metal-amd64.iso"
 ```
 
-### 2. Write talos iso to USB device & Boot the node(s) from talos USB
+#### 2. Write talos iso to USB device & Boot the node(s) from talos USB
 
 > Note: _I used balenaEtcher to write the iso to a USB device_
 
 ![Alt text](.assets/01-talos-console.png)
 
-### 3. Generate Talos Cluster Configuration File(s)
+#### 3. Generate Talos Cluster Configuration File(s)
 
 > Note: Talos Kubernetes Version Support Matrix Link: https://www.talos.dev/latest/introduction/support-matrix
 
@@ -67,7 +75,7 @@ talosctl gen config kargo "https://api.kube.kargo.io:6443" \
     --output .
 ```
 
-### 4. Edit Talos Machine Configuration File(s)
+#### 4. Edit Talos Machine Configuration File(s)
 
 - Validate the talos machine configuration file(s) with the following command
 - Resolve any errors before proceeding
@@ -80,7 +88,7 @@ talosctl validate --mode metal --config 43.controlplane.yaml
 
 > see included pathfinder/41.controlplane.yaml for example
 
-### 5. Apply Talos Cluster Config
+#### 5. Apply Talos Cluster Config
 
 ```bash
 # Apply the cluster configuration to each node
@@ -110,7 +118,7 @@ talosctl bootstrap \
     --endpoints 192.168.1.41
 ```
 
-### 6. Load configs in local directory tree for now
+#### 6. Load configs in local directory tree for now
 
 ```bash
 # move talosconfig to .talos/config
@@ -129,7 +137,7 @@ talosctl --nodes 192.168.1.41 kubeconfig .kube/config --force
 sed -i 's/api.kube.kargo.io/192.168.1.40/g' .kube/config
 ```
 
-### 7. Check your cluster status
+#### 7. Check your cluster status
 
 ```bash
 # Check the status of your cluster
@@ -148,14 +156,14 @@ kubectl get po -A
 
 ![screenshot of bootstrapping talos cluster with controlplane configs and etcd bootstrap command](.assets/02-vscode-talosctl-apply-config.png)
 
-## References
+### References
 
 ```bash
 # Get Talos Disk Usage
 talosctl --nodes 192.168.1.41 usage -H 2>/dev/null | grep -v readlink | tee du.list
 ```
 
-### Apply Config Changes
+#### Apply Config Changes
 
 ```bash
 # Apply the cluster configuration to each node
@@ -175,7 +183,7 @@ talosctl apply-config \
     --file 43.controlplane.yaml
 ```
 
-### Wipe Nodes & Reset
+#### Wipe Nodes & Reset
 
 ```bash
 # If necessary perform an API call to reset the node(s) to a clean state
