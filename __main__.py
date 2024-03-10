@@ -1,14 +1,15 @@
+import os
 import pulumi
-from pulumi import export as export
 import pulumi_kubernetes as k8s
+
+from src.kargo.multus.deploy import deploy_multus
 from src.kargo.cilium.deploy import deploy_cilium
-from src.kargo.kubevirt import deploy_kubevirt  # Import the KubeVirt deployment
+from src.kargo.kubevirt.deploy import deploy_kubevirt
+from src.kargo.ceph.deploy import deploy_rook_operator
+from src.kargo.cert_manager.deploy import deploy_cert_manager
+from src.kargo.local_path_storage.deploy import deploy_local_path_storage
 from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
 from src.lib.namespace import create_namespaces
-from src.kargo.ceph.deploy import deploy as deploy_rook_operator  # Import the Rook Ceph deployment
-from src.kargo.cert_manager.deploy import deploy as deploy_cert_manager  # Import the Rook Ceph deployment
-from src.kargo.local_path_storage.deploy import deploy as deploy_local_path_storage  # Import the local-path-provisioner pkg
-import os
 
 def main():
     """
@@ -61,6 +62,15 @@ def main():
         kubernetes_distribution
     )
 
+    # Deploy Multus
+    # Enable multus with the following command:
+    #   ~$ pulumi config set multus.enabled true
+    multus_enabled = config.get_bool('multus.enabled') or False
+    if multus_enabled:
+        # Deploy Multus
+        multus = deploy_multus(k8s_provider)
+        pulumi.export('multus', multus)
+
     # check if local-path-provisioner pulumi config local_path_storage.enabled is set to true and deploy local-path-provisioner if it is
     # Enable local-path-provisioner with the following command:
     #   ~$ pulumi config set local_path_storage.enabled true
@@ -75,7 +85,7 @@ def main():
             "local-path-storage",
             default_path
         )
-        export('local_path_provisioner', local_path_provisioner)
+        pulumi.export('local_path_provisioner', local_path_provisioner)
 
     # check if pulumi config ceph.enabled is set to true and deploy rook-ceph if it is
     # Enable ceph operator with the following command:
@@ -90,7 +100,7 @@ def main():
             "kargo",
             "rook-ceph"
         )
-        export('rook_operator', rook_operator)
+        pulumi.export('rook_operator', rook_operator)
 
     # Enable cert_manager witht the following command:
     #   ~$ pulumi config set cert_manager.enabled true
@@ -104,16 +114,16 @@ def main():
             "kargo",
             "cert-manager"
         )
-        export('cert_manager', cert_manager)
+        pulumi.export('cert_manager', cert_manager)
 
     # Export deployment details
-    export('helm_release_name', cilium_helm_release.resource_names)
-    export('k8s_provider', k8s_provider)
-    export('namespace_names', [ns.metadata.name for ns in namespace_objects])
-    export('kubeconfig_context', kubeconfig_context)
-    export('kubernetes_distribution', kubernetes_distribution)
-    export('kubernetes_endpoint_ips', kubernetes_endpoint_ip.ips)
-    export('kubevirt_version', kubevirt_version)
+    pulumi.export('helm_release_name', cilium_helm_release.resource_names)
+    pulumi.export('k8s_provider', k8s_provider)
+    pulumi.export('namespace_names', [ns.metadata.name for ns in namespace_objects])
+    pulumi.export('kubeconfig_context', kubeconfig_context)
+    pulumi.export('kubernetes_distribution', kubernetes_distribution)
+    pulumi.export('kubernetes_endpoint_ips', kubernetes_endpoint_ip.ips)
+    pulumi.export('kubevirt_version', kubevirt_version)
 
 # Execute the main function
 main()
