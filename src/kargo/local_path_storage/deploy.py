@@ -1,7 +1,7 @@
 import pulumi
 import pulumi_kubernetes as k8s
 
-def deploy(k8s_provider: k8s.Provider, namespace: str, default_path: str):
+def deploy_local_path_storage(k8s_provider: k8s.Provider, namespace: str, default_path: str):
     # Rancher local-path-provisioner URL
     url_local_path_provisioner = "https://github.com/rancher/local-path-provisioner/raw/master/deploy/local-path-storage.yaml"
 

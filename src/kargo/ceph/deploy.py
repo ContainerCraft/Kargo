@@ -2,7 +2,7 @@ import pulumi
 from pulumi_kubernetes import helm, Provider
 from ...lib.helm_chart_versions import get_latest_helm_chart_version
 
-def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str):
+def deploy_rook_operator(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str):
     """
     Deploy Ceph Operator using the Helm chart.
 
