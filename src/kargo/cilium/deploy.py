@@ -1,9 +1,9 @@
 import pulumi
 from pulumi_kubernetes import helm, Provider
 from typing import Optional
-from ..lib.helm_chart_versions import get_latest_helm_chart_version
+from ...lib.helm_chart_versions import get_latest_helm_chart_version
 
-def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, kubernetes_endpoint_ip_string: str, namespace: str):
+def deploy_cilium(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, kubernetes_endpoint_ip_string: str, namespace: str):
     """
     Deploy Cilium using the Helm chart.
 
