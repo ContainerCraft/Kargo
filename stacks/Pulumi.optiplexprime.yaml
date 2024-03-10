@@ -1,0 +1,4 @@
+encryptionsalt: v1:3ozxeX4uzBE=:v1:EhQhWJL1UkqEkYC2:TAV9BCYX01qsmm9oiY6nHRoPOrx4MA==
+config:
+  kargo:kubecontext: admin@optiplexprime.kargo.dev
+  kargo:kubernetes: talos
