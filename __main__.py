@@ -61,6 +61,8 @@ def main():
     )
 
     # check if pulumi config ceph.enabled is set to true and deploy rook-ceph if it is
+    # Enable ceph operator with the following command:
+    #   ~$ pulumi config set ceph.enabled true
     deploy_ceph = config.get_bool('ceph.enabled') or False
     if deploy_ceph:
         # Deploy Rook Ceph
@@ -73,7 +75,8 @@ def main():
         )
         export('rook_operator', rook_operator)
 
-    # check if pulumi config ceph.enabled is set to true and deploy rook-ceph if it is
+    # Enable cert_manager witht the following command:
+    #   ~$ pulumi config set cert_manager.enabled true
     cert_manager_enabled = config.get_bool('cert_manager.enabled') or False
     if cert_manager_enabled:
         # Deploy Cert Manager
