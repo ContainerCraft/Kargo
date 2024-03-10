@@ -2,3 +2,4 @@ config:
   kargo:cert_manager.enabled: "true"
   kargo:kubecontext: admin@optiplexprime.kargo.dev
   kargo:kubernetes: talos
+  kargo:local_path_storage.enabled: "True"
