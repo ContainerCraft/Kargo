@@ -1,10 +1,10 @@
 import pulumi
 from pulumi import export as export
 import pulumi_kubernetes as k8s
-from src.kargo.cilium import deploy as deploy_cilium
+from src.kargo.cilium.deploy import deploy_cilium
+from src.kargo.kubevirt import deploy_kubevirt  # Import the KubeVirt deployment
 from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
 from src.lib.namespace import create_namespaces
-from src.kargo.kubevirt import deploy_kubevirt  # Import the KubeVirt deployment
 from src.kargo.ceph.deploy import deploy as deploy_rook_operator  # Import the Rook Ceph deployment
 from src.kargo.cert_manager.deploy import deploy as deploy_cert_manager  # Import the Rook Ceph deployment
 from src.kargo.local_path_storage.deploy import deploy as deploy_local_path_storage  # Import the local-path-provisioner pkg
@@ -64,6 +64,8 @@ def main():
     # check if local-path-provisioner pulumi config local_path_storage.enabled is set to true and deploy local-path-provisioner if it is
     # Enable local-path-provisioner with the following command:
     #   ~$ pulumi config set local_path_storage.enabled true
+    # Configure local path default_path with the following command:
+    #   ~$ pulumi config set local_path_storage.default_path /mnt/local-path-provisioner/dev/nvme0n1
     local_path_storage_enabled = config.get_bool('local_path_storage.enabled') or False
     if local_path_storage_enabled and not kubernetes_distribution == "kind":
         default_path = config.require('local_path_storage.default_path')
