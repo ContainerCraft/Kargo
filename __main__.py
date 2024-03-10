@@ -6,6 +6,7 @@ from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
 from src.lib.namespace import create_namespaces
 from src.kargo.kubevirt import deploy_kubevirt  # Import the KubeVirt deployment
 from src.kargo.ceph.deploy import deploy as deploy_rook_operator  # Import the Rook Ceph deployment
+from src.kargo.cert_manager.deploy import deploy as deploy_cert_manager  # Import the Rook Ceph deployment
 import os
 
 def main():
@@ -71,6 +72,19 @@ def main():
             "rook-ceph"
         )
         export('rook_operator', rook_operator)
+
+    # check if pulumi config ceph.enabled is set to true and deploy rook-ceph if it is
+    cert_manager_enabled = config.get_bool('cert_manager.enabled') or False
+    if cert_manager_enabled:
+        # Deploy Cert Manager
+        cert_manager = deploy_cert_manager(
+            "kargo",
+            k8s_provider,
+            kubernetes_distribution,
+            "kargo",
+            "cert-manager"
+        )
+        export('cert_manager', cert_manager)
 
     # Export deployment details
     export('helm_release_name', cilium_helm_release.resource_names)
