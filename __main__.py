@@ -2,7 +2,7 @@ import os
 import pulumi
 import pulumi_kubernetes as k8s
 
-from src.kargo.multus.deploy import deploy_multus
+from src.kargo.cluster_network_addons.deploy import deploy_cluster_network_addons
 from src.kargo.cilium.deploy import deploy_cilium
 from src.kargo.kubevirt.deploy import deploy_kubevirt
 from src.kargo.ceph.deploy import deploy_rook_operator
@@ -47,13 +47,17 @@ def main():
     namespace_objects = create_namespaces(namespaces, k8s_provider)
 
     # Deploy Cilium
+    l2_bridge_name = "br0"
+    l2announcements = "192.168.1.70/28"
     cilium_helm_release = deploy_cilium(
         "cilium-release",
         k8s_provider,
         kubernetes_distribution,
         "kargo",
         kubernetes_endpoint_ip.ips,
-        "kube-system"
+        "kube-system",
+        l2_bridge_name,
+        l2announcements
     )
 
     # Deploy KubeVirt
@@ -62,14 +66,13 @@ def main():
         kubernetes_distribution
     )
 
-    # Deploy Multus
+    # Deploy Cluster Network Addons Operator
     # Enable multus with the following command:
-    #   ~$ pulumi config set multus.enabled true
+    #   ~$ pulumi config set cnao.enabled true
     multus_enabled = config.get_bool('multus.enabled') or False
     if multus_enabled:
         # Deploy Multus
-        multus = deploy_multus(k8s_provider)
-        pulumi.export('multus', multus)
+        multus = deploy_cluster_network_addons(k8s_provider)
 
     # check if local-path-provisioner pulumi config local_path_storage.enabled is set to true and deploy local-path-provisioner if it is
     # Enable local-path-provisioner with the following command:
@@ -85,7 +88,7 @@ def main():
             "local-path-storage",
             default_path
         )
-        pulumi.export('local_path_provisioner', local_path_provisioner)
+        #pulumi.export('local_path_provisioner', local_path_provisioner)
 
     # check if pulumi config ceph.enabled is set to true and deploy rook-ceph if it is
     # Enable ceph operator with the following command:
@@ -114,16 +117,16 @@ def main():
             "kargo",
             "cert-manager"
         )
-        pulumi.export('cert_manager', cert_manager)
+        #pulumi.export('cert_manager', cert_manager)
 
     # Export deployment details
-    pulumi.export('helm_release_name', cilium_helm_release.resource_names)
+    #pulumi.export('helm_release_name', cilium_helm_release.resource_names)
     pulumi.export('k8s_provider', k8s_provider)
-    pulumi.export('namespace_names', [ns.metadata.name for ns in namespace_objects])
+    #pulumi.export('namespace_names', [ns.metadata.name for ns in namespace_objects])
     pulumi.export('kubeconfig_context', kubeconfig_context)
     pulumi.export('kubernetes_distribution', kubernetes_distribution)
-    pulumi.export('kubernetes_endpoint_ips', kubernetes_endpoint_ip.ips)
-    pulumi.export('kubevirt_version', kubevirt_version)
+    #pulumi.export('kubernetes_endpoint_ips', kubernetes_endpoint_ip.ips)
+    #pulumi.export('kubevirt_version', kubevirt_version)
 
 # Execute the main function
 main()
