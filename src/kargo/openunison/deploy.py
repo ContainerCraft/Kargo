@@ -71,7 +71,7 @@ def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, proj
                                         )
 
     # get the CA certificate from the issued cert
-    deploy_openunison_charts(ca_cert=data,k8s_provider=k8s_provider,kubernetes_distribution=kubernetes_distribution,project_name=project_name,namespace=namespace)
+    
     cert_ca = k8s.core.v1.Secret.get("ou-tls-certificate","openunison/ou-tls-certificate",
                                                 opts=pulumi.ResourceOptions(
                                                     provider = k8s_provider,
