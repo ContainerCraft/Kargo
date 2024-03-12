@@ -71,12 +71,24 @@ def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, proj
                                         )
 
     # get the CA certificate from the issued cert
-    #deploy_openunison_charts(ca_cert=data,k8s_provider=k8s_provider,kubernetes_distribution=kubernetes_distribution,project_name=project_name,namespace=namespace)
-    cert_ca = k8s.core.v1.Secret.get("ou-tls-certificate","openunison/ou-tls-certificate").data["ca.crt"].apply(lambda data: str(data)  )
-    deploy_openunison_charts(ca_cert=cert_ca,k8s_provider=k8s_provider,kubernetes_distribution=kubernetes_distribution,project_name=project_name,namespace=namespace,domain_suffix=domain_suffix)
+    deploy_openunison_charts(ca_cert=data,k8s_provider=k8s_provider,kubernetes_distribution=kubernetes_distribution,project_name=project_name,namespace=namespace)
+    cert_ca = k8s.core.v1.Secret.get("ou-tls-certificate","openunison/ou-tls-certificate",
+                                                opts=pulumi.ResourceOptions(
+                                                    provider = k8s_provider,
+                                                    depends_on=[openunison_certificate],
+                                                    custom_timeouts=pulumi.CustomTimeouts(
+                                                        create="5m",
+                                                        update="10m",
+                                                        delete="10m"
+                                                    )
+                                                )).data["ca.crt"].apply(lambda data: data  )
 
 
-def deploy_openunison_charts(ca_cert: str,k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str,domain_suffix: str):
+
+    deploy_openunison_charts(ca_cert=cert_ca,k8s_provider=k8s_provider,kubernetes_distribution=kubernetes_distribution,project_name=project_name,namespace=namespace,domain_suffix=domain_suffix,openunison_certificate=openunison_certificate)
+
+
+def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str,domain_suffix: str,openunison_certificate):
     openunison_helm_values = {
                                 "network": {
                                     "openunison_host": "k8sou." + domain_suffix,
@@ -172,8 +184,38 @@ def deploy_openunison_charts(ca_cert: str,k8s_provider: Provider, kubernetes_dis
                                 }
                             }
 
-    pulumi.log.info("WTF:" + json.dumps(openunison_helm_values))
-    return "wtf?"
+    # Fetch the latest version from the helm chart index
+    chart_name = "openunison-operator"
+    chart_index_path = "index.yaml"
+    chart_url = "https://nexus.tremolo.io/repository/helm"
+    index_url = f"{chart_url}/{chart_index_path}"
+    chart_version = get_latest_helm_chart_version(index_url,chart_name)
+
+    release = k8s.helm.v3.Release(
+            'openunison-operator',
+            k8s.helm.v3.ReleaseArgs(
+                chart=chart_name,
+                version=chart_version,
+                values=openunison_helm_values,
+                namespace='openunison',
+                skip_await=False,
+                repository_opts= k8s.helm.v3.RepositoryOptsArgs(
+                    repo=chart_url
+                ),
+            ),
+            opts=pulumi.ResourceOptions(
+                provider = k8s_provider,
+                depends_on=[openunison_certificate],
+                custom_timeouts=pulumi.CustomTimeouts(
+                    create="8m",
+                    update="10m",
+                    delete="10m"
+                )
+            )
+        )
+
+
+
 
 
 def deploy_kubernetes_dashboard(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str):
