@@ -6,7 +6,9 @@ from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
 from src.lib.namespace import create_namespaces
 from src.kargo.kubevirt import deploy_kubevirt  # Import the KubeVirt deployment
 from src.kargo.ceph.deploy import deploy as deploy_rook_operator  # Import the Rook Ceph deployment
-from src.kargo.cert_manager.deploy import deploy as deploy_cert_manager  # Import the Rook Ceph deployment
+from src.kargo.cert_manager.deploy import deploy as deploy_cert_manager  # Import the cert-manager deployment
+from src.kargo.openunison.deploy import deploy as deploy_openunison  # Import the openunison deployment
+
 import os
 
 def main():
@@ -73,7 +75,7 @@ def main():
         )
         export('rook_operator', rook_operator)
 
-    # check if pulumi config ceph.enabled is set to true and deploy rook-ceph if it is
+    # check if pulumi config cert_manager.enabled is set to true and deploy cert_manager if it is
     cert_manager_enabled = config.get_bool('cert_manager.enabled') or False
     if cert_manager_enabled:
         # Deploy Cert Manager
@@ -85,6 +87,19 @@ def main():
             "cert-manager"
         )
         export('cert_manager', cert_manager)
+
+    # check if pulumi config openunison.enabled is set to true and deploy openunison if it is
+    openunison_enabled = config.get_bool('openunison.enabled') or False
+    if openunison_enabled:
+        # Deploy OpenUnison
+        openunison = deploy_openunison(
+            "kargo",
+            k8s_provider,
+            kubernetes_distribution,
+            "kargo",
+            "openunison"
+        )
+        export('openunison', openunison)
 
     # Export deployment details
     export('helm_release_name', cilium_helm_release.resource_names)
