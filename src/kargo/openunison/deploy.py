@@ -1,16 +1,24 @@
 import pulumi
 from pulumi_kubernetes import helm, Provider
+
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes.apiextensions.CustomResource import CustomResource
 from ...lib.helm_chart_versions import get_latest_helm_chart_version
 import json
+import secrets
+import base64
+from kubernetes import config, dynamic
+from kubernetes import client as k8s_client
+from kubernetes.dynamic.exceptions import ResourceNotFoundError
+from kubernetes.client import api_client
+
 
 def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str):
     # Initialize Pulumi configuration
-    config = pulumi.Config()
+    pconfig = pulumi.Config()
 
     # Deploy the Kubernetes Dashboard 6.0.8
-    deploy_kubernetes_dashboard(name=name,k8s_provider=k8s_provider,kubernetes_distribution=kubernetes_distribution,project_name=project_name,namespace=namespace)
+    k8s_db_release = deploy_kubernetes_dashboard(name=name,k8s_provider=k8s_provider,kubernetes_distribution=kubernetes_distribution,project_name=project_name,namespace=namespace)
 
     # generate openunison namespace
     openunison_namespace = k8s.core.v1.Namespace("openunison",
@@ -29,10 +37,10 @@ def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, proj
         )
 
     # get the domain suffix and cluster_issuer
-    domain_suffix = config.require('openunison.dns_suffix')
+    domain_suffix = pconfig.require('openunison.dns_suffix')
 
     # get the cluster issuer
-    cluster_issuer = config.require('openunison.cluster_issuer')
+    cluster_issuer = pconfig.require('openunison.cluster_issuer')
 
     # create the Certificate
     openunison_certificate = CustomResource("ou-tls-certificate",
@@ -70,26 +78,57 @@ def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, proj
                                             )
                                         )
 
-    # get the CA certificate from the issued cert
-    
-    cert_ca = k8s.core.v1.Secret.get("ou-tls-certificate","openunison/ou-tls-certificate",
-                                                opts=pulumi.ResourceOptions(
-                                                    provider = k8s_provider,
-                                                    depends_on=[openunison_certificate],
-                                                    custom_timeouts=pulumi.CustomTimeouts(
-                                                        create="5m",
-                                                        update="10m",
-                                                        delete="10m"
-                                                    )
-                                                )).data["ca.crt"].apply(lambda data: data  )
+    # this is probably the wrong way to do this, but <shrug>
+    config.load_kube_config()
+
+
+    cluster_issuer_object = k8s_client.CustomObjectsApi().get_cluster_custom_object(group="cert-manager.io",version="v1",plural="clusterissuers",name=cluster_issuer)
+
+    cluster_issuer_ca_secret_name = cluster_issuer_object["spec"]["ca"]["secretName"]
+
+    pulumi.log.info("Loading CA from {}".format(cluster_issuer_ca_secret_name))
+
+    ca_secret = k8s_client.CoreV1Api().read_namespaced_secret(namespace="cert-manager",name=cluster_issuer_ca_secret_name)
+
+    ca_cert = ca_secret.data["tls.crt"]
+
+    pulumi.log.info("CA Certificate {}".format(ca_cert))
+
+    deploy_openunison_charts(ca_cert=ca_cert,k8s_provider=k8s_provider,kubernetes_distribution=kubernetes_distribution,project_name=project_name,namespace=namespace,domain_suffix=domain_suffix,openunison_certificate=openunison_certificate,config=pconfig,db_release=k8s_db_release)
+
+
+    # get the cluster issuer
+    # cluster_issuer = CustomResource.get(resource_name="openunison_cluster_issuer",id=cluster_issuer,api_version="cert-manager.io/v1",kind="ClusterIssuer",opts=pulumi.ResourceOptions(
+    #                                                 provider = k8s_provider,
+    #                                                 depends_on=[],
+    #                                                 custom_timeouts=pulumi.CustomTimeouts(
+    #                                                     create="5m",
+    #                                                     update="10m",
+    #                                                     delete="10m"
+    #                                                 )
+    #                                             ))
+
+    # pulumi.export("openunison_cluster_issuer",cluster_issuer)
+
+    # # get the CA certificate from the issued cert
+    # cert_ca = k8s.core.v1.Secret.get("ou-tls-certificate",cluster_issuer.spec.ca.secretName.apply(lambda secretName: "cert-manager/" + secretName),
+    #                                         opts=pulumi.ResourceOptions(
+    #                                             provider = k8s_provider,
+    #                                             depends_on=[],
+    #                                             custom_timeouts=pulumi.CustomTimeouts(
+    #                                                 create="5m",
+    #                                                 update="10m",
+    #                                                 delete="10m"
+    #                                             )
+    #                                         )).data["tls.crt"].apply(lambda data: data  )
 
 
 
-    deploy_openunison_charts(ca_cert=cert_ca,k8s_provider=k8s_provider,kubernetes_distribution=kubernetes_distribution,project_name=project_name,namespace=namespace,domain_suffix=domain_suffix,openunison_certificate=openunison_certificate)
+    # deploy_openunison_charts(ca_cert=cert_ca,k8s_provider=k8s_provider,kubernetes_distribution=kubernetes_distribution,project_name=project_name,namespace=namespace,domain_suffix=domain_suffix,openunison_certificate=openunison_certificate,config=pconfig,db_release=k8s_db_release)
 
 
-def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str,domain_suffix: str,openunison_certificate):
-    openunison_helm_values = {
+def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str,domain_suffix: str,openunison_certificate,config,db_release):
+    openunison_helm_values = {  "enable_wait_for_job": True,
                                 "network": {
                                     "openunison_host": "k8sou." + domain_suffix,
                                     "dashboard_host": "k8sdb." + domain_suffix,
@@ -120,8 +159,8 @@ def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribu
                                 "dashboard": {
                                     "namespace": "kubernetes-dashboard",
                                     "cert_name": "kubernetes-dashboard-certs",
-                                    "label": "k8s-app=kubernetes-dashboard",
-                                    "service_name": "kubernetes-dashboard",
+                                    "label": "app.kubernetes.io/name=kubernetes-dashboard",
+                                    #"service_name": db_release.name.apply(lambda name: "kubernetes-dashboard-" + name)   ,
                                     "require_session": True
                                 },
                                 "certs": {
@@ -137,8 +176,8 @@ def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribu
                                     "prometheus_service_account": "system:serviceaccount:monitoring:prometheus-k8s"
                                 },
                                 "github": {
-                                    "client_id": "1f9e4e4e1ad396cbb321",
-                                    "teams": "TremoloSecurity/",
+                                    "client_id": config.require('openunison.github.client_id'),
+                                    "teams": config.require('openunison.github.teams'),
                                 },
                                 "network_policies": {
                                 "enabled": False,
@@ -191,7 +230,7 @@ def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribu
     index_url = f"{chart_url}/{chart_index_path}"
     chart_version = get_latest_helm_chart_version(index_url,chart_name)
 
-    release = k8s.helm.v3.Release(
+    openunison_operator_release = k8s.helm.v3.Release(
             'openunison-operator',
             k8s.helm.v3.ReleaseArgs(
                 chart=chart_name,
@@ -213,6 +252,125 @@ def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribu
                 )
             )
         )
+
+    raw_secret_data = {
+        "K8S_DB_SECRET": secrets.token_urlsafe(64),
+        "unisonKeystorePassword": secrets.token_urlsafe(64),
+
+    }
+    encoded_secret_data = {key: base64.b64encode(value.encode('utf-8')).decode('utf-8')
+                           for key, value in raw_secret_data.items()}
+
+    orchestra_secret_source = k8s.core.v1.Secret("orchestra-secrets-source",
+                metadata= k8s.meta.v1.ObjectMetaArgs(
+                    name="orchestra-secrets-source",
+                    namespace="openunison"
+                ),
+                data={
+                    "K8S_DB_SECRET": encoded_secret_data['K8S_DB_SECRET'],
+                    "unisonKeystorePassword": encoded_secret_data["unisonKeystorePassword"],
+                    "GITHUB_SECRET_ID": config.require_secret('openunison.github.client_secret').apply(lambda client_secret : base64.b64encode(client_secret.encode('utf-8')).decode('utf-8') ),
+                },
+                opts=pulumi.ResourceOptions(
+                    provider = k8s_provider,
+                    retain_on_delete=True,
+                    custom_timeouts=pulumi.CustomTimeouts(
+                        create="10m",
+                        update="10m",
+                        delete="10m"
+                    )
+                )
+            )
+
+    orchestra_chart_name = 'orchestra'
+    orchestra_chart_version = get_latest_helm_chart_version(index_url,orchestra_chart_name)
+    openunison_orchestra_release = k8s.helm.v3.Release(
+                'orchestra',
+                k8s.helm.v3.ReleaseArgs(
+                    chart=orchestra_chart_name,
+                    version=orchestra_chart_version,
+                    values=openunison_helm_values,
+                    namespace='openunison',
+                    skip_await=False,
+                    wait_for_jobs=True,
+                    repository_opts= k8s.helm.v3.RepositoryOptsArgs(
+                        repo=chart_url
+                    ),
+
+                ),
+
+                opts=pulumi.ResourceOptions(
+                    provider = k8s_provider,
+                    depends_on=[openunison_operator_release,orchestra_secret_source],
+                    custom_timeouts=pulumi.CustomTimeouts(
+                        create="8m",
+                        update="10m",
+                        delete="10m"
+                    )
+                )
+            )
+
+    pulumi.export("openunison_orchestra_release",openunison_orchestra_release)
+
+    openunison_helm_values["impersonation"]["orchestra_release_name"] = openunison_orchestra_release.name.apply(lambda name: name)
+
+    orchestra_login_portal_chart_name = 'orchestra-login-portal'
+    orchestra_login_portal_chart_version = get_latest_helm_chart_version(index_url,orchestra_login_portal_chart_name)
+    openunison_orchestra_login_portal_release = k8s.helm.v3.Release(
+                'orchestra-login-portal',
+                k8s.helm.v3.ReleaseArgs(
+                    chart=orchestra_login_portal_chart_name,
+                    version=orchestra_login_portal_chart_version,
+                    values=openunison_helm_values,
+                    namespace='openunison',
+                    skip_await=False,
+                    wait_for_jobs=True,
+                    repository_opts= k8s.helm.v3.RepositoryOptsArgs(
+                        repo=chart_url
+                    ),
+
+                ),
+
+                opts=pulumi.ResourceOptions(
+                    provider = k8s_provider,
+                    depends_on=[openunison_orchestra_release],
+                    custom_timeouts=pulumi.CustomTimeouts(
+                        create="8m",
+                        update="10m",
+                        delete="10m"
+                    )
+                )
+            )
+
+    orchestra_kube_oidc_proxy_chart_name = 'orchestra-kube-oidc-proxy'
+    orchestra_kube_oidc_proxy_chart_version = get_latest_helm_chart_version(index_url,orchestra_kube_oidc_proxy_chart_name)
+    openunison_kube_oidc_proxy_release = k8s.helm.v3.Release(
+                'orchestra-kube-oidc-proxy',
+                k8s.helm.v3.ReleaseArgs(
+                    chart=orchestra_kube_oidc_proxy_chart_name,
+                    version=orchestra_kube_oidc_proxy_chart_version,
+                    values=openunison_helm_values,
+                    namespace='openunison',
+                    skip_await=False,
+                    wait_for_jobs=True,
+                    repository_opts= k8s.helm.v3.RepositoryOptsArgs(
+                        repo=chart_url
+                    ),
+
+                ),
+
+                opts=pulumi.ResourceOptions(
+                    provider = k8s_provider,
+                    depends_on=[openunison_orchestra_login_portal_release],
+                    custom_timeouts=pulumi.CustomTimeouts(
+                        create="8m",
+                        update="10m",
+                        delete="10m"
+                    )
+                )
+            )
+
+
 
 
 
@@ -243,7 +401,7 @@ def deploy_kubernetes_dashboard(name: str, k8s_provider: Provider, kubernetes_di
     index_url = f"{chart_url}/{chart_index_path}"
     chart_version = "6.0.8"
 
-    release = k8s.helm.v3.Release(
+    k8s_db_release = k8s.helm.v3.Release(
             'kubernetes-dashboard',
             k8s.helm.v3.ReleaseArgs(
                 chart=chart_name,
@@ -264,3 +422,5 @@ def deploy_kubernetes_dashboard(name: str, k8s_provider: Provider, kubernetes_di
                 )
             )
         )
+
+    return k8s_db_release
