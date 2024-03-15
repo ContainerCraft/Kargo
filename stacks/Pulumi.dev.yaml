@@ -1,0 +1,8 @@
+config:
+  kargo:cert_manager.enabled: "true"
+  kargo:cnao.enabled: "true"
+  kargo:kubecontext: admin@optiplexprime.kargo.dev
+  kargo:kubernetes: talos
+  kargo:local_path_storage.default_path: /mnt/local-path-provisioner/dev/nvme0n1
+  kargo:local_path_storage.enabled: "True"
+  kargo:multus.enabled: "true"

@@ -51,6 +51,14 @@ If running locally on your own machine, you will need the following:
 - [Pulumi Cloud Login & Access Token from app.pulumi.com](https://app.pulumi.com/)
   - [Pulumi Cloud PAT Docs](https://www.pulumi.com/docs/pulumi-cloud/access-management/access-tokens/)
 
+After installing VSCode, the Remote Containers extension, and Docker Desktop, you can proceed to clone the Kargo repository and open it in VSCode with this one-liner:
+
+```bash
+git clone https://github.com/ContainerCraft/Kargo && cd Kargo && code .
+```
+
+When prompted, click "Reopen in Container" to open the Kargo repository in the Konductor devcontainer.
+
 #### Server Side Dependencies
 
 There are two ways to run the server side infrastructure for Kargo. Choose between running, testing, and developing Kargo using [Kind](https://kind.sigs.k8s.io/) from within the Konductor container, or running Kargo on a local or remote [Sidero Talos Kubernetes](https://talos.dev/) cluster.

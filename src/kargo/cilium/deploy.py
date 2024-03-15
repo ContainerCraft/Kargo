@@ -1,9 +1,9 @@
 import pulumi
-from pulumi_kubernetes import helm, Provider
+import pulumi_kubernetes as k8s
 from typing import Optional
-from ..lib.helm_chart_versions import get_latest_helm_chart_version
+from ...lib.helm_chart_versions import get_latest_helm_chart_version
 
-def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, kubernetes_endpoint_ip_string: str, namespace: str):
+def deploy_cilium(name: str, k8s_provider: k8s.Provider, kubernetes_distribution: str, project_name: str, kubernetes_endpoint_ip_string: str, namespace: str, l2_bridge_name: str, l2announcements: str):
     """
     Deploy Cilium using the Helm chart.
 
@@ -30,13 +30,73 @@ def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, proj
     cilium_latest_version = "1.14.7"
 
     # Deploy Cilium using the Helm chart
-    return helm.v3.Release(
+    deploy_cilium_release = k8s.helm.v3.Release(
         name,
         chart="cilium",
         version=cilium_latest_version,
         values=helm_values,
         namespace=namespace,
         repository_opts={"repo": "https://helm.cilium.io/"},
+        opts=pulumi.ResourceOptions(provider=k8s_provider)
+    )
+
+    cilium_l2_announcement_policy = k8s.apiextensions.CustomResource(
+        "cilium_l2_announcement_policy",
+        api_version="cilium.io/v2alpha1",
+        kind="CiliumL2AnnouncementPolicy",
+        metadata={"name": "l2-default"},
+        spec={
+            "serviceSelector": {"matchLabels": {}},
+            "interfaces": [l2_bridge_name],
+            "externalIPs": False,
+            "loadBalancerIPs": True
+        },
+        opts=pulumi.ResourceOptions(provider=k8s_provider)
+    )
+
+    # Define CiliumLoadBalancerIPPool resource
+    cilium_load_balancer_ip_pool = k8s.apiextensions.CustomResource(
+        "cilium_load_balancer_ip_pool",
+        api_version="cilium.io/v2alpha1",
+        kind="CiliumLoadBalancerIPPool",
+        metadata={"name": "l2-default"},
+        spec={
+            "cidrs": [{"cidr": l2announcements}]
+        },
+        opts=pulumi.ResourceOptions(provider=k8s_provider)
+    )
+
+    ## Development only:
+    # nginx pod and loadbalancer service resources are being committed
+    # to test the Cilium L2 announcement policy and LoadBalancerIPPool
+    # These resources will be removed before MVP release.
+    # Define nginx Pod resource
+    nginx_pod = k8s.core.v1.Pod(
+        "nginx_pod",
+        metadata={"name": "nginx", "labels": {"app": "nginx"}},
+        spec=k8s.core.v1.PodSpecArgs(
+            containers=[k8s.core.v1.ContainerArgs(
+                name="nginx",
+                image="nginx:latest",
+                ports=[k8s.core.v1.ContainerPortArgs(container_port=80)]
+            )]
+        ),
+        opts=pulumi.ResourceOptions(provider=k8s_provider)
+    )
+
+    # Define nginx LoadBalancer Service resource
+    nginx_load_balancer_service = k8s.core.v1.Service(
+        "nginx_load_balancer",
+        metadata={"name": "nginx-loadbalancer"},
+        spec=k8s.core.v1.ServiceSpecArgs(
+            type="LoadBalancer",
+            selector={"app": "nginx"},
+            ports=[k8s.core.v1.ServicePortArgs(
+                protocol="TCP",
+                port=80,
+                target_port=80
+            )]
+        ),
         opts=pulumi.ResourceOptions(provider=k8s_provider)
     )
 
@@ -62,6 +122,7 @@ def get_helm_values(kubernetes_distribution: str, project_name: str, kubernetes_
             "cilium": {"name": "cilium"},
             "operator": {"name": "cilium-operator"},
         },
+        "l2announcements": {"enabled": True},
     }
 
     if kubernetes_distribution == 'kind':

@@ -1,7 +1,7 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: ubuntu
+  name: ubuntu-br0
   namespace: default
   labels:
     app: kc2
@@ -15,6 +15,8 @@ spec:
           timer: {}
         cpu:
           cores: 1
+          sockets: 1
+          threads: 1
           dedicatedCpuPlacement: false
         memory:
           guest: 1024M
@@ -33,8 +35,7 @@ spec:
               disk:
                 bus: virtio
           interfaces:
-            - name: enp1s0
-              model: virtio
+            - name: eth0
               bridge: {}
         features:
           acpi:
@@ -52,8 +53,9 @@ spec:
             memory: 1024M
       hostname: ubuntu
       networks:
-        - name: enp1s0
-          pod: {}
+        - name: eth0
+          multus:
+            networkName: br0
       terminationGracePeriodSeconds: 0
       volumes:
         - name: containerdisk
@@ -87,7 +89,10 @@ spec:
                 mode: auto
                 devices: ['/']
                 ignore_growroot_disabled: true
-              package_upgrade: false
+              package_upgrade: true
+              packages:
+                - docker.io
+                - neofetch
               runcmd:
                 - "echo H4sIAAAAAAACA7WRwU7DMAyG73mKaHe6dRrTyKsghELibWYhjhy3gBDvTkIXtRJC4oJP8R/ntz/HUTziyeiPTxVBXokv2agb7SZZ6RKYxl0XrRi9Eh5gNYvWe4acje7vtl2/P3S3h65fb3f6X6L13c99I0UosofsGJMgxTJkHTDaFzA6vPkn3pRU3hNcbxLTM7gC4+FohyAqC7E9wWMiCkv2upLfrdvrUsE4AhcFWRXzIwb4i42HEV2trFQg5810av5VacL0LwucGhNSRPedM5E0g2TlbPS6ZQVrOe781mO+/OC5rqfs9v5BuTBkqWxxCEF9AXZkJoMrAgAA | base64 -d | gzip -d | lxd init --preseed"
-                - "screenfetch"
+                - "neofetch"

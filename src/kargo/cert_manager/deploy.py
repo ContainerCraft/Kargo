@@ -4,7 +4,7 @@ import pulumi_kubernetes as k8s
 from pulumi_kubernetes.apiextensions.CustomResource import CustomResource
 from ...lib.helm_chart_versions import get_latest_helm_chart_version
 
-def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str):
+def deploy_cert_manager(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str):
     # Create a Namespace
     cert_manager_namespace = k8s.core.v1.Namespace("cert_manager_namespace",
         metadata= k8s.meta.v1.ObjectMetaArgs(
