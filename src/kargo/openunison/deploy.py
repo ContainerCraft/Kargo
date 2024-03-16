@@ -13,7 +13,7 @@ from kubernetes.dynamic.exceptions import ResourceNotFoundError
 from kubernetes.client import api_client
 
 
-def deploy(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str):
+def deploy_openunison(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str):
     # Initialize Pulumi configuration
     pconfig = pulumi.Config()
 
@@ -158,7 +158,7 @@ def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribu
                                 },
                                 "dashboard": {
                                     "namespace": "kubernetes-dashboard",
-                                    "cert_name": "kubernetes-dashboard-certs",
+                                    #"cert_name": "kubernetes-dashboard-certs",
                                     "label": "app.kubernetes.io/name=kubernetes-dashboard",
                                     #"service_name": db_release.name.apply(lambda name: "kubernetes-dashboard-" + name)   ,
                                     "require_session": True
@@ -222,6 +222,11 @@ def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribu
                                 "use_standard_jit_workflow": True
                                 }
                             }
+
+    orchesrta_login_portal_helm_values = json.loads(json.dumps(openunison_helm_values))
+    openunison_helm_values["dashboard"]["service_name"] = db_release.name.apply(lambda name: name)
+    openunison_helm_values["dashboard"]["cert_name"] = db_release.name.apply(lambda name: name + "-certs")
+    orchesrta_login_portal_helm_values["dashboard"]["service_name"] = db_release.name.apply(lambda name: name)
 
     # Fetch the latest version from the helm chart index
     chart_name = "openunison-operator"
@@ -312,7 +317,10 @@ def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribu
 
     pulumi.export("openunison_orchestra_release",openunison_orchestra_release)
 
-    openunison_helm_values["impersonation"]["orchestra_release_name"] = openunison_orchestra_release.name.apply(lambda name: name)
+
+
+
+    orchesrta_login_portal_helm_values["impersonation"]["orchestra_release_name"] = openunison_orchestra_release.name.apply(lambda name: name)
 
     orchestra_login_portal_chart_name = 'orchestra-login-portal'
     orchestra_login_portal_chart_version = get_latest_helm_chart_version(index_url,orchestra_login_portal_chart_name)
@@ -321,7 +329,7 @@ def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribu
                 k8s.helm.v3.ReleaseArgs(
                     chart=orchestra_login_portal_chart_name,
                     version=orchestra_login_portal_chart_version,
-                    values=openunison_helm_values,
+                    values=orchesrta_login_portal_helm_values,
                     namespace='openunison',
                     skip_await=False,
                     wait_for_jobs=True,
@@ -349,7 +357,7 @@ def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribu
                 k8s.helm.v3.ReleaseArgs(
                     chart=orchestra_kube_oidc_proxy_chart_name,
                     version=orchestra_kube_oidc_proxy_chart_version,
-                    values=openunison_helm_values,
+                    values=orchesrta_login_portal_helm_values,
                     namespace='openunison',
                     skip_await=False,
                     wait_for_jobs=True,
@@ -370,6 +378,42 @@ def deploy_openunison_charts(ca_cert,k8s_provider: Provider, kubernetes_distribu
                 )
             )
 
+    # now that OpenUnison is deployed, we'll make ClusterAdmins of all the groups specified in openunison.github.teams
+    github_teams = config.require('openunison.github.teams').split(',')
+    subjects = []
+    for team in github_teams:
+        team = team.strip()
+        if team.endswith('/'):
+            team = team[:-1]
+
+        subject = k8s.rbac.v1.SubjectArgs(
+            kind="Group",
+            api_group="rbac.authorization.k8s.io",
+            name=team
+        )
+        subjects.append(subject)
+
+    cluster_admin_cluster_role_binding = k8s.rbac.v1.ClusterRoleBinding(
+        "clusteradmin-clusterrolebinding",
+        metadata=k8s.meta.v1.ObjectMetaArgs(
+            name="openunison-github-cluster-admins"
+        ),
+        role_ref=k8s.rbac.v1.RoleRefArgs(
+            api_group="rbac.authorization.k8s.io",  # The API group of the role being referenced
+            kind="ClusterRole",  # Indicates the kind of role being referenced
+            name="cluster-admin"  # The name of the ClusterRole you're binding
+        ),
+        subjects=subjects,
+        opts=pulumi.ResourceOptions(
+                            provider = k8s_provider,
+                            depends_on=[],
+                            custom_timeouts=pulumi.CustomTimeouts(
+                                create="8m",
+                                update="10m",
+                                delete="10m"
+                            )
+                        )
+    )
 
 
 
