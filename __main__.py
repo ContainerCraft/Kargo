@@ -7,6 +7,7 @@ from src.kargo.cilium.deploy import deploy_cilium
 from src.kargo.kubevirt.deploy import deploy_kubevirt
 from src.kargo.ceph.deploy import deploy_rook_operator
 from src.kargo.cert_manager.deploy import deploy_cert_manager
+from src.kargo.openunison.deploy import deploy_openunison
 from src.kargo.local_path_storage.deploy import deploy_local_path_storage
 from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
 from src.lib.namespace import create_namespaces
@@ -117,7 +118,20 @@ def main():
             "kargo",
             "cert-manager"
         )
-        #pulumi.export('cert_manager', cert_manager)
+        pulumi.export('cert_manager', cert_manager)
+
+    # check if pulumi config openunison.enabled is set to true and deploy openunison if it is
+    openunison_enabled = config.get_bool('openunison.enabled') or False
+    if openunison_enabled:
+        # Deploy OpenUnison
+        openunison = deploy_openunison(
+            "kargo",
+            k8s_provider,
+            kubernetes_distribution,
+            "kargo",
+            "openunison"
+        )
+        pulumi.export('openunison', openunison)
 
     # Export deployment details
     #pulumi.export('helm_release_name', cilium_helm_release.resource_names)
