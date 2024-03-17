@@ -35,7 +35,7 @@ def deploy_cert_manager(name: str, k8s_provider: Provider, kubernetes_distributi
         'cert-manager',
         k8s.helm.v3.ReleaseArgs(
             chart='cert-manager',
-            version='1.3.0',
+            version=chart_version,
             namespace='cert-manager',
             skip_await=False,
             repository_opts= k8s.helm.v3.RepositoryOptsArgs(
