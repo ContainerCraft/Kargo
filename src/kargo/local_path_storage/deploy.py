@@ -19,10 +19,15 @@ def deploy_local_path_storage(k8s_provider: k8s.Provider, namespace: str, defaul
             }}"""
         return obj
 
-    # Define a transformation function to modify the volumeBindingMode of the StorageClass
+    # Define a transformation function to modify the StorageClass and add the default class annotation
     def storageclass_transformation(obj):
         if obj["kind"] == "StorageClass" and obj["metadata"]["name"] == "local-path":
+            # Update the volumeBindingMode
             obj["volumeBindingMode"] = "Immediate"
+            # Add the annotation to make this the default storage class
+            if "annotations" not in obj["metadata"]:
+                obj["metadata"]["annotations"] = {}
+            obj["metadata"]["annotations"]["storageclass.kubernetes.io/is-default-class"] = "true"
         return obj
 
     # Deploy local-path-provisioner using YAML configuration

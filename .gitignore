@@ -18,3 +18,4 @@ Pulumi.*.yaml
 .devcontainer/docker
 tmp.*
 tmp
+.ssh
