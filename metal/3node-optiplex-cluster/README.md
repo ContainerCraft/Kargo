@@ -196,7 +196,7 @@ talosctl reset --debug \
     --system-labels-to-wipe STATE \
     --system-labels-to-wipe EPHEMERAL \
     --graceful=false \
-    --reboot
+    --reboot --wait=false
 
 talosctl reset --debug \
     --nodes 192.168.1.42 \
@@ -204,7 +204,7 @@ talosctl reset --debug \
     --system-labels-to-wipe STATE \
     --system-labels-to-wipe EPHEMERAL \
     --graceful=false \
-    --reboot
+    --reboot --wait=false
 
 talosctl reset --debug \
     --nodes 192.168.1.43 \
@@ -212,5 +212,5 @@ talosctl reset --debug \
     --system-labels-to-wipe STATE \
     --system-labels-to-wipe EPHEMERAL \
     --graceful=false \
-    --reboot
+    --reboot --wait=false
 ```
