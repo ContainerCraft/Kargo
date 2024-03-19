@@ -1,0 +1,139 @@
+# kubectl create secret generic user-kc2-sshpubkey --from-file=key1=.ssh/id_rsa.pub --dry-run=client -oyaml | kubectl apply -f -
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu
+  namespace: default
+  labels:
+    app: kc2
+spec:
+  running: true
+  dataVolumeTemplates:
+  - metadata:
+      name: ubuntu-br0-persistent-volume-vda-root
+      namespace: default
+    spec:
+      persistentVolumeReclaimPolicy: Delete
+      source:
+        registry:
+          url: "docker://docker.io/containercraft/ubuntu:22.04"
+      accessModes:
+      - ReadWriteOnce
+      capacity:
+        storage: 64Gi
+      storageClassName: local-path
+      volumeMode: Filesystem
+      local:
+        path: /var/mnt/block/dev/sda
+      nodeAffinity:
+        required:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+              - cp3
+  template:
+    spec:
+      domain:
+        clock:
+          utc: {}
+          timer:
+            hpet:
+              present: False
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
+            hyperv: {}
+        cpu:
+          cores: 1
+          sockets: 2
+          threads: 2
+          dedicatedCpuPlacement: false
+        memory:
+          guest: 8192M
+        devices:
+          rng: {}
+          autoattachPodInterface: false
+          autoattachSerialConsole: true
+          autoattachGraphicsDevice: true
+          networkInterfaceMultiqueue: false
+          disks:
+            - name: ubuntu-br0-persistent-disk-vda-root
+              bootOrder: 1
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: eth0
+              bridge: {}
+        features:
+          acpi:
+            enabled: true
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: true
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 8192M
+      hostname: ubuntu
+      networks:
+        - name: eth0
+          multus:
+            networkName: br0
+      terminationGracePeriodSeconds: 0
+      accessCredentials:
+      - sshPublicKey:
+          source:
+            secret:
+              secretName: user-kc2-sshpubkey
+          propagationMethod:
+            qemuGuestAgent:
+              users:
+              - "kc2"
+      volumes:
+        - name: ubuntu-br0-persistent-disk-vda-root
+          dataVolume:
+            name: ubuntu-br0-persistent-volume-vda-root
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            networkData: |
+              version: 2
+              ethernets:
+                enp1s0:
+                  dhcp4: true
+                  dhcp6: false
+                  dhcp-identifier: mac
+            userData: |
+              #cloud-config
+              ssh_pwauth: true
+              disable_root: true
+              chpasswd:
+                list: |
+                   kc2:kc2
+                expire: False
+              users:
+                - name: kc2
+                  shell: /bin/bash
+                  lock_passwd: false
+                  sudo: ['ALL=(ALL) NOPASSWD:ALL']
+                  groups: sudo,lxd,libvirt,microk8s,xrdp,docker,ssl-cert
+              growpart:
+                mode: auto
+                devices: ['/']
+                ignore_growroot_disabled: true
+              package_upgrade: true
+              packages:
+                - docker.io
+                - neofetch
+              runcmd:
+                - "echo H4sIAAAAAAACA7WRwU7DMAyG73mKaHe6dRrTyKsghELibWYhjhy3gBDvTkIXtRJC4oJP8R/ntz/HUTziyeiPTxVBXokv2agb7SZZ6RKYxl0XrRi9Eh5gNYvWe4acje7vtl2/P3S3h65fb3f6X6L13c99I0UosofsGJMgxTJkHTDaFzA6vPkn3pRU3hNcbxLTM7gC4+FohyAqC7E9wWMiCkv2upLfrdvrUsE4AhcFWRXzIwb4i42HEV2trFQg5810av5VacL0LwucGhNSRPedM5E0g2TlbPS6ZQVrOe781mO+/OC5rqfs9v5BuTBkqWxxCEF9AXZkJoMrAgAA | base64 -d | gzip -d | lxd init --preseed"
+                - "neofetch"

@@ -11,6 +11,7 @@ from src.kargo.openunison.deploy import deploy_openunison
 from src.kargo.local_path_storage.deploy import deploy_local_path_storage
 from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
 from src.lib.namespace import create_namespaces
+from src.kargo.containerized_data_importer.deploy import deploy_cdi
 
 def main():
     """
@@ -65,6 +66,10 @@ def main():
     kubevirt_version = deploy_kubevirt(
         k8s_provider,
         kubernetes_distribution
+    )
+    # Deploy CDI
+    containerized_data_importer = deploy_cdi(
+        k8s_provider
     )
 
     # Deploy Cluster Network Addons Operator
