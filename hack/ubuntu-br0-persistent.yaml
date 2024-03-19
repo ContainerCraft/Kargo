@@ -1,3 +1,22 @@
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: ubuntu-br0-persistent-volume-vda-root
+spec:
+  source:
+    registry:
+      url: "docker://docker.io/containercraft/ubuntu:22.04"
+  pvc:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 64Gi
+    storageClassName: "local-path"
+    volumeMode: Filesystem
+    selector: null
+---
 # kubectl create secret generic user-kc2-sshpubkey --from-file=key1=.ssh/id_rsa.pub --dry-run=client -oyaml | kubectl apply -f -
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
@@ -8,33 +27,19 @@ metadata:
     app: kc2
 spec:
   running: true
-  dataVolumeTemplates:
-  - metadata:
-      name: ubuntu-br0-persistent-volume-vda-root
-      namespace: default
-    spec:
-      persistentVolumeReclaimPolicy: Delete
-      source:
-        registry:
-          url: "docker://docker.io/containercraft/ubuntu:22.04"
-      accessModes:
-      - ReadWriteOnce
-      capacity:
-        storage: 64Gi
-      storageClassName: local-path
-      volumeMode: Filesystem
-      local:
-        path: /var/mnt/block/dev/sda
-      nodeAffinity:
-        required:
-          nodeSelectorTerms:
-          - matchExpressions:
-            - key: kubernetes.io/hostname
-              operator: In
-              values:
-              - cp3
   template:
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: "cp3"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - "cp3"
       domain:
         clock:
           utc: {}
