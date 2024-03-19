@@ -74,12 +74,16 @@ machine:
               vip:
                   ip: 192.168.1.40
     install:
-        disk: /dev/sda
+        disk: /dev/nvme0n1
         image: ghcr.io/siderolabs/installer:v1.6.3
         wipe: true
         extraKernelArgs:
             - talos.platform=metal
             - reboot=k
+    disks:
+      - device: /dev/sda
+        partitions:
+          - mountpoint: /var/mnt/block/dev/sda
     features:
         rbac: true
         stableHostname: false
@@ -100,10 +104,6 @@ machine:
     controlPlane:
         scheduler:
             disabled: false
-    disks:
-        - device: /dev/sda
-          partitions:
-            - mountpoint: /var/mnt/local-path-provisioner/dev/ssd
     time:
         bootTimeout: 2m0s
         servers:
