@@ -9,13 +9,12 @@ spec:
       url: "docker://docker.io/containercraft/ubuntu:22.04"
   pvc:
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 64Gi
-    storageClassName: "local-path"
+    storageClassName: "ssd"
     volumeMode: Filesystem
-    selector: null
 ---
 # kubectl create secret generic user-kc2-sshpubkey --from-file=key1=.ssh/id_rsa.pub --dry-run=client -oyaml | kubectl apply -f -
 apiVersion: kubevirt.io/v1
@@ -35,11 +34,11 @@ spec:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/hostname
-                operator: In
-                values:
-                - "cp3"
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - "cp3"
       domain:
         clock:
           utc: {}
@@ -74,7 +73,9 @@ spec:
                 bus: virtio
           interfaces:
             - name: eth0
-              bridge: {}
+              masquerade: {}
+          # - name: eth0
+          #   bridge: {}
         features:
           acpi:
             enabled: true
@@ -92,18 +93,20 @@ spec:
       hostname: ubuntu
       networks:
         - name: eth0
-          multus:
-            networkName: br0
+          pod: {}
+      # - name: eth0
+      #   multus:
+      #     networkName: br0
       terminationGracePeriodSeconds: 0
       accessCredentials:
-      - sshPublicKey:
-          source:
-            secret:
-              secretName: user-kc2-sshpubkey
-          propagationMethod:
-            qemuGuestAgent:
-              users:
-              - "kc2"
+        - sshPublicKey:
+            source:
+              secret:
+                secretName: user-kc2-sshpubkey
+            propagationMethod:
+              qemuGuestAgent:
+                users:
+                  - "kc2"
       volumes:
         - name: ubuntu-br0-persistent-disk-vda-root
           dataVolume:
