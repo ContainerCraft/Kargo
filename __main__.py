@@ -12,6 +12,7 @@ from src.kargo.local_path_storage.deploy import deploy_local_path_storage
 from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
 from src.lib.namespace import create_namespaces
 from src.kargo.containerized_data_importer.deploy import deploy_cdi
+from src.kargo.hostpath_provisioner.deploy import deploy as deploy_hostpath_provisioner
 
 def main():
     """
@@ -95,6 +96,29 @@ def main():
             default_path
         )
         #pulumi.export('local_path_provisioner', local_path_provisioner)
+
+    # check if hostpath-provisioner pulumi config hostpath_provisioner.enabled is set to true and deploy if it is
+    # Enable hostpath-provisioner with the following command:
+    #   ~$ pulumi config set hostpath_provisioner.enabled true
+    # configure hostpath-provisioner default storage path with the following command:
+    #   ~$ pulumi config set hostpath_provisioner.default_path /var/mnt/block/dev/sda
+    # Set hostpath-provisioner version override with the following command:
+    #   ~$ pulumi config set hostpath_provisioner.version v0.17.0
+    # Configure hostpath-provisioner to be the default storage class with the following command:
+    #   ~$ pulumi config set hostpath_provisioner.default_storage_class true
+    hostpath_provisioner_enabled = config.get_bool('hostpath_provisioner.enabled') or False
+    hostpath_version = config.get('hostpath_provisioner.version') or None
+    hostpath_default_path = config.get('hostpath_provisioner.default_path') or "/var/mnt"
+    hostpath_default_storage_class = config.get('hostpath_provisioner.default_storage_class') or "false"
+    if hostpath_provisioner_enabled:
+        # Deploy hostpath-provisioner
+        hostpath_provisioner = deploy_hostpath_provisioner(
+            k8s_provider,
+            hostpath_default_path,
+            hostpath_default_storage_class,
+            hostpath_version
+        )
+        pulumi.export('hostpath_provisioner', hostpath_provisioner["namespace"])
 
     # check if pulumi config ceph.enabled is set to true and deploy rook-ceph if it is
     # Enable ceph operator with the following command:
