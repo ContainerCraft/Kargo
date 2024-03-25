@@ -27,7 +27,7 @@ def deploy_cilium(name: str, k8s_provider: k8s.Provider, kubernetes_distribution
     cilium_latest_version = get_latest_helm_chart_version(cilium_chart_url, cilium_chart_name)
 
     # Statically limit the Cilium version to 1.14.7 until resolved
-    cilium_latest_version = "1.14.7"
+    #cilium_latest_version = "1.14.7"
 
     # Deploy Cilium using the Helm chart
     deploy_cilium_release = k8s.helm.v3.Release(
@@ -100,23 +100,16 @@ def deploy_cilium(name: str, k8s_provider: k8s.Provider, kubernetes_distribution
         opts=pulumi.ResourceOptions(provider=k8s_provider)
     )
 
-def get_helm_values(kubernetes_distribution: str, project_name: str, kubernetes_endpoint_ip_string: str):
-    """
-    Get the Helm values for installing Cilium based on the specified Kubernetes distribution.
-
-    Args:
-        kubernetes_distribution (str): The Kubernetes distribution (e.g., 'kind', 'talos').
-        project_name (str): The name of the project.
-        kubernetes_endpoint_ip_string (str): The IP address of the Kubernetes endpoint.
-
-    Returns:
-        dict: The Helm values for installing Cilium.
-
-    Raises:
-        ValueError: If the specified Kubernetes distribution is not supported.
-    """
+def get_helm_values(
+        kubernetes_distribution: str,
+        project_name: str,
+        kubernetes_endpoint_ip_string: str
+    ):
     common_values = {
-        "cluster": {"name": project_name},
+        "cluster": {
+            "id": 1,
+            "name": project_name
+        },
         "ipam": {"mode": "kubernetes"},
         "serviceAccounts": {
             "cilium": {"name": "cilium"},
@@ -138,23 +131,42 @@ def get_helm_values(kubernetes_distribution: str, project_name: str, kubernetes_
         # Talos-specific Helm values per the Talos Cilium Docs
         return {
             **common_values,
+            "autoDirectNodeRoutes": True,
+            "containerRuntime": {"integration": "containerd"},
+            "devices": "br+ bond+ thunderbolt+",
+            "enableRuntimeDeviceDetection": True,
+            "endpointRoutes": {"enabled": True},
+            "bpf": {"masquerade": True},
+            "localRedirectPolicy": True,
+            "loadBalancer": {
+                "algorithm": "maglev",
+                "mode": "dsr"
+            },
             "cgroup": {
                 "autoMount": {"enabled": False},
                 "hostRoot": "/sys/fs/cgroup",
             },
-            "routingMode": "tunnel",
+            "routingMode": "native",
+            "ipv4NativeRoutingCIDR": "10.244.0.0/16",
             "k8sServicePort": 7445,
             "tunnelProtocol": "vxlan",
-            "k8sServiceHost": "localhost",
-            "kubeProxyReplacement": "strict",
+            "k8sServiceHost": "127.0.0.1",
+            "kubeProxyReplacement": "true",
             "image": {"pullPolicy": "IfNotPresent"},
             "hostServices": {"enabled": False},
             "externalIPs": {"enabled": True},
             "gatewayAPI": {"enabled": False},
             "nodePort": {"enabled": True},
             "hostPort": {"enabled": True},
-            "operator": {"replicas": 1},
-            "cni": { "install": True},
+            "rollOutCiliumPods": True,
+            "operator": {
+                "replicas": 1,
+                "rollOutPods": True,
+            },
+            "cni": {
+                "install": True,
+                "exclusive": False
+            },
             "securityContext": {
                 "capabilities": {
                     "ciliumAgent": [

@@ -19,3 +19,4 @@ Pulumi.*.yaml
 tmp.*
 tmp
 .ssh
+tmp

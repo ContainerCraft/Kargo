@@ -2,7 +2,7 @@ import pulumi
 import pulumi_kubernetes as k8s
 import requests
 
-def deploy(k8s_provider: k8s.Provider, hostpath: str, default: str, version: str = None):
+def deploy(k8s_provider: k8s.Provider, hostpath: str, default: str, version: str = None, cert_manager: pulumi.Output = None):
     # If version is not supplied, fetch the latest stable version
     if version is None:
         tag_url = 'https://github.com/kubevirt/hostpath-provisioner-operator/releases/latest'
@@ -15,7 +15,8 @@ def deploy(k8s_provider: k8s.Provider, hostpath: str, default: str, version: str
         'namespace',
         file=url,
         opts=pulumi.ResourceOptions(
-            provider=k8s_provider
+            provider=k8s_provider,
+            depends_on=[cert_manager]
         )
     )
 
@@ -38,8 +39,8 @@ def deploy(k8s_provider: k8s.Provider, hostpath: str, default: str, version: str
         file=url,
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
-            depends_on=[namespace],
-            transformations=[add_namespace]
+            transformations=[add_namespace],
+            depends_on=[namespace]
         )
     )
 
@@ -50,8 +51,8 @@ def deploy(k8s_provider: k8s.Provider, hostpath: str, default: str, version: str
         file=url,
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
-            depends_on=[namespace],
-            transformations=[add_namespace]
+            transformations=[add_namespace],
+            depends_on=[namespace]
         )
     )
 
@@ -75,7 +76,11 @@ def deploy(k8s_provider: k8s.Provider, hostpath: str, default: str, version: str
                     "kubernetes.io/os": "linux"
                 }
             }
-        }
+        },
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
+            depends_on=[webhook]
+        )
     )
 
     # Define the StorageClass
@@ -93,7 +98,11 @@ def deploy(k8s_provider: k8s.Provider, hostpath: str, default: str, version: str
         volume_binding_mode="WaitForFirstConsumer",
         parameters={
             "storagePool": "ssd",
-        }
+        },
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
+            depends_on=[namespace, operator, webhook, hostpath_provisioner]
+        )
     )
 
     # To access the name of the provisioner once it is created, you can export the value:
@@ -106,6 +115,7 @@ def deploy(k8s_provider: k8s.Provider, hostpath: str, default: str, version: str
     pulumi.export("hostpath_provisioner_operator_version", version)
 
     return {
+        "version": version,
         "namespace": namespace,
         "webhook": webhook,
         "operator": operator,
