@@ -49,25 +49,39 @@ def main():
     # Create namespaces
     namespace_objects = create_namespaces(namespaces, k8s_provider)
 
-    # Deploy Cilium
-    l2_bridge_name = "br0"
-    l2announcements = "192.168.1.70/28"
-    cilium_helm_release = deploy_cilium(
-        "cilium-release",
+#   # Deploy Cilium
+#   l2_bridge_name = "br0"
+#   l2announcements = "192.168.1.70/28"
+#   cilium_helm_release = deploy_cilium(
+#       "cilium-release",
+#       k8s_provider,
+#       kubernetes_distribution,
+#       "kargo",
+#       kubernetes_endpoint_ip.ips,
+#       "kube-system",
+#       l2_bridge_name,
+#       l2announcements
+#   )
+
+    # Enable cert_manager witht the following command:
+    #   ~$ pulumi config set cert_manager.enabled true
+    # Deploy Cert Manager
+    cert_manager = deploy_cert_manager(
+        "kargo",
         k8s_provider,
         kubernetes_distribution,
         "kargo",
-        kubernetes_endpoint_ip.ips,
-        "kube-system",
-        l2_bridge_name,
-        l2announcements
+        "cert-manager"
     )
+    #pulumi.export('cert_manager', cert_manager)
 
     # Deploy KubeVirt
     kubevirt_version = deploy_kubevirt(
         k8s_provider,
-        kubernetes_distribution
+        kubernetes_distribution,
+        cert_manager
     )
+
     # Deploy CDI
     containerized_data_importer = deploy_cdi(
         k8s_provider
@@ -97,6 +111,21 @@ def main():
         )
         #pulumi.export('local_path_provisioner', local_path_provisioner)
 
+    # check if pulumi config ceph.enabled is set to true and deploy rook-ceph if it is
+    # Enable ceph operator with the following command:
+    #   ~$ pulumi config set ceph.enabled true
+    deploy_ceph = config.get_bool('ceph.enabled') or False
+    if deploy_ceph:
+        # Deploy Rook Ceph
+        rook_operator = deploy_rook_operator(
+            "kargo",
+            k8s_provider,
+            kubernetes_distribution,
+            "kargo",
+            "rook-ceph"
+        )
+        pulumi.export('rook_operator', rook_operator)
+
     # check if hostpath-provisioner pulumi config hostpath_provisioner.enabled is set to true and deploy if it is
     # Enable hostpath-provisioner with the following command:
     #   ~$ pulumi config set hostpath_provisioner.enabled true
@@ -116,38 +145,10 @@ def main():
             k8s_provider,
             hostpath_default_path,
             hostpath_default_storage_class,
-            hostpath_version
+            hostpath_version,
+            cert_manager
         )
-        pulumi.export('hostpath_provisioner', hostpath_provisioner["namespace"])
-
-    # check if pulumi config ceph.enabled is set to true and deploy rook-ceph if it is
-    # Enable ceph operator with the following command:
-    #   ~$ pulumi config set ceph.enabled true
-    deploy_ceph = config.get_bool('ceph.enabled') or False
-    if deploy_ceph:
-        # Deploy Rook Ceph
-        rook_operator = deploy_rook_operator(
-            "kargo",
-            k8s_provider,
-            kubernetes_distribution,
-            "kargo",
-            "rook-ceph"
-        )
-        pulumi.export('rook_operator', rook_operator)
-
-    # Enable cert_manager witht the following command:
-    #   ~$ pulumi config set cert_manager.enabled true
-    cert_manager_enabled = config.get_bool('cert_manager.enabled') or False
-    if cert_manager_enabled:
-        # Deploy Cert Manager
-        cert_manager = deploy_cert_manager(
-            "kargo",
-            k8s_provider,
-            kubernetes_distribution,
-            "kargo",
-            "cert-manager"
-        )
-        pulumi.export('cert_manager', cert_manager)
+        #pulumi.export('hostpath_provisioner', hostpath_provisioner["version"])
 
     # check if pulumi config openunison.enabled is set to true and deploy openunison if it is
     openunison_enabled = config.get_bool('openunison.enabled') or False
