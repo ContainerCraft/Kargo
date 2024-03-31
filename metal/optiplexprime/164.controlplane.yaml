@@ -26,6 +26,23 @@ machine:
         image: ghcr.io/siderolabs/kubelet:v1.29.1
         defaultRuntimeSeccompProfileEnabled: true
         disableManifestsDirectory: true
+        extraArgs:
+            feature-gates: ServerSideApply=true
+        extraMounts:
+            - destination: /etc/cni/net.d
+              type: bind
+              source: /etc/cni/net.d
+              options:
+                - bind
+                - rshared
+                - rw
+            - destination: /opt/cni/bin
+              type: bind
+              source: /opt/cni/bin
+              options:
+                - bind
+                - rshared
+                - rw
     network:
         hostname: cp1.optiplexprime.kargo.dev
         nameservers:

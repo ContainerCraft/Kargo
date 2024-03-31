@@ -51,14 +51,14 @@ direnv allow
 # Find the IP Address of your node on the talos console top right information list
 
 # Query the network links of your node(s) and save the output to a yaml file
-talosctl --nodes 192.168.1.164 get links --insecure | tee 41.links.list
-talosctl --nodes 192.168.1.166 get links --insecure | tee 42.links.list
-talosctl --nodes 192.168.1.169 get links --insecure | tee 43.links.list
+talosctl --nodes 192.168.1.164 get links --insecure | tee 164.links.list
+talosctl --nodes 192.168.1.166 get links --insecure | tee 166.links.list
+talosctl --nodes 192.168.1.169 get links --insecure | tee 169.links.list
 
 # Find the disk configuration of your node(s)
-talosctl --nodes 192.168.1.164 disks --insecure | tee 41.disks.list
-talosctl --nodes 192.168.1.166 disks --insecure | tee 42.disks.list
-talosctl --nodes 192.168.1.169 disks --insecure | tee 43.disks.list
+talosctl --nodes 192.168.1.164 disks --insecure | tee 164.disks.list
+talosctl --nodes 192.168.1.166 disks --insecure | tee 166.disks.list
+talosctl --nodes 192.168.1.169 disks --insecure | tee 169.disks.list
 
 # Generate your talos kubernetes secrets
 talosctl gen secrets --talos-version v1.6.3 --output-file secrets.yaml
@@ -66,9 +66,9 @@ talosctl gen secrets --talos-version v1.6.3 --output-file secrets.yaml
 # Generate the talos machine boilerplate configuration files
 # Populate the install disk flag with the block device of your choice following the disks.list from earlier
 talosctl gen config kargo "https://api.kube.optiplexprime.kargo.io:6443" \
-    --additional-sans "192.168.1.40,192.168.1.41,192.168.1.42,192.168.1.43,api.kube.optiplexprime.kargo.io" \
+    --additional-sans "192.168.1.40,192.168.1.164,192.168.1.166,192.168.1.169,api.kube.optiplexprime.kargo.io" \
     --with-secrets ./secrets.yaml \
-    --kubernetes-version "1.29.0" \
+    --kubernetes-version "1.29.3" \
     --talos-version "v1.6.3" \
     --install-disk /dev/nvme0n1 \
     --persist \
@@ -81,9 +81,9 @@ talosctl gen config kargo "https://api.kube.optiplexprime.kargo.io:6443" \
 - Resolve any errors before proceeding
 
 ```bash
-talosctl validate --mode metal --config 41.controlplane.yaml
-talosctl validate --mode metal --config 42.controlplane.yaml
-talosctl validate --mode metal --config 43.controlplane.yaml
+talosctl validate --mode metal --config 164.controlplane.yaml
+talosctl validate --mode metal --config 166.controlplane.yaml
+talosctl validate --mode metal --config 169.controlplane.yaml
 ```
 
 > see included pathfinder/41.controlplane.yaml for example
@@ -95,27 +95,27 @@ talosctl validate --mode metal --config 43.controlplane.yaml
 talosctl apply-config \
     --nodes 192.168.1.164 \
     --endpoints 192.168.1.164 \
-    --file 41.controlplane.yaml \
+    --file 164.controlplane.yaml \
     --insecure
 
 talosctl apply-config \
     --nodes 192.168.1.169 \
     --endpoints 192.168.1.169 \
-    --file 42.controlplane.yaml \
+    --file 166.controlplane.yaml \
     --insecure
 
 talosctl apply-config \
     --nodes 192.168.1.166 \
     --endpoints 192.168.1.166 \
-    --file 43.controlplane.yaml \
+    --file 169.controlplane.yaml \
     --insecure
 
 # Bootstrap the first controlplane etcd node
 # *be careful to wait for node to cycle through reboot before proceeding to bootstrap command
 # *bootstrap may return an error if the node is not ready after the network bridge creation config applies
 talosctl bootstrap \
-    --nodes 192.168.1.41 \
-    --endpoints 192.168.1.41
+    --nodes 192.168.1.164 \
+    --endpoints 192.168.1.164
 ```
 
 #### 6. Load configs in local directory tree for now
@@ -129,7 +129,7 @@ mv talosconfig .talos/config
 sed -i 's/127.0.0.1/192.168.1.40/g' .talos/config
 
 # Generate kubeconfig ./.kube/config
-talosctl --nodes 192.168.1.41 kubeconfig .kube/config --force
+talosctl --nodes 192.168.1.164 kubeconfig .kube/config --force
 
 # Kubeconfig is generated with FQDN API endpoint by default since I configured it in the machine cfg
 # If DNS is not configured to resolved your api endpoint you can use the following command to replace the FQDN with the IP Address
@@ -160,7 +160,7 @@ kubectl get po -A
 
 ```bash
 # Get Talos Disk Usage
-talosctl --nodes 192.168.1.41 usage -H 2>/dev/null | grep -v readlink | tee du.list
+talosctl --nodes 192.168.1.164 usage -H 2>/dev/null | grep -v readlink | tee du.list
 ```
 
 #### Apply Config Changes
@@ -168,19 +168,19 @@ talosctl --nodes 192.168.1.41 usage -H 2>/dev/null | grep -v readlink | tee du.l
 ```bash
 # Apply the cluster configuration to each node
 talosctl apply-config \
-    --nodes 192.168.1.41 \
-    --endpoints 192.168.1.41 \
-    --file 41.controlplane.yaml
+    --nodes 192.168.1.164 \
+    --endpoints 192.168.1.164 \
+    --file 164.controlplane.yaml
 
 talosctl apply-config \
     --nodes 192.168.1.42 \
-    --endpoints 192.168.1.42 \
-    --file 42.controlplane.yaml
+    --endpoints 192.168.1.164 \
+    --file 166.controlplane.yaml
 
 talosctl apply-config \
     --nodes 192.168.1.43 \
-    --endpoints 192.168.1.43 \
-    --file 43.controlplane.yaml
+    --endpoints 192.168.1.164 \
+    --file 169.controlplane.yaml
 ```
 
 #### Wipe Nodes & Reset
@@ -191,24 +191,24 @@ talosctl apply-config \
 #  - This will destroy all data on the node(s)
 
 talosctl reset --debug \
-    --nodes 192.168.1.41 \
-    --endpoints 192.168.1.41 \
+    --nodes 192.168.1.164 \
+    --endpoints 192.168.1.164 \
     --system-labels-to-wipe STATE \
     --system-labels-to-wipe EPHEMERAL \
     --graceful=false \
     --reboot --wait=false
 
 talosctl reset --debug \
-    --nodes 192.168.1.42 \
-    --endpoints 192.168.1.42 \
+    --nodes 192.168.1.166 \
+    --endpoints 192.168.1.166 \
     --system-labels-to-wipe STATE \
     --system-labels-to-wipe EPHEMERAL \
     --graceful=false \
     --reboot --wait=false
 
 talosctl reset --debug \
-    --nodes 192.168.1.43 \
-    --endpoints 192.168.1.43 \
+    --nodes 192.168.1.169 \
+    --endpoints 192.168.1.169 \
     --system-labels-to-wipe STATE \
     --system-labels-to-wipe EPHEMERAL \
     --graceful=false \
