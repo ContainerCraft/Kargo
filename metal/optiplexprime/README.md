@@ -214,3 +214,66 @@ talosctl reset --debug \
     --graceful=false \
     --reboot --wait=false
 ```
+
+---
+
+# DBG Multus CNI
+
+```bash
+### Install Multus
+kubectl apply -f https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/master/deployments/multus-daemonset-thick.yml
+
+### Check config on nodes
+talosctl --talosconfig ~/.talos/config -e 192.168.1.164 -n 192.168.1.164 ls /etc/cni/net.d
+talosctl --talosconfig ~/.talos/config -e 192.168.1.164 -n 192.168.1.164 read /etc/cni/net.d/00-multus.conf | jq .
+talosctl --talosconfig ~/.talos/config -e 192.168.1.164 -n 192.168.1.164 ls /opt/cni/bin
+
+### List node links
+talosctl --talosconfig ~/.talos/config -e 192.168.1.164 -n 192.168.1.164 get link
+
+### Create multus network
+cat <<EOF | kubectl apply -f -
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: br0
+  namespace: kube-system
+spec:
+  config: '{
+      "cniVersion": "0.3.0",
+      "type": "macvlan",
+      "master": "br0",
+      "mode": "bridge",
+      "ipam": {
+        "type": "host-local",
+        "subnet": "192.168.1.0/24",
+        "rangeStart": "192.168.1.200",
+        "rangeEnd": "192.168.1.216",
+        "routes": [
+          { "dst": "0.0.0.0/0" }
+        ],
+        "gateway": "192.168.1.1"
+      }
+    }'
+EOF
+
+### List net-attach-def
+kubectl -n kube-system get network-attachment-definitions
+
+### Run test pod
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: samplepod
+  namespace: kube-system
+  annotations:
+    k8s.v1.cni.cncf.io/networks: br0
+spec:
+  containers:
+  - name: k
+    command: ["/bin/bash", "-c", "trap : TERM INT; sleep infinity & wait"]
+    image: ghcr.io/containercraft/konductor
+EOF
+
+```
