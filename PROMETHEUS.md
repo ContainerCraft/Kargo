@@ -18,7 +18,9 @@ If OpenUnison is configured, SSO will automatically be configured to work with O
 
 ## With OpenUnison Enabled
 
-Login to your OpenUnison portal and you will see badges for Prometheus, Grafana, and AlertManager.
+Login to your OpenUnison portal and you will see badges for Prometheus, Grafana, and AlertManager:
+
+![OpenUnison with Prometheus](images/openunison-prometheus.png)
 
 ## Without OpenUnison Enabled
 
