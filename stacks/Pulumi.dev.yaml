@@ -1,8 +1,12 @@
 config:
   kargo:cert_manager.enabled: "true"
   kargo:cnao.enabled: "true"
+  kargo:hostpath_provisioner.default_path: /var/mnt/block/dev/sda
+  kargo:hostpath_provisioner.default_storage_class: "true"
+  kargo:hostpath_provisioner.enabled: "true"
+  kargo:hostpath_provisioner.version: v0.18.0
   kargo:kubecontext: admin@optiplexprime.kargo.dev
   kargo:kubernetes: talos
-  kargo:local_path_storage.default_path: /mnt/local-path-provisioner/dev/nvme0n1
-  kargo:local_path_storage.enabled: "True"
-  kargo:multus.enabled: "true"
+  kargo:local_path_storage.default_path: /var/mnt/block/dev/sda
+  kargo:local_path_storage.enabled: "false"
+  kargo:multus.enabled: "false"

@@ -12,6 +12,8 @@ from src.kargo.prometheus.deploy import deploy_prometheus
 from src.kargo.local_path_storage.deploy import deploy_local_path_storage
 from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
 from src.lib.namespace import create_namespaces
+from src.kargo.containerized_data_importer.deploy import deploy_cdi
+from src.kargo.hostpath_provisioner.deploy import deploy as deploy_hostpath_provisioner
 
 def main():
     """
@@ -48,24 +50,42 @@ def main():
     # Create namespaces
     namespace_objects = create_namespaces(namespaces, k8s_provider)
 
-    # Deploy Cilium
-    l2_bridge_name = "br0"
-    l2announcements = "192.168.1.70/28"
-    cilium_helm_release = deploy_cilium(
-        "cilium-release",
+#   # Deploy Cilium
+#   l2_bridge_name = "br0"
+#   l2announcements = "192.168.1.70/28"
+#   cilium_helm_release = deploy_cilium(
+#       "cilium-release",
+#       k8s_provider,
+#       kubernetes_distribution,
+#       "kargo",
+#       kubernetes_endpoint_ip.ips,
+#       "kube-system",
+#       l2_bridge_name,
+#       l2announcements
+#   )
+
+    # Enable cert_manager witht the following command:
+    #   ~$ pulumi config set cert_manager.enabled true
+    # Deploy Cert Manager
+    cert_manager = deploy_cert_manager(
+        "kargo",
         k8s_provider,
         kubernetes_distribution,
         "kargo",
-        kubernetes_endpoint_ip.ips,
-        "kube-system",
-        l2_bridge_name,
-        l2announcements
+        "cert-manager"
     )
+    #pulumi.export('cert_manager', cert_manager)
 
     # Deploy KubeVirt
     kubevirt_version = deploy_kubevirt(
         k8s_provider,
-        kubernetes_distribution
+        kubernetes_distribution,
+        cert_manager
+    )
+
+    # Deploy CDI
+    containerized_data_importer = deploy_cdi(
+        k8s_provider
     )
 
     # Deploy Cluster Network Addons Operator
@@ -107,19 +127,29 @@ def main():
         )
         pulumi.export('rook_operator', rook_operator)
 
-    # Enable cert_manager witht the following command:
-    #   ~$ pulumi config set cert_manager.enabled true
-    cert_manager_enabled = config.get_bool('cert_manager.enabled') or False
-    if cert_manager_enabled:
-        # Deploy Cert Manager
-        cert_manager = deploy_cert_manager(
-            "kargo",
+    # check if hostpath-provisioner pulumi config hostpath_provisioner.enabled is set to true and deploy if it is
+    # Enable hostpath-provisioner with the following command:
+    #   ~$ pulumi config set hostpath_provisioner.enabled true
+    # configure hostpath-provisioner default storage path with the following command:
+    #   ~$ pulumi config set hostpath_provisioner.default_path /var/mnt/block/dev/sda
+    # Set hostpath-provisioner version override with the following command:
+    #   ~$ pulumi config set hostpath_provisioner.version v0.17.0
+    # Configure hostpath-provisioner to be the default storage class with the following command:
+    #   ~$ pulumi config set hostpath_provisioner.default_storage_class true
+    hostpath_provisioner_enabled = config.get_bool('hostpath_provisioner.enabled') or False
+    hostpath_version = config.get('hostpath_provisioner.version') or None
+    hostpath_default_path = config.get('hostpath_provisioner.default_path') or "/var/mnt"
+    hostpath_default_storage_class = config.get('hostpath_provisioner.default_storage_class') or "false"
+    if hostpath_provisioner_enabled:
+        # Deploy hostpath-provisioner
+        hostpath_provisioner = deploy_hostpath_provisioner(
             k8s_provider,
-            kubernetes_distribution,
-            "kargo",
-            "cert-manager"
+            hostpath_default_path,
+            hostpath_default_storage_class,
+            hostpath_version,
+            cert_manager
         )
-        pulumi.export('cert_manager', cert_manager)
+        #pulumi.export('hostpath_provisioner', hostpath_provisioner["version"])
 
     # check if pulumi config openunison.enabled is set to true and deploy openunison if it is
     openunison_enabled = config.get_bool('openunison.enabled') or False

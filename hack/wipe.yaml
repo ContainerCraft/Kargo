@@ -1,0 +1,132 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: disk-erase-pod-cp1
+  labels:
+    app: disk-erase
+spec:
+  # Uncomment and specify the specific node you want to debug
+  nodeName: cp1
+  containers:
+  - image: ghcr.io/containercraft/konductor
+    command: ["/bin/sh"]
+    args:
+      - "-c"
+      - >
+        sleep 10; # Wait a bit for system to be ready
+        # Replace /dev/nvmeXn1 with your nvme device identifier
+        sfdisk --delete /dev/sda;
+        wipefs -a /dev/sda;
+        # Your additional commands here
+    imagePullPolicy: IfNotPresent
+    name: disk-erase-container
+    securityContext:
+      capabilities:
+        add: ["NET_ADMIN", "SYS_ADMIN"]
+      runAsUser: 0 # run as root (or any other user)
+    volumeMounts:
+      - name: dev
+        mountPath: /dev
+      - name: sys
+        mountPath: /sys
+  restartPolicy: Never # we want to be intentional about running this pod
+  hostIPC: true # Use the host's ipc namespace
+  hostNetwork: true # Use the host's network namespace
+  hostPID: true # Use the host's pid namespace
+  volumes:
+    - name: dev
+      hostPath:
+        path: /dev
+    - name: sys
+      hostPath:
+        path: /sys
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: disk-erase-pod-cp2
+  labels:
+    app: disk-erase
+spec:
+  # Uncomment and specify the specific node you want to debug
+  nodeName: cp2
+  containers:
+  - image: ghcr.io/containercraft/konductor
+    command: ["/bin/sh"]
+    args:
+      - "-c"
+      - >
+        sleep 10; # Wait a bit for system to be ready
+        # Replace /dev/nvmeXn1 with your nvme device identifier
+        sfdisk --delete /dev/sda;
+        wipefs -a /dev/sda;
+        # Your additional commands here
+    imagePullPolicy: IfNotPresent
+    name: disk-erase-container
+    securityContext:
+      capabilities:
+        add: ["NET_ADMIN", "SYS_ADMIN"]
+      runAsUser: 0 # run as root (or any other user)
+    volumeMounts:
+      - name: dev
+        mountPath: /dev
+      - name: sys
+        mountPath: /sys
+  restartPolicy: Never # we want to be intentional about running this pod
+  hostIPC: true # Use the host's ipc namespace
+  hostNetwork: true # Use the host's network namespace
+  hostPID: true # Use the host's pid namespace
+  volumes:
+    - name: dev
+      hostPath:
+        path: /dev
+    - name: sys
+      hostPath:
+        path: /sys
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: disk-erase-pod-cp3
+  labels:
+    app: disk-erase
+spec:
+  # Uncomment and specify the specific node you want to debug
+  nodeName: cp3
+  containers:
+  - image: ghcr.io/containercraft/konductor
+    command: ["/bin/sh"]
+    args:
+      - "-c"
+      - >
+        sleep 10; # Wait a bit for system to be ready
+        # Replace /dev/nvmeXn1 with your nvme device identifier
+        sfdisk --delete /dev/sda;
+        wipefs -a /dev/sda;
+        # Your additional commands here
+    imagePullPolicy: IfNotPresent
+    name: disk-erase-container
+    securityContext:
+      capabilities:
+        add: ["NET_ADMIN", "SYS_ADMIN"]
+      runAsUser: 0 # run as root (or any other user)
+    volumeMounts:
+      - name: dev
+        mountPath: /dev
+      - name: sys
+        mountPath: /sys
+  restartPolicy: Never # we want to be intentional about running this pod
+  hostIPC: true # Use the host's ipc namespace
+  hostNetwork: true # Use the host's network namespace
+  hostPID: true # Use the host's pid namespace
+  volumes:
+    - name: dev
+      hostPath:
+        path: /dev
+    - name: sys
+      hostPath:
+        path: /sys
+

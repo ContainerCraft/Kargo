@@ -8,14 +8,28 @@
     "updateRemoteUserUID": true,
     //"workspaceFolder": "/workspaces/konductor",
     "shutdownAction": "stopContainer",
-    "securityOpt": ["seccomp=unconfined"],
-    "runArgs": ["--network=host"],
-    "mounts": ["source=dind-var-lib-docker,target=/var/lib/docker,type=volume"],
-    "features": {"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}},
+    "securityOpt": [
+        "seccomp=unconfined"
+    ],
+    "runArgs": [
+        "--network=host"
+    ],
+    "mounts": [
+        "source=dind-var-lib-docker,target=/var/lib/docker,type=volume"
+    ],
+    "features": {
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    },
     "postCreateCommand": "devcontainer-links",
     //"workspaceMount": "source=.,target=/home/vscode/konductor,type=bind,consistency=cached",
     //"workspaceFolder": "/home/vscode/konductor",
-    "forwardPorts": [1313, 2222, 6000, 7681, 8080],
+    "forwardPorts": [
+        1313,
+        2222,
+        6000,
+        7681,
+        8080
+    ],
     "customizations": {
         "vscode": {
             "settings": {
@@ -231,7 +245,7 @@
                         "rgba(50, 200, 250, 0.1)", // Lighter Blue
                         "rgba(150, 50, 250, 0.1)", // Darker Purple
                         "rgba(50, 250, 200, 0.1)", // Brighter Green
-                        "rgba(250, 150, 50, 0.1)"  // Orange
+                        "rgba(250, 150, 50, 0.1)" // Orange
                     ],
                     "ignoreErrorLanguages": [
                         "haskell",
