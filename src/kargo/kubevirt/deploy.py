@@ -4,7 +4,11 @@ import requests
 from pulumi_kubernetes.apiextensions import CustomResource
 from pulumi_kubernetes.meta.v1 import ObjectMetaArgs
 
-def deploy_kubevirt(k8s_provider: k8s.Provider, kubernetes_distribution: str):
+def deploy_kubevirt(
+        k8s_provider: k8s.Provider,
+        kubernetes_distribution: str,
+        cert_manager: pulumi.Output = None
+    ):
     """
     Fetches the latest stable version of KubeVirt, deploys the KubeVirt operator,
     the default KubeVirt custom resource, and a detailed KubeVirt custom resource
@@ -20,10 +24,13 @@ def deploy_kubevirt(k8s_provider: k8s.Provider, kubernetes_distribution: str):
 
     # Deploy the KubeVirt operator
     kubevirt_operator_url = f'https://github.com/kubevirt/kubevirt/releases/download/{kubevirt_version}/kubevirt-operator.yaml'
-    k8s.yaml.ConfigFile(
+    operator = k8s.yaml.ConfigFile(
         'kubevirt-operator',
         file=kubevirt_operator_url,
-        opts=pulumi.ResourceOptions(provider=k8s_provider)
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
+            depends_on=[cert_manager]
+        )
     )
 
     # Determine useEmulation based on the kubernetes_distribution
@@ -106,7 +113,10 @@ def deploy_kubevirt(k8s_provider: k8s.Provider, kubernetes_distribution: str):
             namespace="kubevirt"
         ),
         spec=kubevirt_detailed_manifest["spec"],
-        opts=pulumi.ResourceOptions(provider=k8s_provider)
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
+            depends_on=[operator]
+        )
     )
 
     return kubevirt_version

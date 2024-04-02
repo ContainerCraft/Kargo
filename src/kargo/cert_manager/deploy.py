@@ -150,7 +150,8 @@ def deploy_cert_manager(name: str, k8s_provider: Provider, kubernetes_distributi
     #    opts=pulumi.ResourceOptions(provider = k8s_provider)
     #)
 
-    return(release, chart_version)
+    pulumi.export('cert_manager_version', chart_version)
+    return(release)
 
 def gen_helm_values(kubernetes_distribution: str, project_name: str):
     """

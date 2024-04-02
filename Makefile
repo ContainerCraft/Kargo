@@ -38,7 +38,7 @@ $(warning GITHUB_TOKEN is not set)
 endif
 
 # --- Targets ---
-.PHONY: help detect-arch pulumi-login pulumi-up up talos-gen-config talos-cluster kind-cluster clean clean-all act konductor test-kind test-talos stop
+.PHONY: help detect-arch pulumi-login pulumi-up up talos-gen-config talos-cluster kind-cluster clean clean-all act konductor test-kind test-talos stop force-terminating-ns
 
 # --- Default Command ---
 all: help
@@ -234,3 +234,16 @@ stop: clean
 	@echo "Stopping Codespaces..."
 	@gh codespace --codespace ${CODESPACE_NAME} stop
 	@echo "Codespaces stopped."
+
+# --- Stop Codespaces ---
+force-terminating-ns:
+	@kubectl proxy & \
+	PROXY_PID=$$! ;\
+	sleep 2 ;\
+	kubectl get namespaces --field-selector=status.phase=Terminating -o json | jq -r '.items[].metadata.name' | while read NAMESPACE ; do \
+		echo "Clearing finalizers for namespace $$NAMESPACE" ;\
+		kubectl get namespace $$NAMESPACE -o json | jq '.spec = {"finalizers":[]}' > temp-$$NAMESPACE.json ;\
+		curl -k -H "Content-Type: application/json" -X PUT --data-binary @temp-$$NAMESPACE.json 127.0.0.1:8001/api/v1/namespaces/$$NAMESPACE/finalize ;\
+		rm -f temp-$$NAMESPACE.json ;\
+	done ;\
+	kill $$PROXY_PID
