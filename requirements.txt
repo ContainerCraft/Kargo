@@ -4,4 +4,3 @@ kubernetes>=4.7.1
 beautifulsoup4
 pyyaml
 packaging
-
