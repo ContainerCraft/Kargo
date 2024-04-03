@@ -9,7 +9,7 @@ For MVP Ingress NGINX is required - https://kubernetes.github.io/ingress-nginx/d
 If you don't have a load balancer setup you'll want to deploy as a `DaemonSet` and update the `Deployment` or `DaemonSet` to listen on `hostPort`. First, patch the `ingress-nginx` `Namespace` to allow privileged pods:
 
 ```sh
-kubectl patch namespace ingress-nginx -p '{"metadata":{"labels":{"pod-security.kubernetes.io/enforce":"privileged"}}'
+kubectl patch namespace ingress-nginx -p '{"metadata":{"labels":{"pod-security.kubernetes.io/enforce":"privileged"}}}'
 ```
 
 Next, patch the `DaimonSet` / `Deployment` to listen on 80 and 443:
