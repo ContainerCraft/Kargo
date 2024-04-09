@@ -8,6 +8,9 @@ from src.kargo.kubevirt.deploy import deploy_kubevirt
 from src.kargo.ceph.deploy import deploy_rook_operator
 from src.kargo.cert_manager.deploy import deploy_cert_manager
 from src.kargo.openunison.deploy import deploy_openunison
+from src.kargo.prometheus.deploy import deploy_prometheus
+
+from src.kargo.kv_manager.deploy import deploy_ui_for_kubevirt
 from src.kargo.local_path_storage.deploy import deploy_local_path_storage
 from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
 from src.lib.namespace import create_namespaces
@@ -162,6 +165,32 @@ def main():
             "openunison"
         )
         pulumi.export('openunison', openunison)
+
+    # check if pulumi config prometheus.enabled is set to true and deploy prometheus if it is
+    prometheus_enabled = config.get_bool('prometheus.enabled') or False
+    if prometheus_enabled:
+        # Deploy prometheus
+        prometheus = deploy_prometheus(
+            "kargo",
+            k8s_provider,
+            kubernetes_distribution,
+            "kargo",
+            "prometheus"
+        )
+        pulumi.export('prometheus', prometheus)
+
+    # check if pulumi config kubevirt_manager.enabled is set to true and deploy kubervirt-manager if it is
+    kubevirt_manager_enabled = config.get_bool('kubevirt_manager.enabled') or False
+    if kubevirt_manager_enabled:
+        # Deploy kubevirt-manager
+        kubevirt_manager = deploy_ui_for_kubevirt(
+            "kargo",
+            k8s_provider,
+            kubernetes_distribution,
+            "kargo",
+            "kubevirt_manager"
+        )
+        pulumi.export('kubervirt_manager', kubevirt_manager)
 
     # Export deployment details
     #pulumi.export('helm_release_name', cilium_helm_release.resource_names)
