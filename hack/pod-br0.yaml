@@ -27,20 +27,6 @@ spec:
 # "gateway" overrides default gateway to use macvlan-conf's one.
 # without "gateway" in k8s.v1.cni.cncf.io/networks, default route will be cluster
 # network interface, eth0, even tough macvlan-conf has default gateway config.
-#apiVersion: v1
-#kind: Pod
-#metadata:
-#  name: samplepod
-#  annotations:
-#    k8s.v1.cni.cncf.io/networks: '[{"name": "br0"}]'
-#spec:
-#  containers:
-#  - name: samplepod
-#    command: ["/bin/bash", "-c", "trap : TERM INT; sleep infinity & wait"]
-#    image: dougbtv/centos-network
-#    ports:
-#    - containerPort: 80
-#  automountServiceAccountToken: false
 apiVersion: v1
 kind: Pod
 metadata:
