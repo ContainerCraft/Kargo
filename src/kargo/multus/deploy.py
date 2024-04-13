@@ -15,14 +15,19 @@ def transform_host_path(args):
             for container in containers:
                 volume_mounts = container.get('volumeMounts', [])
                 for vm in volume_mounts:
-                    if vm.get('mountPath') == '/run/netns':
+                    # Normalize path before checking to handle potential trailing slash
+                    current_path = vm.get('mountPath', '').rstrip('/')
+                    if current_path == '/run/netns':
                         vm['mountPath'] = '/var/run/netns'
 
             # Transform paths in volumes
             volumes = obj['spec']['template']['spec'].get('volumes', [])
             for vol in volumes:
-                if 'hostPath' in vol and vol['hostPath'].get('path') == '/run/netns':
-                    vol['hostPath']['path'] = '/var/run/netns'
+                if 'hostPath' in vol:
+                    # Normalize path before checking to handle potential trailing slash
+                    current_path = vol['hostPath'].get('path', '').rstrip('/')
+                    if current_path == '/run/netns':
+                        vol['hostPath']['path'] = '/var/run/netns'
 
     # Return the modified object
     return pulumi.ResourceTransformationResult(props=obj, opts=args.opts)
