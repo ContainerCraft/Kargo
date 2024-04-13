@@ -1,40 +1,51 @@
 ---
-# This net-attach-def defines macvlan-conf with
-#   + ips capabilities to specify ip in pod annotation and
-#   + mac capabilities to specify mac address in pod annotation
-# default gateway is defined as well
-apiVersion: "k8s.cni.cncf.io/v1"
+apiVersion: k8s.cni.cncf.io/v1
 kind: NetworkAttachmentDefinition
 metadata:
   name: br0
+  namespace: default
 spec:
-  config: '{
+  config: |
+    {
       "cniVersion": "0.3.1",
-      "name": "br0",
-      "plugins": [
-        {
-          "type": "bridge",
-          "bridge": "br0",
-          "mode": "bridge",
-          "ipam": {}
-        },{
-          "type": "tuning"
-        }
-      ]
-    }'
+      "type": "macvlan",
+      "master": "br0",
+      "isGateway": true,
+      "mode": "bridge",
+      "ipam": {
+        "type": "host-local",
+        "subnet": "192.168.1.0/24",
+        "rangeStart": "192.168.1.200",
+        "rangeEnd": "192.168.1.216",
+        "routes": [
+          {
+            "dst": "0.0.0.0/0"
+          }
+        ],
+        "gateway": "192.168.1.1"
+      }
+    }
 ---
-# Define a pod with macvlan-conf, defined above, with ip address and mac, and
-# "gateway" overrides default gateway to use macvlan-conf's one.
-# without "gateway" in k8s.v1.cni.cncf.io/networks, default route will be cluster
-# network interface, eth0, even tough macvlan-conf has default gateway config.
 apiVersion: v1
 kind: Pod
 metadata:
-  name: samplepod
+  name: k
   annotations:
     k8s.v1.cni.cncf.io/networks: br0
 spec:
   containers:
-  - name: samplepod
-    command: ["/bin/ash", "-c", "trap : TERM INT; sleep infinity & wait"]
-    image: alpine
+  - name: k
+    image: ghcr.io/containercraft/konductor
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "4000m"
+      limits:
+        memory: "512Mi"
+        cpu: "4000m"
+  dnsPolicy: "None"
+  dnsConfig:
+    nameservers:
+      - "1.1.1.1"
+    searches:
+      - "example.com"
