@@ -37,7 +37,7 @@ def deploy_kubevirt(
     use_emulation = True if kubernetes_distribution == "kind" else False
 
     # Define and deploy the detailed KubeVirt custom resource
-    kubevirt_detailed_manifest = {
+    kubevirt_manifest = {
         "apiVersion": "kubevirt.io/v1",
         "kind": "KubeVirt",
         "metadata": {
@@ -51,11 +51,11 @@ def deploy_kubevirt(
             "imagePullPolicy": "IfNotPresent",
             "configuration": {
                 "smbios": {
-                    "sku": "kargo-kc2",
+                    "sku": "undercloud",
                     "version": "v0.1.0",
                     "manufacturer": "ContainerCraft",
-                    "product": "Kargo",
-                    "family": "CCIO"
+                    "product": "kargo",
+                    "family": "ccio"
                 },
                 "developerConfiguration": {
                     "useEmulation": use_emulation,
@@ -104,15 +104,15 @@ def deploy_kubevirt(
         }
     }
 
-    kubevirt_detailed = CustomResource(
-        "kubevirt-detailed",
+    kubevirt = CustomResource(
+        "kubevirt",
         api_version="kubevirt.io/v1",
         kind="KubeVirt",
         metadata=ObjectMetaArgs(
             name="kubevirt",
             namespace="kubevirt"
         ),
-        spec=kubevirt_detailed_manifest["spec"],
+        spec=kubevirt_manifest["spec"],
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
             depends_on=[operator]
