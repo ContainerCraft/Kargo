@@ -112,11 +112,15 @@ cluster:
     controlPlane:
         endpoint: https://192.168.1.40:6443/
     network:
+        cni:
+            name: none
         dnsDomain: cluster.local
         podSubnets:
             - 10.244.0.0/16
         serviceSubnets:
             - 10.96.0.0/12
+    proxy:
+        disabled: true
     token: 11vgq6.yndxc2gwodtlouju
     secretboxEncryptionSecret: XgHt30kchergGSxjhkr1OSoZT+DTkTykRzAeq13NRys=
     ca:
@@ -151,6 +155,7 @@ cluster:
                     warn: restricted
                     warn-version: latest
                 exemptions:
+                    # TODO: cleanup psp implementation
                     namespaces:
                         - cdi
                         - cert-manager
@@ -172,8 +177,6 @@ cluster:
                 - level: Metadata
     controllerManager:
         image: registry.k8s.io/kube-controller-manager:v1.29.1
-    proxy:
-        image: registry.k8s.io/kube-proxy:v1.29.1
     scheduler:
         image: registry.k8s.io/kube-scheduler:v1.29.1
     discovery:
