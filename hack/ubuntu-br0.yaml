@@ -16,15 +16,15 @@ spec:
         cpu:
           cores: 1
           sockets: 1
-          threads: 1
+          threads: 4
           dedicatedCpuPlacement: false
         memory:
-          guest: 1024M
+          guest: 4092M
         devices:
           rng: {}
           autoattachPodInterface: false
           autoattachSerialConsole: true
-          autoattachGraphicsDevice: true
+          autoattachGraphicsDevice: false
           networkInterfaceMultiqueue: false
           disks:
             - name: containerdisk
@@ -50,12 +50,12 @@ spec:
           type: q35
         resources:
           requests:
-            memory: 1024M
+            memory: 4092M
       hostname: ubuntu
       networks:
         - name: eth0
           multus:
-            networkName: br0
+            networkName: lan
       terminationGracePeriodSeconds: 0
       volumes:
         - name: containerdisk
