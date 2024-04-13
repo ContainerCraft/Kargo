@@ -3,6 +3,7 @@ apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
 metadata:
   name: ubuntu-br0-persistent-volume-vda-root
+  namespace: default
 spec:
   source:
     registry:
@@ -28,17 +29,17 @@ spec:
   running: true
   template:
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: "cp3"
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values:
-                      - "cp3"
+#     nodeSelector:
+#       kubernetes.io/hostname: "cp1"
+#     affinity:
+#       nodeAffinity:
+#         requiredDuringSchedulingIgnoredDuringExecution:
+#           nodeSelectorTerms:
+#             - matchExpressions:
+#                 - key: kubernetes.io/hostname
+#                   operator: In
+#                   values:
+#                     - "cp1"
       domain:
         clock:
           utc: {}
@@ -52,8 +53,8 @@ spec:
             hyperv: {}
         cpu:
           cores: 1
-          sockets: 2
-          threads: 2
+          sockets: 1
+          threads: 4
           dedicatedCpuPlacement: false
         memory:
           guest: 8192M
@@ -72,10 +73,10 @@ spec:
               disk:
                 bus: virtio
           interfaces:
-            - name: eth0
-              masquerade: {}
           # - name: eth0
-          #   bridge: {}
+          #   masquerade: {}
+            - name: eth0
+              bridge: {}
         features:
           acpi:
             enabled: true
@@ -92,11 +93,11 @@ spec:
             memory: 8192M
       hostname: ubuntu
       networks:
-        - name: eth0
-          pod: {}
       # - name: eth0
-      #   multus:
-      #     networkName: br0
+      #   pod: {}
+        - name: eth0
+          multus:
+            networkName: lan
       terminationGracePeriodSeconds: 0
       accessCredentials:
         - sshPublicKey:
