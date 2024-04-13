@@ -29,12 +29,12 @@ def deploy_cluster_network_addons(k8s_provider: k8s.Provider):
             "name": "cluster",
         },
         spec={
+            "macvtap": {},
+            "linuxBridge": {},
             #"multus": {},
             #"multusDynamicNetworks": {},
             #"kubeSecondaryDNS": {},
-            #"linuxBridge": {},
             #"kubeMacPool": {},
-            #"macvtap": {},
             #"ovs": {},
             "imagePullPolicy": "IfNotPresent",
             "selfSignConfiguration": {
@@ -68,37 +68,37 @@ def deploy_cluster_network_addons(k8s_provider: k8s.Provider):
         }
     )
 
-    # Variable settings for the name and bridge configuration
-    network_name = "br0"
-    bridge_name = "br0"
+    ## Variable settings for the name and bridge configuration
+    #network_name = "br0"
+    #bridge_name = "br0"
 
-    # Pulumi Kubernetes resource for NetworkAttachmentDefinition
-    network_attachment_definition = k8s.apiextensions.CustomResource(
-        "kargo-net-attach-def",
-        api_version="k8s.cni.cncf.io/v1",
-        kind="NetworkAttachmentDefinition",
-        metadata={
-            "name": f"{network_name}",
-            "namespace": "default"
-        },
-        spec={
-            "config": pulumi.Output.all(network_name, bridge_name).apply(lambda args: f'''
-            {{
-                "cniVersion": "0.3.1",
-                "name": "{args[0]}",
-                "plugins": [
-                    {{
-                        "type": "bridge",
-                        "bridge": "{args[1]}",
-                        "ipam": {{}}
-                    }},
-                    {{
-                        "type": "tuning"
-                    }}
-                ]
-            }}''')
-        }
-    )
+    ## Pulumi Kubernetes resource for NetworkAttachmentDefinition
+    #network_attachment_definition = k8s.apiextensions.CustomResource(
+    #    "kargo-net-attach-def",
+    #    api_version="k8s.cni.cncf.io/v1",
+    #    kind="NetworkAttachmentDefinition",
+    #    metadata={
+    #        "name": f"{network_name}",
+    #        "namespace": "default"
+    #    },
+    #    spec={
+    #        "config": pulumi.Output.all(network_name, bridge_name).apply(lambda args: f'''
+    #        {{
+    #            "cniVersion": "0.3.1",
+    #            "name": "{args[0]}",
+    #            "plugins": [
+    #                {{
+    #                    "type": "bridge",
+    #                    "bridge": "{args[1]}",
+    #                    "ipam": {{}}
+    #                }},
+    #                {{
+    #                    "type": "tuning"
+    #                }}
+    #            ]
+    #        }}''')
+    #    }
+    #)
 
-    # Export the name of the resource
-    pulumi.export('network_attachment_definition_name', network_attachment_definition.metadata['name'])
+    ## Export the name of the resource
+    #pulumi.export('network_attachment_definition_name', network_attachment_definition.metadata['name'])
