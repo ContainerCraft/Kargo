@@ -2,7 +2,7 @@ import os
 import pulumi
 import pulumi_kubernetes as k8s
 
-from src.kargo.cluster_network_addons.deploy import deploy_cluster_network_addons
+from src.kargo.multus.deploy import deploy_multus
 from src.kargo.cilium.deploy import deploy_cilium
 from src.kargo.kubevirt.deploy import deploy_kubevirt
 from src.kargo.ceph.deploy import deploy_rook_operator
@@ -52,19 +52,19 @@ def main():
     # Create namespaces
     namespace_objects = create_namespaces(namespaces, k8s_provider)
 
-#   # Deploy Cilium
-#   l2_bridge_name = "br0"
-#   l2announcements = "192.168.1.70/28"
-#   cilium_helm_release = deploy_cilium(
-#       "cilium-release",
-#       k8s_provider,
-#       kubernetes_distribution,
-#       "kargo",
-#       kubernetes_endpoint_ip.ips,
-#       "kube-system",
-#       l2_bridge_name,
-#       l2announcements
-#   )
+    # Deploy Cilium
+    l2_bridge_name = "br0"
+    l2announcements = "192.168.1.70/28"
+    cilium_helm_release = deploy_cilium(
+        "cilium-release",
+        k8s_provider,
+        kubernetes_distribution,
+        "kargo",
+        kubernetes_endpoint_ip.ips,
+        "kube-system",
+        l2_bridge_name,
+        l2announcements
+    )
 
     # Enable cert_manager witht the following command:
     #   ~$ pulumi config set cert_manager.enabled true
@@ -96,7 +96,7 @@ def main():
     multus_enabled = config.get_bool('multus.enabled') or False
     if multus_enabled:
         # Deploy Multus
-        multus = deploy_cluster_network_addons(k8s_provider)
+        multus = deploy_multus(k8s_provider)
 
     # check if local-path-provisioner pulumi config local_path_storage.enabled is set to true and deploy local-path-provisioner if it is
     # Enable local-path-provisioner with the following command:
