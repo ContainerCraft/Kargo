@@ -145,7 +145,7 @@ def main():
     #   ~$ pulumi config set hostpath_provisioner.default_storage_class true
     hostpath_provisioner_enabled = config.get_bool('hostpath_provisioner.enabled') or False
     hostpath_version = config.get('hostpath_provisioner.version') or None
-    hostpath_default_path = config.get('hostpath_provisioner.default_path') or "/var/mnt"
+    hostpath_default_path = config.get('hostpath_provisioner.default_path') or "/var/mnt/block/dev/sda"
     hostpath_default_storage_class = config.get('hostpath_provisioner.default_storage_class') or "false"
     if hostpath_provisioner_enabled:
         # Deploy hostpath-provisioner
