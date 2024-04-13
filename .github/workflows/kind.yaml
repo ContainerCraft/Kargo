@@ -99,6 +99,20 @@ jobs:
           max-retry-attempts: 12
           retry-delay: 10
 
+      - id: kind-destroy
+        if: always()
+        name: 🛠️ Pulumi Config 🛠️
+        env:
+          ACTIONS_STEP_DEBUG: true
+          KUBECONFIG: .kube/config
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_CONFIG_PASSPHRASE: foobarbaz
+          PULUMI_BACKEND_URL: file://./.pulumi
+        run: |
+          make clean
+          make clean-all
+
       - id: pulumi-destroy
         name: 💣 Pulumi Destroy 💣
         uses: pulumi/actions@v5
@@ -110,6 +124,7 @@ jobs:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           PULUMI_CONFIG_PASSPHRASE: foobarbaz
           PULUMI_BACKEND_URL: file://./.pulumi
+          PULUMI_K8S_DELETE_UNREACHABLE=true
         with:
           command: destroy
           refresh: true
