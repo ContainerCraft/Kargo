@@ -112,15 +112,15 @@ cluster:
     controlPlane:
         endpoint: https://192.168.1.40:6443/
     network:
-        cni:
-            name: none
         dnsDomain: cluster.local
         podSubnets:
             - 10.244.0.0/16
         serviceSubnets:
             - 10.96.0.0/12
-    proxy:
-        disabled: true
+#       cni:
+#           name: none
+#   proxy:
+#       disabled: true
     token: 11vgq6.yndxc2gwodtlouju
     secretboxEncryptionSecret: XgHt30kchergGSxjhkr1OSoZT+DTkTykRzAeq13NRys=
     ca:

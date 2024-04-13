@@ -2,20 +2,20 @@ import os
 import pulumi
 import pulumi_kubernetes as k8s
 
+from src.lib.namespace import create_namespaces
 from src.kargo.multus.deploy import deploy_multus
 from src.kargo.cilium.deploy import deploy_cilium
 from src.kargo.kubevirt.deploy import deploy_kubevirt
 from src.kargo.ceph.deploy import deploy_rook_operator
-from src.kargo.cert_manager.deploy import deploy_cert_manager
 from src.kargo.openunison.deploy import deploy_openunison
 from src.kargo.prometheus.deploy import deploy_prometheus
-
+from src.kargo.cert_manager.deploy import deploy_cert_manager
 from src.kargo.kv_manager.deploy import deploy_ui_for_kubevirt
-from src.kargo.local_path_storage.deploy import deploy_local_path_storage
-from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
-from src.lib.namespace import create_namespaces
 from src.kargo.containerized_data_importer.deploy import deploy_cdi
+from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
+from src.kargo.local_path_storage.deploy import deploy_local_path_storage
 from src.kargo.hostpath_provisioner.deploy import deploy as deploy_hostpath_provisioner
+from src.kargo.cluster_network_addons.deploy import deploy_cluster_network_addons as deploy_cnao
 
 def main():
     """
@@ -52,19 +52,22 @@ def main():
     # Create namespaces
     namespace_objects = create_namespaces(namespaces, k8s_provider)
 
+    # Default Cilium to disabled
     # Deploy Cilium
     l2_bridge_name = "br0"
     l2announcements = "192.168.1.70/28"
-    cilium_helm_release = deploy_cilium(
-        "cilium-release",
-        k8s_provider,
-        kubernetes_distribution,
-        "kargo",
-        kubernetes_endpoint_ip.ips,
-        "kube-system",
-        l2_bridge_name,
-        l2announcements
-    )
+    enabled = config.get_bool('cilium.enabled') or False
+    if enabled:
+        cilium_helm_release = deploy_cilium(
+            "cilium-release",
+            k8s_provider,
+            kubernetes_distribution,
+            "kargo",
+            kubernetes_endpoint_ip.ips,
+            "kube-system",
+            l2_bridge_name,
+            l2announcements
+        )
 
     # Enable cert_manager witht the following command:
     #   ~$ pulumi config set cert_manager.enabled true
@@ -76,25 +79,29 @@ def main():
         "kargo",
         "cert-manager"
     )
-    #pulumi.export('cert_manager', cert_manager)
 
     # Deploy KubeVirt
-    kubevirt_version = deploy_kubevirt(
+    kubevirt = deploy_kubevirt(
         k8s_provider,
         kubernetes_distribution,
         cert_manager
     )
 
     # Deploy CDI
-    containerized_data_importer = deploy_cdi(
-        k8s_provider
-    )
+    # Enable containerized data importer with the following command:
+    #   ~$ pulumi config set cdi.enabled true
+    if config.get_bool('cdi.enabled') or True:
+        containerized_data_importer = deploy_cdi(
+            k8s_provider
+        )
 
     # Deploy Cluster Network Addons Operator
     # Enable multus with the following command:
     #   ~$ pulumi config set cnao.enabled true
     multus_enabled = config.get_bool('multus.enabled') or False
     if multus_enabled:
+        # Deploy Cluster Network Addons Operator
+        cnao = deploy_cnao(k8s_provider)
         # Deploy Multus
         multus = deploy_multus(k8s_provider)
 
@@ -112,7 +119,6 @@ def main():
             "local-path-storage",
             default_path
         )
-        #pulumi.export('local_path_provisioner', local_path_provisioner)
 
     # check if pulumi config ceph.enabled is set to true and deploy rook-ceph if it is
     # Enable ceph operator with the following command:
@@ -127,7 +133,6 @@ def main():
             "kargo",
             "rook-ceph"
         )
-        pulumi.export('rook_operator', rook_operator)
 
     # check if hostpath-provisioner pulumi config hostpath_provisioner.enabled is set to true and deploy if it is
     # Enable hostpath-provisioner with the following command:
@@ -151,7 +156,6 @@ def main():
             hostpath_version,
             cert_manager
         )
-        #pulumi.export('hostpath_provisioner', hostpath_provisioner["version"])
 
     # check if pulumi config openunison.enabled is set to true and deploy openunison if it is
     openunison_enabled = config.get_bool('openunison.enabled') or False
@@ -199,7 +203,7 @@ def main():
     pulumi.export('kubeconfig_context', kubeconfig_context)
     pulumi.export('kubernetes_distribution', kubernetes_distribution)
     #pulumi.export('kubernetes_endpoint_ips', kubernetes_endpoint_ip.ips)
-    #pulumi.export('kubevirt_version', kubevirt_version)
+    #pulumi.export('kubevirt', kubevirt)
 
 # Execute the main function
 main()
