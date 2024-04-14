@@ -29,17 +29,17 @@ spec:
   running: true
   template:
     spec:
-#     nodeSelector:
-#       kubernetes.io/hostname: "cp1"
-#     affinity:
-#       nodeAffinity:
-#         requiredDuringSchedulingIgnoredDuringExecution:
-#           nodeSelectorTerms:
-#             - matchExpressions:
-#                 - key: kubernetes.io/hostname
-#                   operator: In
-#                   values:
-#                     - "cp1"
+      nodeSelector:
+        kubernetes.io/hostname: "cp1"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - "cp1"
       domain:
         clock:
           utc: {}
@@ -73,9 +73,9 @@ spec:
               disk:
                 bus: virtio
           interfaces:
-          # - name: eth0
-          #   masquerade: {}
-            - name: eth0
+            - name: enp1s0
+              bridge: {}
+            - name: enp2s0
               bridge: {}
         features:
           acpi:
@@ -93,9 +93,10 @@ spec:
             memory: 8192M
       hostname: ubuntu
       networks:
-      # - name: eth0
-      #   pod: {}
-        - name: eth0
+        - name: enp1s0
+          multus:
+            networkName: lan
+        - name: enp2s0
           multus:
             networkName: lan
       terminationGracePeriodSeconds: 0
@@ -118,6 +119,12 @@ spec:
               version: 2
               ethernets:
                 enp1s0:
+                  link-local: []
+                  dhcp4: true
+                  dhcp6: false
+                  dhcp-identifier: mac
+                enp2s0:
+                  link-local: []
                   dhcp4: true
                   dhcp6: false
                   dhcp-identifier: mac
@@ -143,6 +150,9 @@ spec:
               packages:
                 - docker.io
                 - neofetch
+                - openvswitch-switch
+              reboot: true
               runcmd:
+                - "systemctl enable --now openvswitch-switch"
                 - "echo H4sIAAAAAAACA7WRwU7DMAyG73mKaHe6dRrTyKsghELibWYhjhy3gBDvTkIXtRJC4oJP8R/ntz/HUTziyeiPTxVBXokv2agb7SZZ6RKYxl0XrRi9Eh5gNYvWe4acje7vtl2/P3S3h65fb3f6X6L13c99I0UosofsGJMgxTJkHTDaFzA6vPkn3pRU3hNcbxLTM7gC4+FohyAqC7E9wWMiCkv2upLfrdvrUsE4AhcFWRXzIwb4i42HEV2trFQg5810av5VacL0LwucGhNSRPedM5E0g2TlbPS6ZQVrOe781mO+/OC5rqfs9v5BuTBkqWxxCEF9AXZkJoMrAgAA | base64 -d | gzip -d | lxd init --preseed"
                 - "neofetch"
