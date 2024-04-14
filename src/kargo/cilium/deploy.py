@@ -103,8 +103,8 @@ def deploy_cilium(name: str, k8s_provider: k8s.Provider, kubernetes_distribution
 def get_helm_values(
         kubernetes_distribution: str,
         project_name: str,
-        kubernetes_endpoint_ip_string: str
-    ):
+        kubernetes_endpoint_ip_string: str):
+
     common_values = {
         "cluster": {
             "id": 1,
@@ -118,19 +118,14 @@ def get_helm_values(
         "l2announcements": {"enabled": True},
     }
 
-    if kubernetes_distribution == 'kind':
-        return {
-            **common_values,
-            "k8sServiceHost": kubernetes_endpoint_ip_string,
-            "k8sServicePort": 6443,
-            "kubeProxyReplacement": "strict",
-            "operator": {"replicas": 1},
-            "routingMode": "tunnel",
-        }
-    elif kubernetes_distribution == 'talos':
+    if kubernetes_distribution == 'talos':
         # Talos-specific Helm values per the Talos Cilium Docs
         return {
             **common_values,
+            "cni": {
+                "install": True,
+                "exclusive": False
+            },
             "autoDirectNodeRoutes": True,
             "containerRuntime": {"integration": "containerd"},
             "devices": "br+ bond+ thunderbolt+",
@@ -163,10 +158,6 @@ def get_helm_values(
                 "replicas": 1,
                 "rollOutPods": True,
             },
-            "cni": {
-                "install": True,
-                "exclusive": False
-            },
             "securityContext": {
                 "capabilities": {
                     "ciliumAgent": [
@@ -177,6 +168,16 @@ def get_helm_values(
                     "cleanCiliumState": ["NET_ADMIN", "SYS_ADMIN", "SYS_RESOURCE"],
                 },
             },
+        }
+
+    elif kubernetes_distribution == 'kind':
+        return {
+            **common_values,
+            "k8sServiceHost": kubernetes_endpoint_ip_string,
+            "k8sServicePort": 6443,
+            "kubeProxyReplacement": "strict",
+            "operator": {"replicas": 1},
+            "routingMode": "tunnel",
         }
     else:
         raise ValueError(f"Unsupported Kubernetes distribution: {kubernetes_distribution}")
