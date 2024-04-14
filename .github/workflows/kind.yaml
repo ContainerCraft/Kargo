@@ -124,7 +124,7 @@ jobs:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           PULUMI_CONFIG_PASSPHRASE: foobarbaz
           PULUMI_BACKEND_URL: file://./.pulumi
-          PULUMI_K8S_DELETE_UNREACHABLE=true
+          PULUMI_K8S_DELETE_UNREACHABLE: true
         with:
           command: destroy
           refresh: true
