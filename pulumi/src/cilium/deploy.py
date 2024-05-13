@@ -21,6 +21,10 @@ def deploy_cilium(
     if version is None:
         # Fetch the latest version of the Cilium Helm chart
         version = get_latest_helm_chart_version(chart_index_url, chart_name)
+        pulumi.log.info(f"Setting helm release version to latest: {chart_name}/{version}")
+    else:
+        # Log the version override
+        pulumi.log.info(f"Using helm release version: {chart_name}/{version}")
 
     # Determine Helm values based on the Kubernetes distribution
     helm_values = get_helm_values(kubernetes_distribution, project_name, kubernetes_endpoint_service_address)

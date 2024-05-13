@@ -54,8 +54,8 @@ def get_latest_helm_chart_version(url, chart_name):
         logging.error(f"Error fetching data: {e}")
         return f"Error fetching data: {e}"
 
-# Example usage
-url = "https://raw.githubusercontent.com/cilium/charts/master/index.yaml"
-chart = "cilium"
-latest_version = get_latest_helm_chart_version(url, chart)
-print(f"The latest version of {chart} is: {latest_version}")
+## Example usage
+#url = "https://raw.githubusercontent.com/cilium/charts/master/index.yaml"
+#chart = "cilium"
+#latest_version = get_latest_helm_chart_version(url, chart)
+#print(f"The latest version of {chart} is: {latest_version}")

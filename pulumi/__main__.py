@@ -5,8 +5,8 @@ from pulumi_kubernetes import Provider
 from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
 from src.cilium.deploy import deploy_cilium
 from src.cert_manager.deploy import deploy_cert_manager
+from src.kubevirt.deploy import deploy_kubevirt
 #from src.multus.deploy import deploy_multus
-#from src.kubevirt.deploy import deploy_kubevirt
 #from src.ceph.deploy import deploy_rook_operator
 #from src.openunison.deploy import deploy_openunison
 #from src.prometheus.deploy import deploy_prometheus
@@ -98,6 +98,7 @@ else:
 #   ~$ pulumi config set cert_manager.enable true
 enable = config.get_bool('cert_manager.enable') or True
 if enable:
+
     # Set cert-manager version override with the following command:
     #   ~$ pulumi config set cert_manager.version v1.5.3
     version = config.get('cert_manager.version') or None
@@ -112,28 +113,40 @@ if enable:
         kubernetes_distribution,
         k8s_provider
     )
+    cert_manager_version = cert_manager[0]
+    cert_manager_release = cert_manager[1]
 else:
     # Set version and release objects to None if cert-manager is disabled
     cert_manager = None, None
 
-## Enable cert_manager witht the following command:
-##   ~$ pulumi config set cert_manager.enabled true
-## Deploy Cert Manager
-#cert_manager = deploy_cert_manager(
-#    "kargo",
-#    k8s_provider,
-#    kubernetes_distribution,
-#    "kargo",
-#    "cert-manager"
-#)
-#
-## Deploy KubeVirt
-#kubevirt = deploy_kubevirt(
-#    k8s_provider,
-#    kubernetes_distribution,
-#    cert_manager
-#)
-#
+# Deploy KubeVirt
+# Check pulumi config 'kubevirt.enable' and deploy if true
+# Enable KubeVirt with the following command:
+#   ~$ pulumi config set kubevirt.enable true
+if config.get_bool('kubevirt.enable') or True:
+
+    # Check for Kubevirt version override
+    # Set kubevirt version override with the following command:
+    #   ~$ pulumi config set kubevirt.version v0.45.0
+    version = config.get('kubevirt.version') or None
+
+    # KubeVirt namespace
+    ns_name = "kubevirt"
+
+    # Deploy KubeVirt
+    kubevirt = deploy_kubevirt(
+        ns_name,
+        version,
+        k8s_provider,
+        kubernetes_distribution,
+        cert_manager_release
+    )
+    kubevirt_version = kubevirt[0]
+    kubevirt_operator = kubevirt[1]
+else:
+    # Set kubevirt object to None if KubeVirt is disabled
+    kubevirt = None, None
+
 ## Deploy CDI
 ## Enable containerized data importer with the following command:
 ##   ~$ pulumi config set cdi.enabled true
