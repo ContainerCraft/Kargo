@@ -1,30 +1,29 @@
 import pulumi
 import pulumi_kubernetes as k8s
-from pulumi_kubernetes.core.v1 import Namespace, ObjectMetaArgs
 
 def create_namespace(
-        namespace: str,
-        provider: k8s.Provider,
-        ns_retain: bool,
-        ns_protect: bool
+        ns_name: str,
+        ns_retain,
+        ns_protect,
+        k8s_provider: k8s.Provider
     ):
 
     namespace_resource = k8s.core.v1.Namespace(
         "cert-manager-namespace",
         metadata=k8s.meta.v1.ObjectMetaArgs(
-            name=namespace
-            #annotations={},
-            #labels={
-            #    "ccio.v1/app": "kargo"
-            #}
+            name=ns_name,
+            annotations={},
+            labels={
+                "ccio.v1/app": "kargo"
+            }
         ),
-        #spec=k8s.core.v1.NamespaceSpecArgs(
-        #    finalizers=["kubernetes"],
-        #),
+        spec=k8s.core.v1.NamespaceSpecArgs(
+            finalizers=["kubernetes"],
+        ),
         opts=pulumi.ResourceOptions(
-            provider=provider,
             protect=ns_protect,
             retain_on_delete=ns_retain,
+            provider=k8s_provider,
             ignore_changes=[
                 "metadata",
                 "spec"

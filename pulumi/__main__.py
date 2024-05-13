@@ -1,4 +1,3 @@
-import os
 import pulumi
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes import Provider
@@ -29,9 +28,7 @@ project_name = pulumi.get_project()
 
 # Get the kubeconfig file path from priority order:
 #   1. Pulumi configuration value: `pulumi config set kubeconfig <path>`
-#   2. KUBECONFIG environment variable
-#   3. Default to ~/.kube/config
-kubernetes_config_filepath = config.get("kubeconfig") or os.getenv("KUBECONFIG") or "~/.kube/config"
+kubernetes_config_filepath = config.require("kubeconfig")
 
 # Get kubeconfig context from Pulumi config or default to "kind-pulumi"
 kubernetes_context = config.get("kubeconfig.context") or "kind-kargo"
@@ -104,19 +101,20 @@ if enable:
     # Set cert-manager version override with the following command:
     #   ~$ pulumi config set cert_manager.version v1.5.3
     version = config.get('cert_manager.version') or None
-    namespace = "cert-manager"
 
-    # Deploy cert-manager
-    # Returns Cert Manager Helm Release Version and Release Resource
+    # Cert Manager namespace
+    ns_name = "cert-manager"
+
+    # Deploy Cert Manager
     cert_manager = deploy_cert_manager(
-        namespace,
-        k8s_provider,
+        ns_name,
         version,
-        kubernetes_distribution
+        kubernetes_distribution,
+        k8s_provider
     )
 else:
-    # Set version and release resource objects to None if cert-manager is disabled
-    cert_manager = (None, None)
+    # Set version and release objects to None if cert-manager is disabled
+    cert_manager = None, None
 
 ## Enable cert_manager witht the following command:
 ##   ~$ pulumi config set cert_manager.enabled true
