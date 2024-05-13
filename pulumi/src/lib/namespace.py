@@ -9,7 +9,7 @@ def create_namespace(
     ):
 
     namespace_resource = k8s.core.v1.Namespace(
-        "cert-manager-namespace",
+        ns_name,
         metadata=k8s.meta.v1.ObjectMetaArgs(
             name=ns_name,
             annotations={},
