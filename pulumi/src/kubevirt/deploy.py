@@ -1,4 +1,7 @@
 import requests
+import yaml
+import tempfile
+import os
 import pulumi
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes.apiextensions.CustomResource import CustomResource
@@ -34,28 +37,71 @@ def deploy_kubevirt(
 
     # Define the transformation to remove Namespace creation and ensure correct namespace for other resources
     # TODO: fix transformation to remove namespace creation (currently producing duplicate namespace resource)
-    def remove_namespace_transform(args):
-        if args['kind'] == "Namespace":
-            pulumi.log.info(f"Skipping creation of duplicate Namespace: {args['metadata']['name']}")
-            return None  # Skip the creation of this resource if it's a duplicate
-        else:
-            if 'metadata' in args:
-                args['metadata']['namespace'] = ns_name
-        pulumi.log.info(f"Transforming resource of namespace/kind: {ns_name}/{args['kind']}")
-        return args
+    #def remove_namespace_transform(args):
 
-    # Deploy the KubeVirt operator with transformations
+    #    transformed_args = args.copy()
+
+    #    if transformed_args['kind'] == "Namespace":
+    #        pulumi.log.info(f"Skipping creation of duplicate Namespace: {args['metadata']['name']}")
+    #        return None  # Skip the creation of this resource if it's a duplicate
+
+    #    if 'metadata' in transformed_args:
+    #        args['metadata']['namespace'] = ns_name
+    #        pulumi.log.info(f"Transforming resource of namespace/kind: {ns_name}/{args['kind']}")
+
+    #    # log the changes between args and transformed_args
+    #    if transformed_args != args:
+    #        pulumi.log.info(f"Transformed args: {transformed_args}")
+    #    else:
+    #        pulumi.log.info(f"No changes to args: {args.get('kind')}")
+
+    #    return transformed_args
+
+    # Download the KubeVirt operator YAML
     kubevirt_operator_url = f'https://github.com/kubevirt/kubevirt/releases/download/v{version}/kubevirt-operator.yaml'
+    response = requests.get(kubevirt_operator_url)
+    kubevirt_yaml = yaml.safe_load_all(response.text)
+
+    # Edit the YAML in memory to remove the Namespace and adjust other resources
+    transformed_yaml = []
+    for resource in kubevirt_yaml:
+        if resource and resource.get('kind') == 'Namespace':
+            pulumi.log.info(f"Removing Namespace: {resource['metadata']['name']}")
+            continue  # Skip adding this namespace to the edited YAML
+        if resource and 'metadata' in resource:
+            resource['metadata']['namespace'] = ns_name
+            pulumi.log.info(f"Setting namespace for {resource['kind']} to {ns_name}")
+        transformed_yaml.append(resource)
+
+    # Write the edited YAML to a temporary file
+    with tempfile.NamedTemporaryFile(delete=False, mode='w') as temp_file:
+        yaml.dump_all(transformed_yaml, temp_file)
+        temp_file_path = temp_file.name
+
+    # Pass the edited YAML directly to ConfigFile
     operator = k8s.yaml.ConfigFile(
         'kubevirt-operator',
-        file=kubevirt_operator_url,
-        transformations=[remove_namespace_transform],
+        file=temp_file_path,
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
             parent=namespace,
             depends_on=[cert_manager]
         )
     )
+
+    # Ensure the temporary file is deleted after Pulumi uses it
+    pulumi.Output.all().apply(lambda _: os.unlink(temp_file_path))
+
+    #operator = k8s.yaml.ConfigFile(
+    #    'kubevirt-operator',
+    #    file=kubevirt_operator_url,
+    #    transformations=[remove_namespace_transform],
+    #    opts=pulumi.ResourceOptions(
+    #        provider=k8s_provider,
+    #        parent=namespace,
+    #        depends_on=[cert_manager]
+    #    )
+    #)
 
     # Determine useEmulation based on the kubernetes_distribution
     use_emulation = True if kubernetes_distribution == "kind" else False

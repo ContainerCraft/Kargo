@@ -88,6 +88,8 @@ if enable:
         l2_bridge_name,
         l2announcements
     )
+    cilium_version = cilium[0]
+    cilium_release = cilium[1]
 else:
     # Set version and release resource objects to None if Cilium is disabled
     cilium = (None, None)
