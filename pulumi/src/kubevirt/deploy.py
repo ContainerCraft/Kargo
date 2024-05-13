@@ -33,8 +33,9 @@ def deploy_kubevirt(
         pulumi.log.info(f"Using KubeVirt version: kubevirt/{version}")
 
     # Define the transformation to remove Namespace creation and ensure correct namespace for other resources
+    # TODO: fix transformation to remove namespace creation (currently producing duplicate namespace resource)
     def remove_namespace_transform(args):
-        if args['kind'] == "Namespace" and args['metadata']['name'] == ns_name:
+        if args['kind'] == "Namespace":
             pulumi.log.info(f"Skipping creation of duplicate Namespace: {args['metadata']['name']}")
             return None  # Skip the creation of this resource if it's a duplicate
         else:
