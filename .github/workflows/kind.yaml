@@ -55,22 +55,6 @@ jobs:
         name: 📦️ Pulumi Install 📦️
         uses: pulumi/actions@v5
 
-      #- id: pulumi-config
-      #  name: 🛠️ Pulumi Config 🛠️
-      #  env:
-      #    ACTIONS_STEP_DEBUG: true
-      #    KUBECONFIG: .kube/config
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #    PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      #    PULUMI_CONFIG_PASSPHRASE: foobarbaz
-      #    PULUMI_BACKEND_URL: file://./.pulumi
-      #  run: |
-      #    pulumi login
-      #    pulumi install
-      #    pulumi stack select --create /kargo/ci
-      #    pulumi config set kubernetes kind
-      #    pulumi config set kubecontext kind-kargo
-
       - id: pulumi-up
         name: 🚀 Pulumi Up 🚀
         uses: pulumi/actions@v5
@@ -116,6 +100,7 @@ jobs:
       - id: pulumi-destroy
         name: 💣 Pulumi Destroy 💣
         uses: pulumi/actions@v5
+        continue-on-error: true
         if: always()
         env:
           ACTIONS_STEP_DEBUG: false

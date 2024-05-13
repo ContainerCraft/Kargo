@@ -29,19 +29,19 @@ nodes:
   # Expose ports on the host:
   # - 80/tcp
   # - 443/tcp
-  extraPortMappings:
-  - listenAddress: "0.0.0.0"
-    protocol: TCP
-    hostPort: 80
-    containerPort: 80
-  - listenAddress: "0.0.0.0"
-    protocol: TCP
-    hostPort: 2022
-    containerPort: 2222
-  - listenAddress: "0.0.0.0"
-    protocol: TCP
-    hostPort: 443
-    containerPort: 443
+# extraPortMappings:
+# - listenAddress: "0.0.0.0"
+#   protocol: TCP
+#   hostPort: 80
+#   containerPort: 80
+# - listenAddress: "0.0.0.0"
+#   protocol: TCP
+#   hostPort: 2022
+#   containerPort: 2222
+# - listenAddress: "0.0.0.0"
+#   protocol: TCP
+#   hostPort: 443
+#   containerPort: 443
   kubeadmConfigPatches:
   - |
     # Label the worker node listening on service ports

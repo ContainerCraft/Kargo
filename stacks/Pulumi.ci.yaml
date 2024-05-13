@@ -1,7 +1,0 @@
-config:
-  kargo:kubecontext: kind-kargo
-  kargo:kubernetes: kind
-  kargo:cdi.enabled: "true"
-  kargo:cilium.enabled: "false"
-  kargo:hostpath_provisioner.enabled: "false"
-  kargo:multus.enabled: "true"

@@ -1,9 +1,0 @@
-config:
-  kargo:cdi.enabled: "true"
-  kargo:cilium.enabled: "false"
-  kargo:hostpath_provisioner.default_path: /var/mnt/block/dev/sda/csi
-  kargo:hostpath_provisioner.default_storage_class: "true"
-  kargo:hostpath_provisioner.enabled: "true"
-  kargo:kubecontext: admin@optiplexprime
-  kargo:kubernetes: talos
-  kargo:multus.enabled: "true"
