@@ -1,6 +1,7 @@
 import pulumi
 from pulumi_kubernetes import helm, Provider
-from ...lib.helm_chart_versions import get_latest_helm_chart_version
+from src.lib.namespace import create_namespace
+from src.lib.helm_chart_versions import get_latest_helm_chart_version
 
 def deploy_rook_operator(name: str, k8s_provider: Provider, kubernetes_distribution: str, project_name: str, namespace: str):
     """
@@ -17,6 +18,8 @@ def deploy_rook_operator(name: str, k8s_provider: Provider, kubernetes_distribut
     Returns:
         pulumi.helm.v3.Release: The deployed Rook Ceph Helm release.
     """
+    namespace = create_namespace("rook-ceph", k8s_provider)
+
     # Determine Helm values based on the Kubernetes distribution
     helm_values = gen_helm_values(kubernetes_distribution, project_name)
 

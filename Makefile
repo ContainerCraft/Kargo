@@ -165,8 +165,8 @@ kind-cluster:
 	@sudo docker volume create kargo-control-plane-n01
 	@sudo kind create cluster --wait 1m --retain --config=hack/kind.yaml
 	@sudo kind get clusters
-	@sudo kind get kubeconfig --name kargo | tee ${KUBE_CONFIG_FILE} 1>/dev/null
-	@sudo kind get kubeconfig --name kargo | tee ${HOME}/.kube/config 1>/dev/null
+	@sudo kind get kubeconfig --name kargo | tee ${KUBE_CONFIG_FILE} #1>/dev/null
+	@sudo kind get kubeconfig --name kargo | tee ${HOME}/.kube/config #1>/dev/null
 	@sudo chown -R $(id -u):$(id -g) ${KUBE_CONFIG_FILE}
 	@pulumi config set kubernetes kind || true
 	@echo "Created Kind Cluster."

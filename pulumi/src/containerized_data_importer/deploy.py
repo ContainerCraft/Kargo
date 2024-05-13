@@ -30,7 +30,10 @@ def deploy_cdi(k8s_provider: k8s.Provider):
     cdi_cr = k8s.yaml.ConfigFile(
         'cdi-cr',
         file=cdi_cr_url,
-        opts=pulumi.ResourceOptions(provider=k8s_provider)
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
+            parent=cdi_operator
+        )
     )
 
     # Export the version of CDI that was deployed

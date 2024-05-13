@@ -1,39 +1,35 @@
 import pulumi
 import pulumi_kubernetes as k8s
-from typing import Optional
-from ...lib.helm_chart_versions import get_latest_helm_chart_version
+from src.lib.helm_chart_versions import get_latest_helm_chart_version
 
-def deploy_cilium(name: str, k8s_provider: k8s.Provider, kubernetes_distribution: str, project_name: str, kubernetes_endpoint_ip_string: str, namespace: str, l2_bridge_name: str, l2announcements: str):
-    """
-    Deploy Cilium using the Helm chart.
-
-    Args:
-        name (str): The name of the release.
-        k8s_provider (Provider): The Kubernetes provider.
-        kubernetes_distribution (str): The Kubernetes distribution.
-        project_name (str): The name of the project.
-        kubernetes_endpoint_ip_string (str): The IP address of the Kubernetes endpoint.
-        namespace (str): The namespace to deploy Cilium to.
-
-    Returns:
-        pulumi.helm.v3.Release: The deployed Cilium Helm release.
-    """
-    # Determine Helm values based on the Kubernetes distribution
-    helm_values = get_helm_values(kubernetes_distribution, project_name, kubernetes_endpoint_ip_string)
+def deploy_cilium(
+        name: str,
+        k8s_provider: k8s.Provider,
+        kubernetes_distribution: str,
+        project_name: str,
+        kubernetes_endpoint_service_address: pulumi.Output[str],
+        namespace: str,
+        version: str,
+        l2_bridge_name: str,
+        l2announcements: str
+    ):
 
     # Fetch the latest version of the Cilium Helm chart
-    cilium_chart_url = "https://raw.githubusercontent.com/cilium/charts/master/index.yaml"
-    cilium_chart_name = "cilium"
-    cilium_latest_version = get_latest_helm_chart_version(cilium_chart_url, cilium_chart_name)
+    chart_name = "cilium"
+    chart_index_url = "https://raw.githubusercontent.com/cilium/charts/master/index.yaml"
 
-    # Statically limit the Cilium version to 1.14.7 until resolved
-    #cilium_latest_version = "1.14.7"
+    if version is None:
+        # Fetch the latest version of the Cilium Helm chart
+        version = get_latest_helm_chart_version(chart_index_url, chart_name)
+
+    # Determine Helm values based on the Kubernetes distribution
+    helm_values = get_helm_values(kubernetes_distribution, project_name, kubernetes_endpoint_service_address)
 
     # Deploy Cilium using the Helm chart
-    deploy_cilium_release = k8s.helm.v3.Release(
+    release = k8s.helm.v3.Release(
         name,
         chart="cilium",
-        version=cilium_latest_version,
+        version=version,
         values=helm_values,
         namespace=namespace,
         repository_opts={"repo": "https://helm.cilium.io/"},
@@ -66,66 +62,48 @@ def deploy_cilium(name: str, k8s_provider: k8s.Provider, kubernetes_distribution
         opts=pulumi.ResourceOptions(provider=k8s_provider)
     )
 
-    ## Development only:
-    # nginx pod and loadbalancer service resources are being committed
-    # to test the Cilium L2 announcement policy and LoadBalancerIPPool
-    # These resources will be removed before MVP release.
-    # Define nginx Pod resource
-    nginx_pod = k8s.core.v1.Pod(
-        "nginx_pod",
-        metadata={"name": "nginx", "labels": {"app": "nginx"}},
-        spec=k8s.core.v1.PodSpecArgs(
-            containers=[k8s.core.v1.ContainerArgs(
-                name="nginx",
-                image="nginx:latest",
-                ports=[k8s.core.v1.ContainerPortArgs(container_port=80)]
-            )]
-        ),
-        opts=pulumi.ResourceOptions(provider=k8s_provider)
-    )
-
-    # Define nginx LoadBalancer Service resource
-    nginx_load_balancer_service = k8s.core.v1.Service(
-        "nginx_load_balancer",
-        metadata={"name": "nginx-loadbalancer"},
-        spec=k8s.core.v1.ServiceSpecArgs(
-            type="LoadBalancer",
-            selector={"app": "nginx"},
-            ports=[k8s.core.v1.ServicePortArgs(
-                protocol="TCP",
-                port=80,
-                target_port=80
-            )]
-        ),
-        opts=pulumi.ResourceOptions(provider=k8s_provider)
-    )
+    return version, release
 
 def get_helm_values(
         kubernetes_distribution: str,
         project_name: str,
-        kubernetes_endpoint_ip_string: str
+        kubernetes_endpoint_service_address: str
     ):
+    # Common Cilium Helm Chart Values
     common_values = {
         "cluster": {
             "id": 1,
             "name": project_name
         },
+        "routingMode": "tunnel",
+        "tunnelProtocol": "vxlan",
+        "kubeProxyReplacement": "strict",
+        "image": {"pullPolicy": "IfNotPresent"},
+        "l2announcements": {"enabled": True},
+        "hostServices": {"enabled": False},
+        "cluster": {"name": "pulumi"},
+        "externalIPs": {"enabled": True},
+        "gatewayAPI": {"enabled": False},
+        "hubble": {
+            "enabled": True,
+            "relay": {"enabled": True},
+            "ui": {"enabled": True},
+        },
         "ipam": {"mode": "kubernetes"},
+        "nodePort": {"enabled": True},
+        "hostPort": {"enabled": True},
+        "operator": {"replicas": 1},
         "serviceAccounts": {
             "cilium": {"name": "cilium"},
             "operator": {"name": "cilium-operator"},
         },
-        "l2announcements": {"enabled": True},
     }
-
+    # Kind Kubernetes specific Helm values
     if kubernetes_distribution == 'kind':
         return {
             **common_values,
-            "k8sServiceHost": kubernetes_endpoint_ip_string,
+            "k8sServiceHost": kubernetes_endpoint_service_address,
             "k8sServicePort": 6443,
-            "kubeProxyReplacement": "strict",
-            "operator": {"replicas": 1},
-            "routingMode": "tunnel",
         }
     elif kubernetes_distribution == 'talos':
         # Talos-specific Helm values per the Talos Cilium Docs
@@ -180,3 +158,47 @@ def get_helm_values(
         }
     else:
         raise ValueError(f"Unsupported Kubernetes distribution: {kubernetes_distribution}")
+
+# Deploy test loadbalancer service
+def deploy_test_service(
+        namespace: str,
+        k8s_provider: k8s.Provider
+    ):
+
+    # Development only:
+    # nginx pod and loadbalancer service resources are being committed
+    # to test the Cilium L2 announcement policy and LoadBalancerIPPool
+    # These resources will be removed before MVP release.
+    # Define nginx Pod resource
+    nginx_pod = k8s.core.v1.Pod(
+        "nginx_pod",
+        namespace=namespace,
+        metadata={"name": "nginx", "labels": {"app": "nginx"}},
+        spec=k8s.core.v1.PodSpecArgs(
+            containers=[k8s.core.v1.ContainerArgs(
+                name="nginx",
+                image="nginx:latest",
+                ports=[k8s.core.v1.ContainerPortArgs(container_port=80)]
+            )]
+        ),
+        opts=pulumi.ResourceOptions(provider=k8s_provider)
+    )
+
+    # Define nginx LoadBalancer Service resource
+    nginx_load_balancer_service = k8s.core.v1.Service(
+        "nginx_load_balancer",
+        namespace=namespace,
+        metadata={"name": "nginx-loadbalancer"},
+        spec=k8s.core.v1.ServiceSpecArgs(
+            type="LoadBalancer",
+            selector={"app": "nginx"},
+            ports=[k8s.core.v1.ServicePortArgs(
+                protocol="TCP",
+                port=80,
+                target_port=80
+            )]
+        ),
+        opts=pulumi.ResourceOptions(provider=k8s_provider)
+    )
+
+    return nginx_pod, nginx_load_balancer_service

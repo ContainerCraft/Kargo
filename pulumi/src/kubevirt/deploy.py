@@ -3,6 +3,7 @@ import pulumi_kubernetes as k8s
 import requests
 from pulumi_kubernetes.apiextensions import CustomResource
 from pulumi_kubernetes.meta.v1 import ObjectMetaArgs
+from src.lib.namespace import create_namespace
 
 def deploy_kubevirt(
         k8s_provider: k8s.Provider,
@@ -18,6 +19,9 @@ def deploy_kubevirt(
     :return: The version of KubeVirt that was deployed.
     """
 
+    ## Create namespaces
+    namespace = create_namespace("kubevirt", k8s_provider)
+
     # Fetch the latest stable version of KubeVirt
     kubevirt_stable_version_url = 'https://storage.googleapis.com/kubevirt-prow/release/kubevirt/kubevirt/stable.txt'
     kubevirt_version = requests.get(kubevirt_stable_version_url).text.strip()
@@ -29,7 +33,10 @@ def deploy_kubevirt(
         file=kubevirt_operator_url,
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
-            depends_on=[cert_manager]
+            depends_on=[
+                cert_manager,
+                namespace
+            ]
         )
     )
 
@@ -42,7 +49,7 @@ def deploy_kubevirt(
         "kind": "KubeVirt",
         "metadata": {
             "name": "kubevirt",
-            "namespace": "kubevirt"
+            "namespace": namespace.metadata.name
         },
         "spec": {
             "customizeComponents": {},
@@ -110,12 +117,12 @@ def deploy_kubevirt(
         kind="KubeVirt",
         metadata=ObjectMetaArgs(
             name="kubevirt",
-            namespace="kubevirt"
+            namespace=namespace.metadata.name
         ),
         spec=kubevirt_manifest["spec"],
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
-            depends_on=[operator]
+            parent=operator
         )
     )
 
