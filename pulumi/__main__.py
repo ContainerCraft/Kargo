@@ -7,6 +7,7 @@ from src.cilium.deploy import deploy_cilium
 from src.cert_manager.deploy import deploy_cert_manager
 from src.kubevirt.deploy import deploy_kubevirt
 from src.containerized_data_importer.deploy import deploy_cdi
+from src.cluster_network_addons.deploy import deploy_cnao
 #from src.multus.deploy import deploy_multus
 #from src.ceph.deploy import deploy_rook_operator
 #from src.openunison.deploy import deploy_openunison
@@ -14,7 +15,6 @@ from src.containerized_data_importer.deploy import deploy_cdi
 #from src.kv_manager.deploy import deploy_ui_for_kubevirt
 #from src.local_path_storage.deploy import deploy_local_path_storage
 #from src.hostpath_provisioner.deploy import deploy as deploy_hostpath_provisioner
-#from src.cluster_network_addons.deploy import deploy_cluster_network_addons as deploy_cnao
 
 ##################################################################################
 # Load the Pulumi Config
@@ -162,16 +162,32 @@ if config.get_bool('cdi.enabled') or True:
         k8s_provider
     )
 
-## Deploy Cluster Network Addons Operator
-## Enable multus with the following command:
-##   ~$ pulumi config set cnao.enabled true
+# Deploy Cluster Network Addons Operator
+# Enable Cluster Network Addons Operator with the following command:
+#   ~$ pulumi config set cnao.enabled true
+# Set CNAO version override with the following command:
+#   ~$ pulumi config set cnao.version 0.0.1
+cnao_enabled = config.get_bool('cnao.enabled') or False
+if cnao_enabled:
+
+    # Set CNAO version override from Pulumi config
+    version_cnao = config.get('cnao.version') or None
+
+    # Deploy Cluster Network Addons Operator
+    cnao = deploy_cnao(
+        version_cnao,
+        k8s_provider
+    )
+
+# Enable multus with the following command:
+#   ~$ pulumi config set cnao.enabled true
+# Set Multus version override with the following command:
+#   ~$ pulumi config set multus.version 3.7.0
 #multus_enabled = config.get_bool('multus.enabled') or False
 #if multus_enabled:
-#    # Deploy Cluster Network Addons Operator
-#    cnao = deploy_cnao(k8s_provider)
-#    # Deploy Multus
-#    multus = deploy_multus(k8s_provider)
-#
+    # Deploy Multus
+    #multus = deploy_multus(k8s_provider)
+
 ## check if local-path-provisioner pulumi config local_path_storage.enabled is set to true and deploy local-path-provisioner if it is
 ## Enable local-path-provisioner with the following command:
 ##   ~$ pulumi config set local_path_storage.enabled true

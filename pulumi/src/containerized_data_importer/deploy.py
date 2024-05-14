@@ -19,7 +19,6 @@ def deploy_cdi(version: str, k8s_provider: k8s.Provider):
 
     # Deploy the CDI operator
     cdi_operator_url = f'https://github.com/kubevirt/containerized-data-importer/releases/download/v{version}/cdi-operator.yaml'
-    pulumi.log.info(f"Deploying CDI operator from: {cdi_operator_url}")
     operator = k8s.yaml.ConfigFile(
         'cdi-operator',
         file=cdi_operator_url,
