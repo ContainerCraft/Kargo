@@ -19,11 +19,20 @@ def deploy_kubevirt(
     # Create namespace
     ns_retain = True
     ns_protect = False
+    ns_annotations = {}
+    ns_labels = {
+        "kubevirt.io": "",
+        "kubernetes.io/metadata.name": ns_name,
+        "openshift.io/cluster-monitoring": "true",
+        "pod-security.kubernetes.io/enforce": "privileged"
+    }
     namespace = create_namespace(
         ns_name,
         ns_retain,
         ns_protect,
-        k8s_provider
+        k8s_provider,
+        custom_labels=ns_labels,
+        custom_annotations=ns_annotations
     )
 
     # Fetch the latest stable version of KubeVirt
@@ -34,28 +43,6 @@ def deploy_kubevirt(
     else:
         # Log the version override
         pulumi.log.info(f"Using KubeVirt version: kubevirt/{version}")
-
-    # Define the transformation to remove Namespace creation and ensure correct namespace for other resources
-    # TODO: fix transformation to remove namespace creation (currently producing duplicate namespace resource)
-    #def remove_namespace_transform(args):
-
-    #    transformed_args = args.copy()
-
-    #    if transformed_args['kind'] == "Namespace":
-    #        pulumi.log.info(f"Skipping creation of duplicate Namespace: {args['metadata']['name']}")
-    #        return None  # Skip the creation of this resource if it's a duplicate
-
-    #    if 'metadata' in transformed_args:
-    #        args['metadata']['namespace'] = ns_name
-    #        pulumi.log.info(f"Transforming resource of namespace/kind: {ns_name}/{args['kind']}")
-
-    #    # log the changes between args and transformed_args
-    #    if transformed_args != args:
-    #        pulumi.log.info(f"Transformed args: {transformed_args}")
-    #    else:
-    #        pulumi.log.info(f"No changes to args: {args.get('kind')}")
-
-    #    return transformed_args
 
     # Download the KubeVirt operator YAML
     kubevirt_operator_url = f'https://github.com/kubevirt/kubevirt/releases/download/v{version}/kubevirt-operator.yaml'
@@ -91,6 +78,28 @@ def deploy_kubevirt(
 
     # Ensure the temporary file is deleted after Pulumi uses it
     pulumi.Output.all().apply(lambda _: os.unlink(temp_file_path))
+
+    # Define the transformation to remove Namespace creation and ensure correct namespace for other resources
+    # TODO: fix transformation to remove namespace creation (currently producing duplicate namespace resource)
+    #def remove_namespace_transform(args):
+
+    #    transformed_args = args.copy()
+
+    #    if transformed_args['kind'] == "Namespace":
+    #        pulumi.log.info(f"Skipping creation of duplicate Namespace: {args['metadata']['name']}")
+    #        return None  # Skip the creation of this resource if it's a duplicate
+
+    #    if 'metadata' in transformed_args:
+    #        args['metadata']['namespace'] = ns_name
+    #        pulumi.log.info(f"Transforming resource of namespace/kind: {ns_name}/{args['kind']}")
+
+    #    # log the changes between args and transformed_args
+    #    if transformed_args != args:
+    #        pulumi.log.info(f"Transformed args: {transformed_args}")
+    #    else:
+    #        pulumi.log.info(f"No changes to args: {args.get('kind')}")
+
+    #    return transformed_args
 
     #operator = k8s.yaml.ConfigFile(
     #    'kubevirt-operator',
@@ -157,23 +166,3 @@ def deploy_kubevirt(
     )
 
     return version, operator
-
-# 🐋 ❯ k get ns -oyaml kubevirt
-# apiVersion: v1
-# kind: Namespace
-# metadata:
-#   creationTimestamp: "2024-05-13T21:50:13Z"
-#   labels:
-#     ccio.v1/app: kargo
-#     kubernetes.io/metadata.name: kubevirt
-#     kubevirt.io: ""
-#     openshift.io/cluster-monitoring: "true"
-#     pod-security.kubernetes.io/enforce: privileged
-#   name: kubevirt
-#   resourceVersion: "1992"
-#   uid: ab0fa472-080c-46f5-8c2e-a14988c03c87
-# spec:
-#   finalizers:
-#   - kubernetes
-# status:
-#   phase: Active

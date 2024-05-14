@@ -6,12 +6,12 @@ from src.lib.kubernetes_api_endpoint import KubernetesApiEndpointIp
 from src.cilium.deploy import deploy_cilium
 from src.cert_manager.deploy import deploy_cert_manager
 from src.kubevirt.deploy import deploy_kubevirt
+from src.containerized_data_importer.deploy import deploy_cdi
 #from src.multus.deploy import deploy_multus
 #from src.ceph.deploy import deploy_rook_operator
 #from src.openunison.deploy import deploy_openunison
 #from src.prometheus.deploy import deploy_prometheus
 #from src.kv_manager.deploy import deploy_ui_for_kubevirt
-#from src.containerized_data_importer.deploy import deploy_cdi
 #from src.local_path_storage.deploy import deploy_local_path_storage
 #from src.hostpath_provisioner.deploy import deploy as deploy_hostpath_provisioner
 #from src.cluster_network_addons.deploy import deploy_cluster_network_addons as deploy_cnao
@@ -125,7 +125,8 @@ else:
 # Check pulumi config 'kubevirt.enable' and deploy if true
 # Enable KubeVirt with the following command:
 #   ~$ pulumi config set kubevirt.enable true
-if config.get_bool('kubevirt.enable') or True:
+enable = config.get_bool('kubevirt.enable') or True
+if enable:
 
     # Check for Kubevirt version override
     # Set kubevirt version override with the following command:
@@ -146,17 +147,21 @@ if config.get_bool('kubevirt.enable') or True:
     kubevirt_version = kubevirt[0]
     kubevirt_operator = kubevirt[1]
 else:
-    # Set kubevirt object to None if KubeVirt is disabled
+    # Set kubevirt object to None if Kubevirt is disabled
     kubevirt = None, None
 
-## Deploy CDI
-## Enable containerized data importer with the following command:
-##   ~$ pulumi config set cdi.enabled true
-#if config.get_bool('cdi.enabled') or True:
-#    containerized_data_importer = deploy_cdi(
-#        k8s_provider
-#    )
-#
+# Deploy CDI
+# Enable containerized data importer with the following command:
+#   ~$ pulumi config set cdi.enabled true
+# Set version override with the following command:
+#   ~$ pulumi config set cdi.version v1.14.7
+version = config.get('cdi.version') or None
+if config.get_bool('cdi.enabled') or True:
+    containerized_data_importer = deploy_cdi(
+        version,
+        k8s_provider
+    )
+
 ## Deploy Cluster Network Addons Operator
 ## Enable multus with the following command:
 ##   ~$ pulumi config set cnao.enabled true

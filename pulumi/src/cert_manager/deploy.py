@@ -14,11 +14,15 @@ def deploy_cert_manager(
     # Create namespace
     ns_retain = False
     ns_protect = False
+    ns_annotations = {}
+    ns_labels = {}
     namespace = create_namespace(
         ns_name,
         ns_retain,
         ns_protect,
-        k8s_provider
+        k8s_provider,
+        custom_labels=ns_labels,
+        custom_annotations=ns_annotations
     )
 
     chart_name = "cert-manager"
