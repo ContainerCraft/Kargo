@@ -7,3 +7,4 @@ config:
   kargo:kubeconfig: /workspaces/Kargo/.kube/config
   kargo:kubernetes: kind
   kargo:kubevirt.version: 1.2.0
+  kargo:multus.enabled: "true"

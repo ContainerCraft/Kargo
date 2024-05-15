@@ -8,7 +8,7 @@ from src.cert_manager.deploy import deploy_cert_manager
 from src.kubevirt.deploy import deploy_kubevirt
 from src.containerized_data_importer.deploy import deploy_cdi
 from src.cluster_network_addons.deploy import deploy_cnao
-#from src.multus.deploy import deploy_multus
+from src.multus.deploy import deploy_multus
 #from src.ceph.deploy import deploy_rook_operator
 #from src.openunison.deploy import deploy_openunison
 #from src.prometheus.deploy import deploy_prometheus
@@ -211,10 +211,30 @@ if enable_cnao:
 #   ~$ pulumi config set cnao.enabled true
 # Set Multus version override with the following command:
 #   ~$ pulumi config set multus.version 3.7.0
-#multus_enabled = config.get_bool('multus.enabled') or False
-#if multus_enabled:
+multus_enabled = config.get_bool('multus.enabled') or False
+if multus_enabled:
+
+    # Set Multus version override from Pulumi config
+    version = config.get('multus.version') or None
+
+    # Set Cilium as a dependency for Multus
+    if enable_cilium:
+        depends = [cilium_release]
+    else:
+        depends = []
+
+    # Get multus default bridge name from pulumi config
+    # Set Multus default bridge name with the following command:
+    #   ~$ pulumi config set multus.default_bridge br0
+    bridge_name = config.get('multus.default_bridge') or "br0"
+
     # Deploy Multus
-    #multus = deploy_multus(k8s_provider)
+    multus = deploy_multus(
+        depends,
+        version,
+        bridge_name,
+        k8s_provider
+    )
 
 ## check if local-path-provisioner pulumi config local_path_storage.enabled is set to true and deploy local-path-provisioner if it is
 ## Enable local-path-provisioner with the following command:
