@@ -41,7 +41,7 @@ jobs:
 
       - id: kind-kubernetes
         name: 🔨 Kind Kubernetes 🔨
-        uses: helm/kind-action@v1.9.0
+        uses: helm/kind-action@v1.10.0
         env:
           ACTIONS_STEP_DEBUG: false
           KUBECONFIG: .kube/config
