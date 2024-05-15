@@ -2,6 +2,7 @@ import pulumi
 import pulumi_kubernetes as k8s
 
 def create_namespace(
+        depends,
         ns_name: str,
         ns_retain,
         ns_protect,
@@ -39,6 +40,7 @@ def create_namespace(
             protect=ns_protect,
             retain_on_delete=ns_retain,
             provider=k8s_provider,
+            depends_on=depends,
             ignore_changes=[
                 "metadata",
                 "spec"

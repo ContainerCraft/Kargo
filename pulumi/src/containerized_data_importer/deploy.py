@@ -4,7 +4,11 @@ import pulumi_kubernetes as k8s
 from pulumi_kubernetes.apiextensions.CustomResource import CustomResource
 from pulumi_kubernetes.meta.v1 import ObjectMetaArgs
 
-def deploy_cdi(version: str, k8s_provider: k8s.Provider):
+def deploy_cdi(
+        depends,
+        version: str,
+        k8s_provider: k8s.Provider
+    ):
 
     # Fetch the latest stable version of CDI
     if version is None:
@@ -62,8 +66,8 @@ def deploy_cdi(version: str, k8s_provider: k8s.Provider):
         },
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
-            depends_on=[operator]
-            #parent=namespace
+            parent=operator,
+            depends_on=depends
         )
     )
 

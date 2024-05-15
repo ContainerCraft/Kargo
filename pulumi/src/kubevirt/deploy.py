@@ -9,6 +9,7 @@ from pulumi_kubernetes.meta.v1 import ObjectMetaArgs
 from src.lib.namespace import create_namespace
 
 def deploy_kubevirt(
+        depends,
         ns_name: str,
         version: str,
         k8s_provider: k8s.Provider,
@@ -27,6 +28,7 @@ def deploy_kubevirt(
         "pod-security.kubernetes.io/enforce": "privileged"
     }
     namespace = create_namespace(
+        depends,
         ns_name,
         ns_retain,
         ns_protect,
@@ -72,7 +74,7 @@ def deploy_kubevirt(
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
             parent=namespace,
-            depends_on=[cert_manager]
+            depends_on=depends
         )
     )
 
@@ -159,8 +161,7 @@ def deploy_kubevirt(
             provider=k8s_provider,
             parent=operator,
             depends_on=[
-                namespace,
-                cert_manager
+                namespace
             ]
         )
     )

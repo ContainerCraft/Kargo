@@ -1,5 +1,6 @@
 import pulumi
 import pulumi_kubernetes as k8s
+from pulumi_kubernetes.apiextensions import CustomResource
 from src.lib.helm_chart_versions import get_latest_helm_chart_version
 
 def deploy_cilium(
@@ -37,10 +38,10 @@ def deploy_cilium(
         values=helm_values,
         namespace=namespace,
         repository_opts={"repo": "https://helm.cilium.io/"},
-        opts=pulumi.ResourceOptions(provider=k8s_provider)
+                    opts=pulumi.ResourceOptions(provider=k8s_provider)
     )
 
-    cilium_l2_announcement_policy = k8s.apiextensions.CustomResource(
+    cilium_l2_announcement_policy = CustomResource(
         "cilium_l2_announcement_policy",
         api_version="cilium.io/v2alpha1",
         kind="CiliumL2AnnouncementPolicy",
@@ -51,7 +52,10 @@ def deploy_cilium(
             "externalIPs": False,
             "loadBalancerIPs": True
         },
-        opts=pulumi.ResourceOptions(provider=k8s_provider)
+        opts=pulumi.ResourceOptions(
+            parent=release,
+            provider=k8s_provider
+        )
     )
 
     # Define CiliumLoadBalancerIPPool resource
@@ -63,7 +67,10 @@ def deploy_cilium(
         spec={
             "cidrs": [{"cidr": l2announcements}]
         },
-        opts=pulumi.ResourceOptions(provider=k8s_provider)
+        opts=pulumi.ResourceOptions(
+            parent=release,
+            provider=k8s_provider
+        )
     )
 
     return version, release
@@ -185,7 +192,9 @@ def deploy_test_service(
                 ports=[k8s.core.v1.ContainerPortArgs(container_port=80)]
             )]
         ),
-        opts=pulumi.ResourceOptions(provider=k8s_provider)
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider
+        )
     )
 
     # Define nginx LoadBalancer Service resource
@@ -202,7 +211,9 @@ def deploy_test_service(
                 target_port=80
             )]
         ),
-        opts=pulumi.ResourceOptions(provider=k8s_provider)
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider
+        )
     )
 
     return nginx_pod, nginx_load_balancer_service

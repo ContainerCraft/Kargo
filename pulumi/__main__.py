@@ -50,10 +50,11 @@ k8s_endpoint_ip = KubernetesApiEndpointIp(
 )
 
 # Extract the Kubernetes Endpoint clusterIP
-kubernetes_endpoint_service_address = pulumi.Output.from_input(k8s_endpoint_ip)
+kubernetes_endpoint_service = pulumi.Output.from_input(k8s_endpoint_ip)
+kubernetes_endpoint_service_address = kubernetes_endpoint_service.endpoint.subsets[0].addresses[0].ip
 pulumi.export(
     "kubernetes-endpoint-service-address",
-    kubernetes_endpoint_service_address.endpoint.subsets[0].addresses[0].ip
+    kubernetes_endpoint_service_address
 )
 
 ##################################################################################
@@ -65,8 +66,8 @@ pulumi.export(
 # Check pulumi config 'cilium.enable' and deploy if true
 # Disable Cilium with the following command:
 #   ~$ pulumi config set cilium.enable false
-enable = config.get_bool('cilium.enable') or False
-if enable:
+enable_cilium = config.get_bool('cilium.enable') or False
+if enable_cilium:
     # Get Cilium configuration from Pulumi stack config
     # Set Cilium version override with the following command:
     #   ~$ pulumi config set cilium.version v1.14.7
@@ -98,8 +99,13 @@ else:
 # Check pulumi config 'cert_manager.enable' and deploy if true
 # Enable cert-manager with the following command:
 #   ~$ pulumi config set cert_manager.enable true
-enable = config.get_bool('cert_manager.enable') or True
-if enable:
+enable_cert_manager = config.get_bool('cert_manager.enable') or True
+if enable_cert_manager:
+    if enable_cilium:
+        # Set Cilium release resource as a parent dependency for Cert Manager
+        depends = [cilium_release]
+    else:
+        depends = []
 
     # Set cert-manager version override with the following command:
     #   ~$ pulumi config set cert_manager.version v1.5.3
@@ -113,6 +119,7 @@ if enable:
         ns_name,
         version,
         kubernetes_distribution,
+        depends,
         k8s_provider
     )
     cert_manager_version = cert_manager[0]
@@ -125,24 +132,30 @@ else:
 # Check pulumi config 'kubevirt.enable' and deploy if true
 # Enable KubeVirt with the following command:
 #   ~$ pulumi config set kubevirt.enable true
-enable = config.get_bool('kubevirt.enable') or True
-if enable:
+enable_kubevirt = config.get_bool('kubevirt.enable') or True
+if enable_kubevirt:
 
     # Check for Kubevirt version override
     # Set kubevirt version override with the following command:
     #   ~$ pulumi config set kubevirt.version v0.45.0
     version = config.get('kubevirt.version') or None
 
+    # Set cert-manager as a dependency of KubeVirt
+    if enable_cert_manager:
+        depends = [cert_manager_release]
+    else:
+        depends = []
+
     # KubeVirt namespace
     ns_name = "kubevirt"
 
     # Deploy KubeVirt
     kubevirt = deploy_kubevirt(
+        depends,
         ns_name,
         version,
         k8s_provider,
         kubernetes_distribution,
-        cert_manager_release
     )
     kubevirt_version = kubevirt[0]
     kubevirt_operator = kubevirt[1]
@@ -157,7 +170,15 @@ else:
 #   ~$ pulumi config set cdi.version v1.14.7
 version = config.get('cdi.version') or None
 if config.get_bool('cdi.enabled') or True:
+
+    # Set Kubevirt as a dependency for CDI
+    if enable_kubevirt:
+        depends = [kubevirt_operator]
+    else:
+        depends = []
+
     containerized_data_importer = deploy_cdi(
+        depends,
         version,
         k8s_provider
     )
@@ -167,14 +188,21 @@ if config.get_bool('cdi.enabled') or True:
 #   ~$ pulumi config set cnao.enabled true
 # Set CNAO version override with the following command:
 #   ~$ pulumi config set cnao.version 0.0.1
-cnao_enabled = config.get_bool('cnao.enabled') or False
-if cnao_enabled:
+enable_cnao = config.get_bool('cnao.enabled') or False
+if enable_cnao:
 
     # Set CNAO version override from Pulumi config
     version_cnao = config.get('cnao.version') or None
 
+    # Set Cilium as a dependency for CNAO
+    if enable_cilium:
+        depends = [cilium_release]
+    else:
+        depends = []
+
     # Deploy Cluster Network Addons Operator
     cnao = deploy_cnao(
+        depends,
         version_cnao,
         k8s_provider
     )
