@@ -6,6 +6,7 @@ from pulumi_kubernetes.apiextensions.CustomResource import CustomResource
 from src.lib.namespace import create_namespace
 
 def deploy_cnao(
+        depends,
         version: str,
         k8s_provider: k8s.Provider
     ):
@@ -19,6 +20,7 @@ def deploy_cnao(
         "openshift.io/cluster-monitoring": "true",
     }
     namespace = create_namespace(
+        depends,
         ns_name,
         ns_retain,
         ns_protect,

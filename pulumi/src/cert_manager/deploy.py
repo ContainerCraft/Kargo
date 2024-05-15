@@ -8,6 +8,7 @@ def deploy_cert_manager(
         ns_name: str,
         version: str,
         kubernetes_distribution: str,
+        depends: pulumi.Resource,
         k8s_provider: k8s.Provider
     ):
 
@@ -17,6 +18,7 @@ def deploy_cert_manager(
     ns_annotations = {}
     ns_labels = {}
     namespace = create_namespace(
+        depends,
         ns_name,
         ns_retain,
         ns_protect,

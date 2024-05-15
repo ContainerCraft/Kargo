@@ -1,6 +1,7 @@
 config:
   kargo:cdi.version: 1.59.0
   kargo:cert_manager.version: 1.14.5
+  kargo:cilium.enable: "false"
   kargo:cnao.enabled: "true"
   kargo:cnao.version: 0.79.5
   kargo:kubeconfig: /workspaces/Kargo/.kube/config
