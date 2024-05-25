@@ -112,6 +112,8 @@ def deploy_cnao(
         }
     )
 
+    return version, resources
+
     ## Variable settings for the name and bridge configuration
     #network_name = "br0"
     #bridge_name = "br0"

@@ -13,8 +13,7 @@ def deploy_kubevirt(
         ns_name: str,
         version: str,
         k8s_provider: k8s.Provider,
-        kubernetes_distribution: str,
-        cert_manager: pulumi.Output = None
+        kubernetes_distribution: str
     ):
 
     # Create namespace
@@ -55,11 +54,11 @@ def deploy_kubevirt(
     transformed_yaml = []
     for resource in kubevirt_yaml:
         if resource and resource.get('kind') == 'Namespace':
-            pulumi.log.info(f"Removing Namespace: {resource['metadata']['name']}")
+            pulumi.log.debug(f"Transforming Namespace resource: {resource['metadata']['name']}")
             continue  # Skip adding this namespace to the edited YAML
         if resource and 'metadata' in resource:
             resource['metadata']['namespace'] = ns_name
-            pulumi.log.info(f"Setting namespace for {resource['kind']} to {ns_name}")
+            pulumi.log.debug(f"Setting namespace for {resource['kind']} to {ns_name}")
         transformed_yaml.append(resource)
 
     # Write the edited YAML to a temporary file
@@ -81,43 +80,10 @@ def deploy_kubevirt(
     # Ensure the temporary file is deleted after Pulumi uses it
     pulumi.Output.all().apply(lambda _: os.unlink(temp_file_path))
 
-    # Define the transformation to remove Namespace creation and ensure correct namespace for other resources
-    # TODO: fix transformation to remove namespace creation (currently producing duplicate namespace resource)
-    #def remove_namespace_transform(args):
-
-    #    transformed_args = args.copy()
-
-    #    if transformed_args['kind'] == "Namespace":
-    #        pulumi.log.info(f"Skipping creation of duplicate Namespace: {args['metadata']['name']}")
-    #        return None  # Skip the creation of this resource if it's a duplicate
-
-    #    if 'metadata' in transformed_args:
-    #        args['metadata']['namespace'] = ns_name
-    #        pulumi.log.info(f"Transforming resource of namespace/kind: {ns_name}/{args['kind']}")
-
-    #    # log the changes between args and transformed_args
-    #    if transformed_args != args:
-    #        pulumi.log.info(f"Transformed args: {transformed_args}")
-    #    else:
-    #        pulumi.log.info(f"No changes to args: {args.get('kind')}")
-
-    #    return transformed_args
-
-    #operator = k8s.yaml.ConfigFile(
-    #    'kubevirt-operator',
-    #    file=kubevirt_operator_url,
-    #    transformations=[remove_namespace_transform],
-    #    opts=pulumi.ResourceOptions(
-    #        provider=k8s_provider,
-    #        parent=namespace,
-    #        depends_on=[cert_manager]
-    #    )
-    #)
-
     # Determine useEmulation based on the kubernetes_distribution
     use_emulation = True if kubernetes_distribution == "kind" else False
     if use_emulation:
-        pulumi.log.info("Using emulation for KubeVirt in developer mode")
+        pulumi.log.info("KVM Emulation configured for KubeVirt in development.")
 
     # Create the KubeVirt custom resource object
     kubevirt_custom_resource_spec = {
