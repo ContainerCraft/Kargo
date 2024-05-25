@@ -12,5 +12,12 @@ config:
   kargo:kubernetes_dashboard.version: 7.4.0
   kargo:kubevirt.version: 1.2.0
   kargo:multus.enabled: "true"
+  kargo:openunison.dns_suffix: kargo.arpa
+  kargo:openunison.enabled: "true"
+  kargo:openunison.github.client_id: Ov23li28jxV3tmAviMVl
+  kargo:openunison.github.client_secret:
+    secure: AAABAEQGM+PYpnW0+MOeMdrRc1byEVg3Hp+aMPyB9BluzfjjpGeus1U4hhjf0fXt1xTmXrAJ8H6iGpzQmGAFi6ARgYZ3I/gd
+  kargo:openunison.github.teams: ContainerCraft/kubeadmin,ContainerCraft/
+  kargo:openunison.version: 3.0.11
   kargo:prometheus.enabled: "true"
   kargo:prometheus.version: 58.7.2

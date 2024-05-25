@@ -199,6 +199,9 @@ clean: login down
 
 clean-all: clean
 	@echo "Performing extended cleanup..."
+	@echo "Destroying all kind clusters"
+	@sudo kind delete clusters --all \
+		|| echo "Kind clusters not found."
 	@sudo docker volume rm kargo-worker-n01 kargo-worker-n02 kargo-control-plane-n01 \
 		|| echo "Docker volumes not found."
 	@rm -rf Pulumi.*.yaml
