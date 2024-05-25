@@ -1,69 +1,95 @@
-import pulumi
-import pulumi_kubernetes as k8s
 import requests
+import pulumi
+from pulumi import ResourceOptions
+import pulumi_kubernetes as k8s
+from pulumi_kubernetes.meta.v1 import ObjectMetaArgs
+from pulumi_kubernetes.storage.v1 import StorageClass
+from src.lib.namespace import create_namespace
 
-def deploy(k8s_provider: k8s.Provider, hostpath: str, default: str, version: str = None, cert_manager: pulumi.Output = None):
+def deploy(
+        depends: pulumi.Output[list],
+        version: str,
+        ns_name: str,
+        hostpath: str,
+        default: bool,
+        k8s_provider: k8s.Provider,
+    ):
+
     # If version is not supplied, fetch the latest stable version
     if version is None:
         tag_url = 'https://github.com/kubevirt/hostpath-provisioner-operator/releases/latest'
         tag = requests.get(tag_url, allow_redirects=False).headers.get('location')
-        version = tag.split('/')[-1] if tag else 'v0.17.0'
+        version = tag.split('/')[-1] if tag else '0.17.0'
 
-    # Deploy the namespace
-    url = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/{version}/namespace.yaml'
-    namespace = k8s.yaml.ConfigFile(
-        'namespace',
-        file=url,
-        opts=pulumi.ResourceOptions(
-            provider=k8s_provider,
-            depends_on=[cert_manager]
-        )
+    # Create namespace
+    ns_retain = True
+    ns_protect = False
+    ns_annotations = {}
+    ns_labels = {
+        "kubevirt.io": "",
+        "kubernetes.io/metadata.name": ns_name,
+    }
+    namespace = create_namespace(
+        depends,
+        ns_name,
+        ns_retain,
+        ns_protect,
+        k8s_provider,
+        custom_labels=ns_labels,
+        custom_annotations=ns_annotations
     )
 
     # Function to add namespace to resource if not set
     def add_namespace(args):
         obj = args.props
+
         if 'metadata' in obj:
-            if not obj['metadata'].get('namespace'):
-                obj['metadata']['namespace'] = 'hostpath-provisioner'
+            if isinstance(obj['metadata'], ObjectMetaArgs):
+                if not obj['metadata'].namespace:
+                    obj['metadata'].namespace = ns_name
+            else:
+                if not obj['metadata'].get('namespace'):
+                    obj['metadata']['namespace'] = ns_name
         else:
-            obj['metadata'] = {'namespace': 'hostpath-provisioner'}
+            obj['metadata'] = {'namespace': ns_name}
 
         # Return the modified object wrapped in ResourceTransformationResult
         return pulumi.ResourceTransformationResult(props=obj, opts=args.opts)
 
     # Deploy the webhook
-    url = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/{version}/webhook.yaml'
+    url_webhook = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/v{version}/webhook.yaml'
     webhook = k8s.yaml.ConfigFile(
-        'webhook',
-        file=url,
-        opts=pulumi.ResourceOptions(
+        "hostpath-provisioner-webhook",
+        file=url_webhook,
+        opts=ResourceOptions(
             provider=k8s_provider,
             transformations=[add_namespace],
-            depends_on=[namespace]
+            parent=namespace,
+            depends_on=depends
         )
     )
 
     # Deploy the operator with a transformation that adds the namespace
-    url = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/{version}/operator.yaml'
+    url_operator = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/v{version}/operator.yaml'
     operator = k8s.yaml.ConfigFile(
-        'operator',
-        file=url,
-        opts=pulumi.ResourceOptions(
+        "hostpath-provisioner-operator",
+        file=url_operator,
+        opts=ResourceOptions(
             provider=k8s_provider,
             transformations=[add_namespace],
-            depends_on=[namespace]
+            parent=namespace,
+            depends_on=[webhook]
         )
     )
 
     # Create a HostPathProvisioner resource
     hostpath_provisioner = k8s.apiextensions.CustomResource(
-        "hostpath-provisioner",
+        "hostpath-provisioner-hpp",
         api_version="hostpathprovisioner.kubevirt.io/v1beta1",
         kind="HostPathProvisioner",
         metadata={
-            "name": "hostpath-provisioner",
-            "namespace": "hostpath-provisioner"
+            "name": "hostpath-provisioner-class-ssd",
+            "namespace": ns_name
         },
         spec={
             "imagePullPolicy": "IfNotPresent",
@@ -77,20 +103,20 @@ def deploy(k8s_provider: k8s.Provider, hostpath: str, default: str, version: str
                 }
             }
         },
-        opts=pulumi.ResourceOptions(
+        opts=ResourceOptions(
             provider=k8s_provider,
+            parent=operator,
             depends_on=[webhook]
         )
     )
 
     # Define the StorageClass
-    storage_class = k8s.storage.v1.StorageClass(
-        "storage_class_ssd",
-        metadata=k8s.meta.v1.ObjectMetaArgs(
+    storage_class = StorageClass(
+        "hostpath-storage-class-ssd",
+        metadata=ObjectMetaArgs(
             name="ssd",
-            namespace="hostpath-provisioner",
             annotations={
-                "storageclass.kubernetes.io/is-default-class": default
+                "storageclass.kubernetes.io/is-default-class": "true" if default else "false"
             }
         ),
         reclaim_policy="Delete",
@@ -99,26 +125,11 @@ def deploy(k8s_provider: k8s.Provider, hostpath: str, default: str, version: str
         parameters={
             "storagePool": "ssd",
         },
-        opts=pulumi.ResourceOptions(
+        opts=ResourceOptions(
             provider=k8s_provider,
-            depends_on=[namespace, operator, webhook, hostpath_provisioner]
+            parent=hostpath_provisioner,
+            depends_on=[namespace, operator, webhook]
         )
     )
 
-    # To access the name of the provisioner once it is created, you can export the value:
-    pulumi.export("provisioner_name", hostpath_provisioner.metadata["name"])
-
-    # Export the name of the StorageClass
-    pulumi.export("storage_class_name", storage_class.metadata["name"])
-
-    # Export the version of the hostpath provisioner operator that was deployed
-    pulumi.export("hostpath_provisioner_operator_version", version)
-
-    return {
-        "version": version,
-        "namespace": namespace,
-        "webhook": webhook,
-        "operator": operator,
-        "hostpath_provisioner": hostpath_provisioner,
-        "storage_class": storage_class
-    }
+    return version, operator

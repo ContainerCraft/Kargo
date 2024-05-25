@@ -9,9 +9,9 @@ def deploy_multus(
     ):
 
     resource_name = f"k8snetworkplumbingwg-multus-daemonset-thick"
-    manifest_url = "https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/master/deployments/multus-daemonset-thick.yml"
+    manifest_url = f"https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/{version}/deployments/multus-daemonset-thick.yml"
 
-    resource = k8s.yaml.ConfigFile(
+    multus = k8s.yaml.ConfigFile(
         resource_name,
         file=manifest_url,
         opts=pulumi.ResourceOptions(
@@ -56,11 +56,13 @@ def deploy_multus(
     # Export the name of the resource
     pulumi.export('network_attachment_definition', network_attachment_definition.metadata['name'])
 
+    return "master", multus
+
 def transform_host_path(args):
 
     # Get the object from the arguments
     obj = args.props
-    pulumi.log.info(f"Object keys: {list(obj.keys())}")
+    pulumi.log.debug(f"Object keys: {list(obj.keys())}")
 
     # Transform DaemonSet named 'kube-multus-ds'
     if obj.get('kind', '') == 'DaemonSet' and obj.get('metadata', {}).get('name', '') == 'kube-multus-ds':
