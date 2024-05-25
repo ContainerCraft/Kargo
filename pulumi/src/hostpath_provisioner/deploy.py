@@ -105,8 +105,8 @@ def deploy(
         },
         opts=ResourceOptions(
             provider=k8s_provider,
-            parent=operator,
-            depends_on=[webhook]
+            parent=namespace,
+            depends_on=[namespace, operator, webhook]
         )
     )
 
@@ -127,8 +127,8 @@ def deploy(
         },
         opts=ResourceOptions(
             provider=k8s_provider,
-            parent=hostpath_provisioner,
-            depends_on=[namespace, operator, webhook]
+            parent=namespace,
+            depends_on=[namespace, operator, webhook, hostpath_provisioner]
         )
     )
 

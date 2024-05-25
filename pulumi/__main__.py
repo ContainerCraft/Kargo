@@ -184,6 +184,10 @@ if cert_manager_enabled:
     # Cert Manager Release Resource
     cert_manager_release = cert_manager[1]
 
+    cert_manager_selfsigned_cert = cert_manager[2]
+
+    pulumi.export("cert_manager_selfsigned_cert", cert_manager_selfsigned_cert)
+
 else:
     cert_manager = None, None
 
@@ -448,10 +452,14 @@ if openunison_enabled:
     version = config.get('openunison.version') or None
 
     # get the domain suffix and cluster_issuer
-    domain_suffix = config.require('openunison.dns_suffix') or "kargo.arpa"
+    domain_suffix = config.get('openunison.dns_suffix') or "kargo.arpa"
 
     # get the cluster issuer
-    cluster_issuer = config.require('openunison.cluster_issuer') or "cluster-selfsigned-issuer"
+    cluster_issuer = config.get('openunison.cluster_issuer') or "cluster-selfsigned-issuer-ca"
+
+    # Set openunison github integration config values
+    ou_config_id = config.require('openunison.github.client_id')
+    ou_config_teams = config.require('openunison.github.teams')
 
     # Set depends to an empty list by default
     depends = []
@@ -468,6 +476,16 @@ if openunison_enabled:
     if prometheus_enabled:
         depends.append(prometheus_release)
 
+    enabled = {}
+
+    if kubevirt_enabled:
+        enabled["kubevirt"] = {"enabled": kubevirt_enabled}
+
+    if prometheus_enabled:
+        enabled["prometheus"] = {"enabled": prometheus_enabled}
+
+    pulumi.export("enabled", enabled)
+
     # Set openunison namespace
     ns_name = "openunison"
 
@@ -477,20 +495,20 @@ if openunison_enabled:
         ns_name,
         version,
         k8s_provider,
-        kubernetes_distribution,
-        project_name,
         domain_suffix,
         cluster_issuer,
-        prometheus_enabled,
-        kubevirt_manager_enabled,
-        kubernetes_dashboard_release
+        cert_manager_selfsigned_cert,
+        kubernetes_dashboard_release,
+        ou_config_id,
+        ou_config_teams,
+        enabled,
     )
 
     # Append openunison version to versions dictionary
-    versions["openunison"] = {"enabled": openunison_enabled, "version": openunison[0]}
+    #versions["openunison"] = {"enabled": openunison_enabled, "version": openunison[0]}
 
     # OpenUnison Release Resource
-    openunison_release = openunison[1]
+    #openunison_release = openunison[1]
 
 else:
     openunison = None, None

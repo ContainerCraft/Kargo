@@ -49,7 +49,7 @@ def deploy_cert_manager(
         k8s.helm.v3.ReleaseArgs(
             chart=chart_name,
             version=version,
-            namespace=namespace.metadata["name"],
+            namespace=ns_name,
             skip_await=False,
             repository_opts= k8s.helm.v3.RepositoryOptsArgs(
                 repo=chart_url
@@ -75,7 +75,7 @@ def deploy_cert_manager(
         kind="ClusterIssuer",
         metadata={
             "name": "cluster-selfsigned-issuer-root",
-            "namespace": namespace.metadata["name"]
+            "namespace": ns_name
         },
         spec={
             "selfSigned": {}
@@ -98,7 +98,7 @@ def deploy_cert_manager(
         kind="Certificate",
         metadata={
             "name": "cluster-selfsigned-issuer-ca",
-            "namespace": namespace.metadata["name"]
+            "namespace": ns_name
         },
         spec={
             "commonName": "cluster-selfsigned-issuer-ca",
@@ -134,7 +134,7 @@ def deploy_cert_manager(
         kind="ClusterIssuer",
         metadata={
             "name": "cluster-selfsigned-issuer",
-            "namespace": namespace.metadata["name"]
+            "namespace": ns_name
         },
         spec={
             "ca": {
@@ -142,7 +142,7 @@ def deploy_cert_manager(
             }
         },
         opts=pulumi.ResourceOptions(
-            provider = k8s_provider,
+            provider=k8s_provider,
             parent=cluster_issuer_ca_certificate,
             depends_on=[namespace],
             custom_timeouts=pulumi.CustomTimeouts(
@@ -153,7 +153,24 @@ def deploy_cert_manager(
         )
     )
 
-    return version, release
+    # Retrieve the CA certificate secret
+    ca_secret = k8s.core.v1.Secret(
+        "cluster-selfsigned-issuer-ca-secret",
+        metadata={
+            "namespace": ns_name,
+            "name": cluster_issuer_ca_certificate.spec["secretName"]
+        },
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
+            parent=cluster_issuer,
+            depends_on=[cluster_issuer]
+        )
+    )
+
+    # Extract the tls.crt value from the secret
+    ca_data_tls_crt_b64 = ca_secret.data.apply(lambda data: data["tls.crt"])
+
+    return version, release, ca_data_tls_crt_b64
 
 def gen_helm_values(kubernetes_distribution: str):
 
