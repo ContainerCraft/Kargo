@@ -304,7 +304,6 @@ if multus_enabled:
     if cilium_enabled:
         depends.append(cilium_release)
 
-    # Get multus default bridge name from pulumi config
     # Set Multus default bridge name with the following command:
     #   ~$ pulumi config set multus.default_bridge br0
     bridge_name = config.get('multus.default_bridge') or "br0"
@@ -458,8 +457,9 @@ if openunison_enabled:
     cluster_issuer = config.get('openunison.cluster_issuer') or "cluster-selfsigned-issuer-ca"
 
     # Set openunison github integration config values
-    ou_config_id = config.require('openunison.github.client_id')
-    ou_config_teams = config.require('openunison.github.teams')
+    openunison_github_teams = config.require('openunison.github.teams')
+    openunison_github_client_id = config.require('openunison.github.client_id')
+    openunison_github_client_secret = config.require('openunison.github.client_secret')
 
     # Set depends to an empty list by default
     depends = []
@@ -499,8 +499,9 @@ if openunison_enabled:
         cluster_issuer,
         cert_manager_selfsigned_cert,
         kubernetes_dashboard_release,
-        ou_config_id,
-        ou_config_teams,
+        openunison_github_client_id,
+        openunison_github_client_secret,
+        openunison_github_teams,
         enabled,
     )
 
