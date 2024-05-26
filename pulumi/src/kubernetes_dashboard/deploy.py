@@ -54,6 +54,7 @@ def deploy_kubernetes_dashboard(
             ),
             opts=pulumi.ResourceOptions(
                 provider = k8s_provider,
+                parent=namespace,
                 depends_on=[namespace],
                 custom_timeouts=pulumi.CustomTimeouts(
                     create="8m",

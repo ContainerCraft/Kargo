@@ -40,26 +40,26 @@ def deploy_cnao(
         # Log the version override
         pulumi.log.info(f"Using CNAO Version: cnao/{version}")
 
-    # Kubernetes YAML manifest URLs
-    manifest_urls = [
-        f"https://github.com/kubevirt/cluster-network-addons-operator/releases/download/v{version}/network-addons-config.crd.yaml",
-        f"https://github.com/kubevirt/cluster-network-addons-operator/releases/download/v{version}/operator.yaml",
-    ]
-
-    resources = []
-
-    for i, url in enumerate(manifest_urls):
-        file_name = os.path.splitext(os.path.basename(url))[0]
-        resource_name = f"nado-{file_name}"
-        resource = k8s.yaml.ConfigFile(
-            resource_name,
-            file=url,
-            opts=pulumi.ResourceOptions(
-                provider=k8s_provider,
-                parent=namespace
-            )
+    crd_manifest_url = f"https://github.com/kubevirt/cluster-network-addons-operator/releases/download/v{version}/network-addons-config.crd.yaml"
+    nado_crd_resource = k8s.yaml.ConfigFile(
+        "network-addons-crds",
+        file=crd_manifest_url,
+        opts=pulumi.ResourceOptions(
+            parent=namespace,
+            provider=k8s_provider,
         )
-        resources.append(resource)
+    )
+
+    operator_manifest_url = f"https://github.com/kubevirt/cluster-network-addons-operator/releases/download/v{version}/operator.yaml"
+    nado_operator_resource = k8s.yaml.ConfigFile(
+        "network-addons-operator",
+        file=operator_manifest_url,
+        opts=pulumi.ResourceOptions(
+            parent=namespace,
+            provider=k8s_provider,
+        )
+    )
+    depends.append(nado_operator_resource)
 
     network_addons_config = CustomResource(
         "network-addons-config",
@@ -69,8 +69,8 @@ def deploy_cnao(
             "name": "cluster",
         },
         opts=pulumi.ResourceOptions(
+            parent=namespace,
             provider=k8s_provider,
-            parent=namespace
         ),
         spec={
             "macvtap": {},
@@ -112,7 +112,7 @@ def deploy_cnao(
         }
     )
 
-    return version, resources
+    return version, nado_operator_resource
 
     ## Variable settings for the name and bridge configuration
     #network_name = "br0"

@@ -16,10 +16,11 @@ def deploy_multus(
         file=manifest_url,
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
-            depends_on=depends,
+            #depends_on=depends,
             transformations=[transform_host_path]
         )
     )
+    depends.append(multus)
 
     # Pulumi Kubernetes resource for NetworkAttachmentDefinition
     network_attachment_definition = k8s.apiextensions.CustomResource(
@@ -48,7 +49,7 @@ def deploy_multus(
             }}''')
         },
         opts=pulumi.ResourceOptions(
-            depends_on=depends,
+            #depends_on=depends,
             provider=k8s_provider
         )
     )

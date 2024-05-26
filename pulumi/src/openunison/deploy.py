@@ -1,4 +1,6 @@
 import json
+import base64
+import secrets
 import pulumi
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes.apiextensions import CustomResource
@@ -14,8 +16,9 @@ def deploy_openunison(
         cluster_issuer: str,
         cert_manager_selfsigned_cert: str,
         kubernetes_dashboard_release: str,
-        openunison_github_client_id: str,
-        openunison_github_teams: str,
+        ou_github_client_id: str,
+        ou_github_client_secret: str,
+        ou_github_teams: str,
         enabled
     ):
 
@@ -35,7 +38,7 @@ def deploy_openunison(
         ns_annotations
     )
 
-    openunison_certificate = CustomResource(
+    ou_certificate = CustomResource(
         "ou-tls-certificate",
         api_version="cert-manager.io/v1",
         kind="Certificate",
@@ -77,12 +80,12 @@ def deploy_openunison(
             )
         )
     )
-    depends.append(openunison_certificate)
+    depends.append(ou_certificate)
 
-    openunison_helm_values = {
+    ou_helm_values = {
         "enable_wait_for_job": True,
         "network": {
-            "openunison_host": f"k8sou.{domain_suffix}",
+            "ou_host": f"k8sou.{domain_suffix}",
             "dashboard_host": f"k8sdb.{domain_suffix}",
             "api_server_host": f"k8sapi.{domain_suffix}",
             "session_inactivity_timeout_seconds": 900,
@@ -124,8 +127,8 @@ def deploy_openunison(
             "prometheus_service_account": "system:serviceaccount:monitoring:prometheus-k8s"
         },
         "github": {
-            "client_id": openunison_github_client_id,
-            "teams": openunison_github_teams,
+            "client_id": ou_github_client_id,
+            "teams": ou_github_teams,
         },
         "network_policies": {
         "enabled": False,
@@ -169,7 +172,7 @@ def deploy_openunison(
     }
 
     # now that OpenUnison is deployed, we'll make ClusterAdmins of all the groups specified in openunison.github.teams
-    github_teams = openunison_github_teams.split(',')
+    github_teams = ou_github_teams.split(',')
     subjects = []
     az_groups = []
     for team in github_teams:
@@ -196,7 +199,7 @@ def deploy_openunison(
     grafana_icon_json = json.dumps(assets["grafana_icon"])
 
     if enabled["kubevirt"]["enabled"]:
-        openunison_helm_values["openunison"]["apps"].append(
+        ou_helm_values["openunison"]["apps"].append(
             {
                 "name": "kubevirt-manager",
                 "label": "KubeVirt Manager",
@@ -210,7 +213,7 @@ def deploy_openunison(
         )
 
     if enabled["prometheus"]["enabled"]:
-        openunison_helm_values["openunison"]["apps"].append(
+        ou_helm_values["openunison"]["apps"].append(
             {
                 "name": "prometheus",
                 "label": "Prometheus",
@@ -223,7 +226,7 @@ def deploy_openunison(
             }
         )
 
-        openunison_helm_values["openunison"]["apps"].append(
+        ou_helm_values["openunison"]["apps"].append(
                     {
                         "name": "alertmanager",
                         "label": "Alert Manager",
@@ -236,7 +239,7 @@ def deploy_openunison(
                     }
         )
 
-        openunison_helm_values["openunison"]["apps"].append(
+        ou_helm_values["openunison"]["apps"].append(
             {
                 "name": "grafana",
                 "label": "Grafana",
@@ -250,12 +253,12 @@ def deploy_openunison(
             }
         )
 
-    openunison_helm_values["dashboard"]["service_name"] = kubernetes_dashboard_release.name.apply(lambda name: name)
-    openunison_helm_values["dashboard"]["cert_name"] = kubernetes_dashboard_release.name.apply(lambda name: name + "-certs")
+    ou_helm_values["dashboard"]["service_name"] = kubernetes_dashboard_release.name.apply(lambda name: name)
+    ou_helm_values["dashboard"]["cert_name"] = kubernetes_dashboard_release.name.apply(lambda name: name + "-certs")
 
     # Apply function to wait for the dashboard release names before proceeding
     def wait_for_dashboard_release_names():
-        return openunison_helm_values
+        return ou_helm_values
 
     orchesrta_login_portal_helm_values = kubernetes_dashboard_release.name.apply(lambda _: wait_for_dashboard_release_names())
 
@@ -277,7 +280,7 @@ def deploy_openunison(
             chart=chart_name,
             version=version,
             values=orchesrta_login_portal_helm_values,
-            namespace='openunison',
+            namespace=ns_name,
             skip_await=False,
             repository_opts=k8s.helm.v3.RepositoryOptsArgs(
                 repo=chart_url
@@ -295,132 +298,142 @@ def deploy_openunison(
         )
     )
 
+    raw_secret_data = {
+        "K8S_DB_SECRET": secrets.token_urlsafe(64),
+        "unisonKeystorePassword": secrets.token_urlsafe(64),
+        "GITHUB_SECRET_ID": ou_github_client_secret
+    }
+
+    encoded_secret_data = {
+        key: base64.b64encode(value.encode('utf-8')).decode('utf-8')
+            for key, value in raw_secret_data.items()
+    }
+
+    # Base64 encode the GitHub client secret
+    orchestra_secret_source = k8s.core.v1.Secret(
+        "orchestra-secrets-source",
+        metadata= k8s.meta.v1.ObjectMetaArgs(
+            name="orchestra-secrets-source",
+            namespace=ns_name
+        ),
+        data={
+            "K8S_DB_SECRET": encoded_secret_data['K8S_DB_SECRET'],
+            "unisonKeystorePassword": encoded_secret_data["unisonKeystorePassword"],
+            "GITHUB_SECRET_ID": encoded_secret_data["GITHUB_SECRET_ID"]
+        },
+        opts=pulumi.ResourceOptions(
+            parent=operator_release,
+            provider = k8s_provider,
+            retain_on_delete=False,
+            delete_before_replace=True,
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="10m",
+                update="10m",
+                delete="10m"
+            )
+        )
+    )
+
+    orchestra_chart_name = 'orchestra'
+    orchestra_chart_version = get_latest_helm_chart_version(chart_index_url, orchestra_chart_name)
+    ou_orchestra_release = k8s.helm.v3.Release(
+        'orchestra',
+        k8s.helm.v3.ReleaseArgs(
+            chart=orchestra_chart_name,
+            version=orchestra_chart_version,
+            values=ou_helm_values,
+            namespace=ns_name,
+            skip_await=False,
+            wait_for_jobs=True,
+            repository_opts= k8s.helm.v3.RepositoryOptsArgs(
+                repo=chart_url
+            ),
+        ),
+        opts=pulumi.ResourceOptions(
+            parent=operator_release,
+            depends_on=[operator_release, orchestra_secret_source],
+            provider = k8s_provider,
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m",
+                update="10m",
+                delete="10m"
+            )
+        )
+    )
+
+    ou_orchestra_release_name = ou_orchestra_release.name.apply(lambda name: name)
+
+    def update_values(name):
+        return {
+            **ou_helm_values,
+            "impersonation": {
+                **ou_helm_values["impersonation"],
+                "orchestra_release_name": name
+            }
+        }
+
+    # Apply the updated values
+    updated_values = ou_orchestra_release_name.apply(update_values)
+
+    orchestra_login_portal_chart_name = 'orchestra-login-portal'
+    orchestra_login_portal_chart_version = get_latest_helm_chart_version(chart_index_url,orchestra_login_portal_chart_name)
+    ou_orchestra_login_portal_release = k8s.helm.v3.Release(
+        'orchestra-login-portal',
+        k8s.helm.v3.ReleaseArgs(
+            chart=orchestra_login_portal_chart_name,
+            version=orchestra_login_portal_chart_version,
+            values=updated_values,
+            namespace=ns_name,
+            skip_await=False,
+            wait_for_jobs=True,
+            repository_opts= k8s.helm.v3.RepositoryOptsArgs(
+                repo=chart_url
+            ),
+        ),
+        opts=pulumi.ResourceOptions(
+            provider = k8s_provider,
+            parent=ou_orchestra_release,
+            depends_on=[ou_orchestra_release],
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m",
+                update="10m",
+                delete="10m"
+            )
+        )
+    )
+
+    orchestra_kube_oidc_proxy_chart_name = 'orchestra-kube-oidc-proxy'
+    orchestra_kube_oidc_proxy_chart_version = get_latest_helm_chart_version(chart_index_url, orchestra_kube_oidc_proxy_chart_name)
+
+    ou_kube_oidc_proxy_release = k8s.helm.v3.Release(
+        'proxy',
+        k8s.helm.v3.ReleaseArgs(
+            chart=orchestra_kube_oidc_proxy_chart_name,
+            namespace=ns_name,
+            values=orchesrta_login_portal_helm_values,
+            version=orchestra_kube_oidc_proxy_chart_version,
+            skip_await=False,
+            wait_for_jobs=True,
+            repository_opts= k8s.helm.v3.RepositoryOptsArgs(
+                repo=chart_url
+            ),
+        ),
+        opts=pulumi.ResourceOptions(
+            provider = k8s_provider,
+            parent=ou_orchestra_login_portal_release,
+            depends_on=[ou_orchestra_login_portal_release],
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m",
+                update="10m",
+                delete="10m"
+            )
+        )
+    )
+
     return version, operator_release
 
 
-#    raw_secret_data = {
-#        "K8S_DB_SECRET": secrets.token_urlsafe(64),
-#        "unisonKeystorePassword": secrets.token_urlsafe(64),
-#
-#    }
-#    encoded_secret_data = {
-#        key: base64.b64encode(value.encode('utf-8')).decode('utf-8')
-#            for key, value in raw_secret_data.items()
-#    }
-#
-#    orchestra_secret_source = k8s.core.v1.Secret(
-#        "orchestra-secrets-source",
-#        metadata= k8s.meta.v1.ObjectMetaArgs(
-#            name="orchestra-secrets-source",
-#            namespace="openunison"
-#        ),
-#        data={
-#            "K8S_DB_SECRET": encoded_secret_data['K8S_DB_SECRET'],
-#            "unisonKeystorePassword": encoded_secret_data["unisonKeystorePassword"],
-#            "GITHUB_SECRET_ID": config.require_secret('openunison.github.client_secret').apply(lambda client_secret : base64.b64encode(client_secret.encode('utf-8')).decode('utf-8') ),
-#        },
-#        opts=pulumi.ResourceOptions(
-#            provider = k8s_provider,
-#            retain_on_delete=False,
-#            delete_before_replace=True,
-#            custom_timeouts=pulumi.CustomTimeouts(
-#                create="10m",
-#                update="10m",
-#                delete="10m"
-#            )
-#        )
-#    )
-#
-#    orchestra_chart_name = 'orchestra'
-#    orchestra_chart_version = get_latest_helm_chart_version(index_url,orchestra_chart_name)
-#    openunison_orchestra_release = k8s.helm.v3.Release(
-#        'orchestra',
-#        k8s.helm.v3.ReleaseArgs(
-#            chart=orchestra_chart_name,
-#            version=orchestra_chart_version,
-#            values=openunison_helm_values,
-#            namespace='openunison',
-#            skip_await=False,
-#            wait_for_jobs=True,
-#            repository_opts= k8s.helm.v3.RepositoryOptsArgs(
-#                repo=chart_url
-#            ),
-#
-#        ),
-#
-#        opts=pulumi.ResourceOptions(
-#            provider = k8s_provider,
-#            depends_on=[openunison_operator_release,orchestra_secret_source],
-#            custom_timeouts=pulumi.CustomTimeouts(
-#                create="8m",
-#                update="10m",
-#                delete="10m"
-#            )
-#        )
-#    )
-#
-#    pulumi.export("openunison_orchestra_release",openunison_orchestra_release)
-#
-#    orchesrta_login_portal_helm_values["impersonation"]["orchestra_release_name"] = openunison_orchestra_release.name.apply(lambda name: name)
-#
-#    orchestra_login_portal_chart_name = 'orchestra-login-portal'
-#    orchestra_login_portal_chart_version = get_latest_helm_chart_version(index_url,orchestra_login_portal_chart_name)
-#    openunison_orchestra_login_portal_release = k8s.helm.v3.Release(
-#        'orchestra-login-portal',
-#        k8s.helm.v3.ReleaseArgs(
-#            chart=orchestra_login_portal_chart_name,
-#            version=orchestra_login_portal_chart_version,
-#            values=orchesrta_login_portal_helm_values,
-#            namespace='openunison',
-#            skip_await=False,
-#            wait_for_jobs=True,
-#            repository_opts= k8s.helm.v3.RepositoryOptsArgs(
-#                repo=chart_url
-#            ),
-#
-#        ),
-#
-#        opts=pulumi.ResourceOptions(
-#            provider = k8s_provider,
-#            depends_on=[openunison_orchestra_release],
-#            custom_timeouts=pulumi.CustomTimeouts(
-#                create="8m",
-#                update="10m",
-#                delete="10m"
-#            )
-#        )
-#    )
-#
-#    orchestra_kube_oidc_proxy_chart_name = 'orchestra-kube-oidc-proxy'
-#    orchestra_kube_oidc_proxy_chart_version = get_latest_helm_chart_version(index_url,orchestra_kube_oidc_proxy_chart_name)
-#    openunison_kube_oidc_proxy_release = k8s.helm.v3.Release(
-#        'orchestra-kube-oidc-proxy',
-#        k8s.helm.v3.ReleaseArgs(
-#            chart=orchestra_kube_oidc_proxy_chart_name,
-#            version=orchestra_kube_oidc_proxy_chart_version,
-#            values=orchesrta_login_portal_helm_values,
-#            namespace='openunison',
-#            skip_await=False,
-#            wait_for_jobs=True,
-#            repository_opts= k8s.helm.v3.RepositoryOptsArgs(
-#                repo=chart_url
-#            ),
-#
-#        ),
-#
-#        opts=pulumi.ResourceOptions(
-#            provider = k8s_provider,
-#            depends_on=[openunison_orchestra_login_portal_release],
-#            custom_timeouts=pulumi.CustomTimeouts(
-#                create="8m",
-#                update="10m",
-#                delete="10m"
-#            )
-#        )
-#    )
-#
-#
-#
+
 #    cluster_admin_cluster_role_binding = k8s.rbac.v1.ClusterRoleBinding(
 #        "clusteradmin-clusterrolebinding",
 #        metadata=k8s.meta.v1.ObjectMetaArgs(
@@ -446,7 +459,7 @@ def deploy_openunison(
 #
 #    if prometheus_enabled:
 #        # create the Grafana ResultGroup
-#        openunison_grafana_resultgroup = CustomResource(
+#        ou_grafana_resultgroup = CustomResource(
 #            "openunison-grafana",
 #            api_version="openunison.tremolo.io/v1",
 #            kind="ResultGroup",
@@ -474,7 +487,7 @@ def deploy_openunison(
 #            ],
 #            opts=pulumi.ResourceOptions(
 #                provider = k8s_provider,
-#                depends_on=[openunison_orchestra_release],
+#                depends_on=[ou_orchestra_release],
 #                custom_timeouts=pulumi.CustomTimeouts(
 #                    create="5m",
 #                    update="10m",

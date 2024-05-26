@@ -76,7 +76,8 @@ def deploy_prometheus(
         ),
         opts=pulumi.ResourceOptions(
             provider = k8s_provider,
-            depends_on=[],
+            parent=namespace,
+            depends_on=depends,
             custom_timeouts=pulumi.CustomTimeouts(
                 create="30m",
                 update="30m",
@@ -84,6 +85,7 @@ def deploy_prometheus(
             )
         )
     )
+    depends.append(release)
 
     # create services with predictable names
     service_grafana = k8s.core.v1.Service(
@@ -108,6 +110,8 @@ def deploy_prometheus(
             }
         },
         opts=pulumi.ResourceOptions(
+            parent=namespace,
+            depends_on=depends,
             retain_on_delete=False,
             provider = k8s_provider,
             custom_timeouts=pulumi.CustomTimeouts(
@@ -140,6 +144,8 @@ def deploy_prometheus(
             }
         },
         opts=pulumi.ResourceOptions(
+            parent=namespace,
+            depends_on=depends,
             provider = k8s_provider,
             retain_on_delete=False,
             custom_timeouts=pulumi.CustomTimeouts(
@@ -172,6 +178,8 @@ def deploy_prometheus(
             }
         },
         opts=pulumi.ResourceOptions(
+            parent=namespace,
+            depends_on=depends,
             provider = k8s_provider,
             retain_on_delete=False,
             custom_timeouts=pulumi.CustomTimeouts(
