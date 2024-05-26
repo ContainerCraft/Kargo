@@ -7,6 +7,13 @@ from pulumi_kubernetes.apiextensions import CustomResource
 from src.lib.namespace import create_namespace
 from src.lib.helm_chart_versions import get_latest_helm_chart_version
 
+def sanitize_name(name: str) -> str:
+    """Ensure the name complies with DNS-1035 and RFC 1123."""
+    name = name.strip('-')
+    if not name:
+        raise ValueError("Invalid name: resulting sanitized name is empty")
+    return name
+
 def deploy_openunison(
         depends,
         ns_name: str,
@@ -180,6 +187,8 @@ def deploy_openunison(
         if team.endswith('/'):
             team = team[:-1]
 
+        team = sanitize_name(team)
+
         subject = k8s.rbac.v1.SubjectArgs(
             kind="Group",
             api_group="rbac.authorization.k8s.io",
@@ -253,8 +262,8 @@ def deploy_openunison(
             }
         )
 
-    ou_helm_values["dashboard"]["service_name"] = kubernetes_dashboard_release.name.apply(lambda name: name)
-    ou_helm_values["dashboard"]["cert_name"] = kubernetes_dashboard_release.name.apply(lambda name: name + "-certs")
+    ou_helm_values["dashboard"]["service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name))
+    ou_helm_values["dashboard"]["cert_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + "-certs"))
 
     # Apply function to wait for the dashboard release names before proceeding
     def wait_for_dashboard_release_names():
@@ -402,11 +411,14 @@ def deploy_openunison(
         )
     )
 
+    # Sanitize name for proxy
+    proxy_name = sanitize_name('proxy')
+
     orchestra_kube_oidc_proxy_chart_name = 'orchestra-kube-oidc-proxy'
     orchestra_kube_oidc_proxy_chart_version = get_latest_helm_chart_version(chart_index_url, orchestra_kube_oidc_proxy_chart_name)
 
     ou_kube_oidc_proxy_release = k8s.helm.v3.Release(
-        'proxy',
+        proxy_name,
         k8s.helm.v3.ReleaseArgs(
             chart=orchestra_kube_oidc_proxy_chart_name,
             namespace=ns_name,
@@ -431,7 +443,6 @@ def deploy_openunison(
     )
 
     return version, operator_release
-
 
 
 #    cluster_admin_cluster_role_binding = k8s.rbac.v1.ClusterRoleBinding(
