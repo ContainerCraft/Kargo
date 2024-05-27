@@ -1,0 +1,26 @@
+config:
+  kargo:cdi.version: 1.59.0
+  kargo:cert_manager.version: 1.14.5
+  kargo:cilium.enable: "true"
+  kargo:cilium.enabled: "False"
+  kargo:cnao.enabled: "true"
+  kargo:cnao.version: 0.79.5
+  kargo:hostpath_provisioner.default_path: /var/mnt/local-path-provisioner/dev/nvme
+  kargo:hostpath_provisioner.default_storage_class: "true"
+  kargo:hostpath_provisioner.enabled: "true"
+  kargo:hostpath_provisioner.version: 0.19.0
+  kargo:kubeconfig: /workspaces/kargo/metal/mordor/.kube/config
+  kargo:kubeconfig.context: admin@mordor
+  kargo:kubernetes: talos
+  kargo:kubernetes.context: admin@mordor
+  kargo:kubernetes_dashboard.enabled: "true"
+  kargo:kubernetes_dashboard.version: 7.4.0
+  kargo:kubevirt.version: 1.2.0
+  kargo:multus.enabled: "true"
+  kargo:openunison.dns_suffix: kargo.arpa
+  kargo:openunison.enabled: "false"
+  kargo:openunison.github.client_id: Ov23li28jxV3tmAviMVl
+  kargo:openunison.github.teams: ContainerCraft/kubeadmin,ContainerCraft/
+  kargo:openunison.version: 3.0.11
+  kargo:prometheus.enabled: "true"
+  kargo:prometheus.version: 58.7.2
