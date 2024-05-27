@@ -191,7 +191,7 @@ talosctl apply-config \
 #  - This will destroy all data on the node(s)
 
 # All nodes
-talosctl reset --graceful=false --reboot --wipe-mode all --wait=false --nodes cp2,cp3
+talosctl reset --graceful=false --reboot --wipe-mode all --system-labels-to-wipe STATE --system-labels-to-wipe EPHEMERAL --wait=false --nodes cp2,cp3
 
 # Individual nodes
 talosctl reset --debug \
