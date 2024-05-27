@@ -51,15 +51,15 @@ versions = {}
 
 # Disable Cilium with the following command:
 #   ~$ pulumi config set cilium.enable false
-cilium_enabled = config.get_bool('cilium.enable') or False
+cilium_enabled = config.get_bool('cilium.enabled') or False
 
 # Enable cert-manager with the following command:
 #   ~$ pulumi config set cert_manager.enable true
-cert_manager_enabled = config.get_bool('cert_manager.enable') or True
+cert_manager_enabled = config.get_bool('cert_manager.enabled') or True
 
 # Enable KubeVirt with the following command:
 #   ~$ pulumi config set kubevirt.enable true
-kubevirt_enabled = config.get_bool('kubevirt.enable') or True
+kubevirt_enabled = config.get_bool('kubevirt.enabled') or True
 
 # Enable containerized data importer with the following command:
 #   ~$ pulumi config set cdi.enabled true

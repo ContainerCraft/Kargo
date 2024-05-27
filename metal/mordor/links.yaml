@@ -1,0 +1,360 @@
+node: 
+metadata:
+    namespace: network
+    type: LinkStatuses.net.talos.dev
+    id: bond0
+    version: 1
+    owner: network.LinkStatusController
+    phase: running
+    created: 2023-12-22T22:09:30Z
+    updated: 2023-12-22T22:09:30Z
+spec:
+    index: 2
+    type: ether
+    linkIndex: 0
+    flags: BROADCAST,MASTER,MULTICAST
+    hardwareAddr: aa:31:13:b1:6a:0e
+    permanentAddr: ""
+    broadcastAddr: ff:ff:ff:ff:ff:ff
+    mtu: 1500
+    queueDisc: noop
+    operationalState: down
+    kind: bond
+    slaveKind: ""
+    driver: bonding
+    driverVersion: 6.1.69-talos
+    firmwareVersion: "2"
+    linkState: false
+    speedMbit: 4294967295
+    port: Other
+    duplex: Unknown
+    bondMaster:
+        mode: balance-rr
+        xmitHashPolicy: layer2
+        lacpRate: slow
+        arpValidate: none
+        arpAllTargets: any
+        primaryReselect: always
+        failOverMac: 0
+        resendIgmp: 1
+        lpInterval: 1
+        packetsPerSlave: 1
+        numPeerNotif: 1
+        tlbLogicalLb: 1
+        useCarrier: true
+---
+node: 
+metadata:
+    namespace: network
+    type: LinkStatuses.net.talos.dev
+    id: dummy0
+    version: 1
+    owner: network.LinkStatusController
+    phase: running
+    created: 2023-12-22T22:09:31Z
+    updated: 2023-12-22T22:09:30Z
+spec:
+    index: 3
+    type: ether
+    linkIndex: 0
+    flags: BROADCAST,NOARP
+    hardwareAddr: a6:7b:73:9a:51:47
+    permanentAddr: ""
+    broadcastAddr: ff:ff:ff:ff:ff:ff
+    mtu: 1500
+    queueDisc: noop
+    operationalState: down
+    kind: dummy
+    slaveKind: ""
+    driver: dummy
+    driverVersion: 6.1.69-talos
+    linkState: false
+    port: Other
+    duplex: Unknown
+---
+node: 
+metadata:
+    namespace: network
+    type: LinkStatuses.net.talos.dev
+    id: eno1
+    version: 2
+    owner: network.LinkStatusController
+    phase: running
+    created: 2023-12-22T22:09:31Z
+    updated: 2023-12-22T22:09:37Z
+spec:
+    index: 13
+    type: ether
+    linkIndex: 0
+    flags: UP,BROADCAST,RUNNING,MULTICAST,LOWER_UP
+    hardwareAddr: f4:02:70:9b:42:10
+    permanentAddr: f4:02:70:9b:42:10
+    broadcastAddr: ff:ff:ff:ff:ff:ff
+    mtu: 1500
+    queueDisc: mq
+    operationalState: up
+    kind: ""
+    slaveKind: ""
+    busPath: "0000:18:00.0"
+    pciID: 14E4:16D8
+    driver: bnxt_en
+    driverVersion: 6.1.69-talos
+    firmwareVersion: 218.0.219.13/pkg 21.85.21.91
+    productID: "0x16d8"
+    vendorID: "0x14e4"
+    product: BCM57416 NetXtreme-E Dual-Media 10G RDMA Ethernet Controller
+    vendor: Broadcom Inc. and subsidiaries
+    linkState: true
+    speedMbit: 1000
+    port: TwistedPair
+    duplex: Full
+---
+node: 
+metadata:
+    namespace: network
+    type: LinkStatuses.net.talos.dev
+    id: eno2
+    version: 2
+    owner: network.LinkStatusController
+    phase: running
+    created: 2023-12-22T22:09:31Z
+    updated: 2023-12-22T22:09:37Z
+spec:
+    index: 14
+    type: ether
+    linkIndex: 0
+    flags: UP,BROADCAST,MULTICAST
+    hardwareAddr: f4:02:70:9b:42:11
+    permanentAddr: f4:02:70:9b:42:11
+    broadcastAddr: ff:ff:ff:ff:ff:ff
+    mtu: 1500
+    queueDisc: mq
+    operationalState: down
+    kind: ""
+    slaveKind: ""
+    busPath: "0000:18:00.1"
+    pciID: 14E4:16D8
+    driver: bnxt_en
+    driverVersion: 6.1.69-talos
+    firmwareVersion: 218.0.219.13/pkg 21.85.21.91
+    productID: "0x16d8"
+    vendorID: "0x14e4"
+    product: BCM57416 NetXtreme-E Dual-Media 10G RDMA Ethernet Controller
+    vendor: Broadcom Inc. and subsidiaries
+    linkState: false
+    speedMbit: 4294967295
+    port: TwistedPair
+    duplex: Unknown
+---
+node: 
+metadata:
+    namespace: network
+    type: LinkStatuses.net.talos.dev
+    id: enp131s0f0
+    version: 2
+    owner: network.LinkStatusController
+    phase: running
+    created: 2023-12-22T22:09:31Z
+    updated: 2023-12-22T22:09:37Z
+spec:
+    index: 8
+    type: ether
+    linkIndex: 0
+    flags: UP,BROADCAST,MULTICAST
+    hardwareAddr: a0:36:9f:00:4e:05
+    permanentAddr: a0:36:9f:00:4e:05
+    broadcastAddr: ff:ff:ff:ff:ff:ff
+    mtu: 1500
+    queueDisc: pfifo_fast
+    operationalState: down
+    kind: ""
+    slaveKind: ""
+    busPath: 0000:83:00.0
+    pciID: 8086:10BC
+    driver: e1000e
+    driverVersion: 6.1.69-talos
+    firmwareVersion: 5.10-2
+    productID: "0x10bc"
+    vendorID: "0x8086"
+    product: 82571EB/82571GB Gigabit Ethernet Controller (Copper)
+    vendor: Intel Corporation
+    linkState: false
+    speedMbit: 4294967295
+    port: TwistedPair
+    duplex: Unknown
+---
+node: 
+metadata:
+    namespace: network
+    type: LinkStatuses.net.talos.dev
+    id: enp131s0f1
+    version: 2
+    owner: network.LinkStatusController
+    phase: running
+    created: 2023-12-22T22:09:31Z
+    updated: 2023-12-22T22:09:37Z
+spec:
+    index: 9
+    type: ether
+    linkIndex: 0
+    flags: UP,BROADCAST,MULTICAST
+    hardwareAddr: a0:36:9f:00:4e:04
+    permanentAddr: a0:36:9f:00:4e:04
+    broadcastAddr: ff:ff:ff:ff:ff:ff
+    mtu: 1500
+    queueDisc: pfifo_fast
+    operationalState: down
+    kind: ""
+    slaveKind: ""
+    busPath: 0000:83:00.1
+    pciID: 8086:10BC
+    driver: e1000e
+    driverVersion: 6.1.69-talos
+    firmwareVersion: 5.10-2
+    productID: "0x10bc"
+    vendorID: "0x8086"
+    product: 82571EB/82571GB Gigabit Ethernet Controller (Copper)
+    vendor: Intel Corporation
+    linkState: false
+    speedMbit: 4294967295
+    port: TwistedPair
+    duplex: Unknown
+---
+node: 
+metadata:
+    namespace: network
+    type: LinkStatuses.net.talos.dev
+    id: enp132s0f0
+    version: 2
+    owner: network.LinkStatusController
+    phase: running
+    created: 2023-12-22T22:09:31Z
+    updated: 2023-12-22T22:09:37Z
+spec:
+    index: 10
+    type: ether
+    linkIndex: 0
+    flags: UP,BROADCAST,MULTICAST
+    hardwareAddr: a0:36:9f:00:4e:07
+    permanentAddr: a0:36:9f:00:4e:07
+    broadcastAddr: ff:ff:ff:ff:ff:ff
+    mtu: 1500
+    queueDisc: pfifo_fast
+    operationalState: down
+    kind: ""
+    slaveKind: ""
+    busPath: 0000:84:00.0
+    pciID: 8086:10BC
+    driver: e1000e
+    driverVersion: 6.1.69-talos
+    firmwareVersion: 5.10-2
+    productID: "0x10bc"
+    vendorID: "0x8086"
+    product: 82571EB/82571GB Gigabit Ethernet Controller (Copper)
+    vendor: Intel Corporation
+    linkState: false
+    speedMbit: 4294967295
+    port: TwistedPair
+    duplex: Unknown
+---
+node: 
+metadata:
+    namespace: network
+    type: LinkStatuses.net.talos.dev
+    id: enp132s0f1
+    version: 2
+    owner: network.LinkStatusController
+    phase: running
+    created: 2023-12-22T22:09:31Z
+    updated: 2023-12-22T22:09:37Z
+spec:
+    index: 11
+    type: ether
+    linkIndex: 0
+    flags: UP,BROADCAST,MULTICAST
+    hardwareAddr: a0:36:9f:00:4e:06
+    permanentAddr: a0:36:9f:00:4e:06
+    broadcastAddr: ff:ff:ff:ff:ff:ff
+    mtu: 1500
+    queueDisc: pfifo_fast
+    operationalState: down
+    kind: ""
+    slaveKind: ""
+    busPath: 0000:84:00.1
+    pciID: 8086:10BC
+    driver: e1000e
+    driverVersion: 6.1.69-talos
+    firmwareVersion: 5.10-2
+    productID: "0x10bc"
+    vendorID: "0x8086"
+    product: 82571EB/82571GB Gigabit Ethernet Controller (Copper)
+    vendor: Intel Corporation
+    linkState: false
+    speedMbit: 4294967295
+    port: TwistedPair
+    duplex: Unknown
+---
+node: 
+metadata:
+    namespace: network
+    type: LinkStatuses.net.talos.dev
+    id: enp137s0
+    version: 2
+    owner: network.LinkStatusController
+    phase: running
+    created: 2023-12-22T22:09:31Z
+    updated: 2023-12-22T22:09:37Z
+spec:
+    index: 12
+    type: ether
+    linkIndex: 0
+    flags: UP,BROADCAST,MULTICAST
+    hardwareAddr: fc:34:97:1e:79:86
+    permanentAddr: fc:34:97:1e:79:86
+    broadcastAddr: ff:ff:ff:ff:ff:ff
+    mtu: 1500
+    queueDisc: mq
+    operationalState: down
+    kind: ""
+    slaveKind: ""
+    busPath: 0000:89:00.0
+    pciID: 1D6A:00B1
+    driver: atlantic
+    driverVersion: 6.1.69-talos
+    firmwareVersion: 3.1.58
+    productID: "0x00b1"
+    vendorID: "0x1d6a"
+    product: AQC100 10G Ethernet MAC controller [AQtion]
+    vendor: Aquantia Corp.
+    linkState: false
+    port: Fibre
+    duplex: Unknown
+---
+node: 
+metadata:
+    namespace: network
+    type: LinkStatuses.net.talos.dev
+    id: ip6tnl0
+    version: 1
+    owner: network.LinkStatusController
+    phase: running
+    created: 2023-12-22T22:09:31Z
+    updated: 2023-12-22T22:09:31Z
+spec:
+    index: 7
+    type: tunnel6
+    linkIndex: 0
+    flags: NOARP
+    hardwareAddr: "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+    permanentAddr: 96:7b:97:72:39:02
+    broadcastAddr: "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+    mtu: 1452
+    queueDisc: noop
+    operationalState: down
+    kind: ip6tnl
+    slaveKind: ""
+    driver: ip6tnl
+    driverVersion: 6.1.69-talos
+    linkState: false
+    port: Other
+    duplex: Unknown

@@ -1,0 +1,150 @@
+version: v1alpha1
+debug: false
+persist: true
+machine:
+    type: controlplane
+    nodeLabels:
+        kargo.dev/node: ""
+        kargo.dev/controlplane: ""
+        kargo.dev/name: "optiplexprime"
+        kargo.dev/domain: "kargo.dev"
+        kargo.dev/version: "v1alpha1"
+    certSANs:
+        - api.k8s.mordor.home.arpa
+        - 192.168.1.30
+    kubelet:
+        disableManifestsDirectory: true
+        defaultRuntimeSeccompProfileEnabled: false
+        extraArgs:
+            feature-gates: ServerSideApply=true
+        extraMounts:
+            - destination: /etc/cni/net.d
+              type: bind
+              source: /etc/cni/net.d
+              options:
+                - bind
+                - rshared
+                - rw
+            - destination: /opt/cni/bin
+              type: bind
+              source: /opt/cni/bin
+              options:
+                - bind
+                - rshared
+                - rw
+    time:
+        disabled: false
+        bootTimeout: 1m0s
+        servers:
+            - time.cloudflare.com
+    network:
+        hostname: mordor
+        nameservers:
+            - 192.168.1.1
+        extraHostEntries:
+            - ip: 192.168.1.30
+              aliases:
+              - mordor
+              - api.k8s.mordor.home.arpa
+        interfaces:
+            - interface: br0
+              mtu: 1500
+              addresses:
+                  - 192.168.1.30/24
+              routes:
+                  - network: 0.0.0.0/0
+                    gateway: 192.168.1.1
+                    metric: 1024
+              bridge:
+                  stp:
+                      enabled: true
+                  interfaces:
+                      - eno1
+                      - eno2
+    install:
+        wipe: true
+        diskSelector:
+          model: IDSDM
+        extraKernelArgs:
+        - talos.platform=metal
+        - reboot=k
+    disks:
+        - device: /dev/nvme2n1
+          partitions:
+              - mountpoint: /var/lib/kubelet
+                size: 32GB
+              - mountpoint: /var/lib/etcd
+                size: 32GB
+              - mountpoint: /var/lib/containerd
+                size: 128GB
+              - mountpoint: /var/mnt/local-path-provisioner/dev/nvme
+    registries: {}
+    features:
+        rbac: true
+        stableHostname: false
+        apidCheckExtKeyUsage: true
+        diskQuotaSupport: true
+        kubePrism:
+            enabled: true
+            port: 7445
+        kubernetesTalosAPIAccess:
+            enabled: true
+            allowedRoles:
+            - os:reader
+            allowedKubernetesNamespaces:
+            - kube-system
+            - konductor
+            - default
+    token: 9hmy7w.ezcbdk1cicgarzhb
+    ca:
+        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBdkhWbnhUQkxQeDREL1JOL2VYV1FvREFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qTXhNakl5TWpJeU1UTXdXaGNOTXpNeE1qRTVNakl5TVRNd1dqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUtRK2tHazVNWHh6NHdmeFVCNDVzR1NqdnBwejY1NWJCcHpGClFIRmI4SnE3bzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkdXSUh1d25NdjFxUUt4Wgp4S1oyUG44cG9YYzhNQVVHQXl0bGNBTkJBQlMxdmlFTGNGUisyczc1YUdXKzR6Wkgrb01VNUNPTjRDYVI3RmNWCmJ0TEprKzh2cHBGNXlkWVZEeXlqbnFxYUVLSUx6Zm5QeVNwTnpEYTVLV3VHOWd3PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+        key: LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJQ29xZ2pwREVnM0I1ODZOWWNlMHExWk8zeEU5bDMwZUpOaC94d25PUHliSQotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K
+cluster:
+    clusterName: mordor
+    allowSchedulingOnControlPlanes: true
+    controlPlane:
+        endpoint: https://192.168.1.30:6443
+    network:
+        dnsDomain: cluster.local
+        podSubnets:
+            - 10.244.0.0/16
+        serviceSubnets:
+            - 10.96.0.0/12
+    discovery:
+        enabled: true
+        registries:
+            kubernetes: {}
+            service: {}
+    apiServer:
+        disablePodSecurityPolicy: true
+        certSANs:
+            - api.k8s.mordor.home.arpa
+            - 192.168.1.30
+        admissionControl:
+            - name: PodSecurity
+              configuration:
+                kind: PodSecurityConfiguration
+                apiVersion: pod-security.admission.config.k8s.io/v1alpha1
+                defaults: {}
+                exemptions: {}
+        auditPolicy:
+            apiVersion: audit.k8s.io/v1
+            kind: Policy
+            rules:
+                - level: Metadata
+    id: P5YGP5EQTWWaCnLx2l3LlMOPSUkjqS1OvJKW8ygG8-4=
+    secret: dfjjxfusNz3df5rnbFfA8L6Dr1n/HJhydUCEiwgTrjY=
+    token: yjwwkz.t5lia7muxq0gn0sx
+    secretboxEncryptionSecret: YB2divRRJSMDMxo5/d9MyVJ/vCFPJHg22Nn+zUYnBdI=
+    etcd:
+        ca:
+            crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJmVENDQVNTZ0F3SUJBZ0lSQUtXRzVSOHpvSk1hTm8rS3MxeitITHd3Q2dZSUtvWkl6ajBFQXdJd0R6RU4KTUFzR0ExVUVDaE1FWlhSalpEQWVGdzB5TXpFeU1qSXlNakl4TXpCYUZ3MHpNekV5TVRreU1qSXhNekJhTUE4eApEVEFMQmdOVkJBb1RCR1YwWTJRd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DQUFRV0QwcWdrQzNPCkYxekRVRXh3VjBSd1RCcHY0eHdjZmNLd1FHSFp6NTgyRWpNakFsdjREQUpEUURZR01lUks2L1VwS25PcnRpVWgKaVdjNHJMS0tmRUxWbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSApBd0VHQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkJZOHY1c0ljWXFECnlLMytibUllVFNxQmFTY0VNQW9HQ0NxR1NNNDlCQU1DQTBjQU1FUUNJSEpnRDdJVG5LNmhBWVM4RldBT2l3ckMKT3hZM1pWazZ2Q2FLUzB5b0pIdktBaUF4WHM3eDloeDBBTWlicUtwdGZTOUNVVlRuVFZGUUFVM1E5dXZ0eHNxZgpoUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+            key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUwxY0lCa3pFbTUxRnFLaHlMK1JyYkFaRmp1eXIrQllacmQzeUVvZ2tMemNvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFRmc5S29KQXR6aGRjdzFCTWNGZEVjRXdhYitNY0hIM0NzRUJoMmMrZk5oSXpJd0piK0F3QwpRMEEyQmpIa1N1djFLU3B6cTdZbElZbG5PS3l5aW54QzFRPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+    ca:
+        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpVENDQVMrZ0F3SUJBZ0lRQXZYUFNaTDBGUnM0YVBkNkIzNzM5akFLQmdncWhrak9QUVFEQWpBVk1STXcKRVFZRFZRUUtFd3ByZFdKbGNtNWxkR1Z6TUI0WERUSXpNVEl5TWpJeU1qRXpNRm9YRFRNek1USXhPVEl5TWpFegpNRm93RlRFVE1CRUdBMVVFQ2hNS2EzVmlaWEp1WlhSbGN6QlpNQk1HQnlxR1NNNDlBZ0VHQ0NxR1NNNDlBd0VICkEwSUFCRDBIYy9QV1Q4TDB0bHYwNW4zYXBmTXhlZ0hwZUZ5SUkwOFBLaG9OQlVmTERad2Y0U2ZYUkhuR2NZNFoKckVBcVNjaDIvYTYwQkU0VDExSVl2NDZXbUdxallUQmZNQTRHQTFVZER3RUIvd1FFQXdJQ2hEQWRCZ05WSFNVRQpGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFCkZnUVVFVzkyeUhWQUhobGtDV3k5eCtGNXRwY0J4Rmd3Q2dZSUtvWkl6ajBFQXdJRFNBQXdSUUloQU9wTTEyUlIKTGJoN2l3NWtweUU3M3YzdTk1S01wZzdCeEtaU3FpeXRaRzI3QWlBb05vd1FtbFJZZFIvVGFWeTRoMCsxc0J4YgpnQ3pxb3BqRzBoY2hidlhaY0E9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+        key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUNab1pVUjNUNEJLMkdFSnlwUTQ4ellvaDNQTmFrVmUwMnVVczdMNHloYWNvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFUFFkejg5WlB3dlMyVy9UbWZkcWw4ekY2QWVsNFhJZ2pUdzhxR2cwRlI4c05uQi9oSjlkRQplY1p4amhtc1FDcEp5SGI5cnJRRVRoUFhVaGkvanBhWWFnPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+    aggregatorCA:
+        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJZRENDQVFhZ0F3SUJBZ0lSQU9LbE9MT2NQbStVOXNEV3RnTHgvc1l3Q2dZSUtvWkl6ajBFQXdJd0FEQWUKRncweU16RXlNakl5TWpJeE16QmFGdzB6TXpFeU1Ua3lNakl4TXpCYU1BQXdXVEFUQmdjcWhrak9QUUlCQmdncQpoa2pPUFFNQkJ3TkNBQVJ1bTRvMHpQWG1rQnBqVEpDZ2x5NUFNTmRDRDZyQ1NBUjdXR3R5ekR4OFBkSnZWVTROClNHRUVjK3VpV0ZPSVdDSzh3aDJPRjZuOEdCL3ZxdXpBbzA3dW8yRXdYekFPQmdOVkhROEJBZjhFQkFNQ0FvUXcKSFFZRFZSMGxCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01BOEdBMVVkRXdFQi93UUZNQU1CQWY4dwpIUVlEVlIwT0JCWUVGQmxkdFkwUG56NmNVUS9ieXZBdVNJOTVBemRyTUFvR0NDcUdTTTQ5QkFNQ0EwZ0FNRVVDCklRRGlmWmROT04wWi9IQkNkSkpaa25kMFpRWXNPaTVxa2lhczNtL09zckU5bXdJZ1BoQ0pMemwvTWdtWFR2VlAKSWYxS0d3cXprY1JybVV3WS9ObDZGODFyQm93PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+        key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSU0xOVZ2ZWwvTGh5QStNT3NUWUFSUDByK09PMC9oUXRrSlM0NUErYW03dGhvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFYnB1S05NejE1cEFhWTB5UW9KY3VRRERYUWcrcXdrZ0VlMWhyY3N3OGZEM1NiMVZPRFVoaApCSFByb2xoVGlGZ2l2TUlkamhlcC9CZ2Y3NnJzd0tOTzdnPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+    serviceAccount:
+        key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUwrUWxwS29ORG9YVHU1bS9uS1g5ME85azlxWVp5Tk43UzlabksxcFlualZvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFOUtobEFvanpZcjFXWmlUUDJ4QzllOHpJS1dHMjhXdGNiNUxpbzZ5Wmdia0RGRXZwdVhmUwpSUVdJODVJcy8rcEh5M3RiOG15QnRuYUdTN2ZaVWkyVWVnPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
