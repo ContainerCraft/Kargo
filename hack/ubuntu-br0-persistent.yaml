@@ -13,7 +13,7 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 64Gi
+        storage: 256G
     storageClassName: "ssd"
     volumeMode: Filesystem
 ---
@@ -26,11 +26,15 @@ metadata:
   labels:
     app: kc2
 spec:
-  running: true
+  running: false
   template:
     spec:
       nodeSelector:
+<<<<<<< HEAD
         kubernetes.io/hostname: "cp1"
+=======
+        kubernetes.io/hostname: "mordor"
+>>>>>>> 1047d22 (wip kargo on kargo deployment)
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -39,7 +43,11 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
+<<<<<<< HEAD
                       - "cp1"
+=======
+                      - "mordor"
+>>>>>>> 1047d22 (wip kargo on kargo deployment)
       domain:
         clock:
           utc: {}
@@ -50,14 +58,14 @@ spec:
               tickPolicy: delay
             rtc:
               tickPolicy: catchup
-            hyperv: {}
         cpu:
           cores: 1
           sockets: 1
-          threads: 4
+          threads: 16
+          model: host-passthrough
           dedicatedCpuPlacement: false
         memory:
-          guest: 8192M
+          guest: 32768M
         devices:
           rng: {}
           autoattachPodInterface: false
@@ -73,9 +81,13 @@ spec:
               disk:
                 bus: virtio
           interfaces:
+<<<<<<< HEAD
             - name: enp1s0
               bridge: {}
             - name: enp2s0
+=======
+            - name: eth0
+>>>>>>> 1047d22 (wip kargo on kargo deployment)
               bridge: {}
         features:
           acpi:
@@ -90,15 +102,19 @@ spec:
           type: q35
         resources:
           requests:
-            memory: 8192M
-      hostname: ubuntu
+            memory: 32768M
+      hostname: kargo
       networks:
+<<<<<<< HEAD
         - name: enp1s0
           multus:
             networkName: lan
         - name: enp2s0
+=======
+        - name: eth0
+>>>>>>> 1047d22 (wip kargo on kargo deployment)
           multus:
-            networkName: lan
+            networkName: br0
       terminationGracePeriodSeconds: 0
       accessCredentials:
         - sshPublicKey:
@@ -141,18 +157,37 @@ spec:
                   shell: /bin/bash
                   lock_passwd: false
                   sudo: ['ALL=(ALL) NOPASSWD:ALL']
-                  groups: sudo,lxd,libvirt,microk8s,xrdp,docker,ssl-cert
+                  groups: sudo,kvm,lxd,libvirt,microk8s,xrdp,docker,ssl-cert
               growpart:
                 mode: auto
                 devices: ['/']
                 ignore_growroot_disabled: true
+              package_update: true
               package_upgrade: true
+              package_reboot_if_required: true
               packages:
+                - vim
                 - docker.io
                 - neofetch
+<<<<<<< HEAD
                 - openvswitch-switch
               reboot: true
               runcmd:
                 - "systemctl enable --now openvswitch-switch"
+=======
+                - screenfetch
+                - ubuntu-desktop
+                - gnome-tweaks
+                - firefox
+                - xrdp
+              runcmd:
+                - "apt-get remove apport apport-gtk python3-apport python3-problem-report shim-signed apport-symptoms python3-systemd ansible -y --allow-remove-essential"
+                - "apt-get autoremove -y"
+                - "snap install helm --classic"
+                - "snap install kubectl --classic"
+                - "mkdir -p /home/kc2/.kube"
+                - "chown -R kc2:kc2 /home/kc2/.kube"
+>>>>>>> 1047d22 (wip kargo on kargo deployment)
                 - "echo H4sIAAAAAAACA7WRwU7DMAyG73mKaHe6dRrTyKsghELibWYhjhy3gBDvTkIXtRJC4oJP8R/ntz/HUTziyeiPTxVBXokv2agb7SZZ6RKYxl0XrRi9Eh5gNYvWe4acje7vtl2/P3S3h65fb3f6X6L13c99I0UosofsGJMgxTJkHTDaFzA6vPkn3pRU3hNcbxLTM7gC4+FohyAqC7E9wWMiCkv2upLfrdvrUsE4AhcFWRXzIwb4i42HEV2trFQg5810av5VacL0LwucGhNSRPedM5E0g2TlbPS6ZQVrOe781mO+/OC5rqfs9v5BuTBkqWxxCEF9AXZkJoMrAgAA | base64 -d | gzip -d | lxd init --preseed"
-                - "neofetch"
+                - "screenfetch"
+                - "ip a"

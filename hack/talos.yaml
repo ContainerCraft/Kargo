@@ -1,0 +1,107 @@
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: vdc
+  namespace: default
+spec:
+  source:
+    blank: {}
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 64Gi
+    storageClassName: "ssd"
+    volumeMode: Filesystem
+---
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: vdd
+  namespace: default
+spec:
+  source:
+    blank: {}
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 64Gi
+    storageClassName: "ssd"
+    volumeMode: Filesystem
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: talos
+  namespace: default
+  labels:
+    app: kc2
+spec:
+  running: true
+  template:
+    spec:
+      domain:
+        clock:
+          utc: {}
+          timer: {}
+        cpu:
+          cores: 1
+          sockets: 1
+          threads: 8
+          dedicatedCpuPlacement: false
+        machine:
+          type: q35
+        memory:
+          guest: 32768M
+        resources:
+          requests:
+            memory: 32768M
+        devices:
+          rng: {}
+          autoattachPodInterface: false
+          autoattachSerialConsole: true
+          autoattachGraphicsDevice: true
+          networkInterfaceMultiqueue: false
+          disks:
+            - name: containerdisk
+              bootOrder: 1
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+            - name: vdc
+              disk:
+                bus: virtio
+            - name: vdd
+              disk:
+                bus: virtio
+          interfaces:
+            - name: eth0
+              bridge: {}
+      hostname: talos
+      networks:
+        - name: eth0
+          multus:
+            networkName: br0
+      terminationGracePeriodSeconds: 0
+      volumes:
+        - name: containerdisk
+          containerDisk:
+            image: docker.io/containercraft/talos:1.7.2-nocloud-amd64
+            imagePullPolicy: Always
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            secretRef:
+              name: talos-userdata-cp1
+        - name: vdc
+          dataVolume:
+            name: vdc
+        - name: vdd
+          dataVolume:
+            name: vdd

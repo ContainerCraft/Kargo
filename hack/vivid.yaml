@@ -1,0 +1,141 @@
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: vivid-volume-vda-root
+  namespace: default
+spec:
+  source:
+    registry:
+      url: "docker://docker.io/containercraft/ubuntu:vivid-ttyS0"
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 128G
+    storageClassName: "ssd"
+    volumeMode: Filesystem
+---
+# kubectl create secret generic user-kc2-sshpubkey --from-file=key1=.ssh/id_rsa.pub --dry-run=client -oyaml | kubectl apply -f -
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: vivid
+  namespace: default
+  labels:
+    app: kc2
+spec:
+  running: true
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: "mordor"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - "mordor"
+      domain:
+        clock:
+          utc: {}
+          timer:
+            hpet:
+              present: False
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
+        cpu:
+          cores: 1
+          sockets: 1
+          threads: 8
+          model: host-passthrough
+          dedicatedCpuPlacement: false
+        memory:
+          guest: 8192M
+        devices:
+          rng: {}
+          autoattachPodInterface: false
+          autoattachSerialConsole: true
+          autoattachGraphicsDevice: true
+          networkInterfaceMultiqueue: false
+          disks:
+            - name: vivid-disk-vda-root
+              bootOrder: 1
+              disk:
+                bus: sata
+            - name: cloudinitdisk
+              disk:
+                bus: sata
+          interfaces:
+            - name: eth0
+              model: e1000e
+              bridge: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 8192M
+      hostname: vivid
+      networks:
+        - name: eth0
+          multus:
+            networkName: br0
+      terminationGracePeriodSeconds: 0
+      accessCredentials:
+        - sshPublicKey:
+            source:
+              secret:
+                secretName: user-kc2-sshpubkey
+            propagationMethod:
+              qemuGuestAgent:
+                users:
+                  - "kc2"
+      volumes:
+        - name: vivid-disk-vda-root
+          dataVolume:
+            name: vivid-volume-vda-root
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              ssh_pwauth: true
+              disable_root: true
+              chpasswd:
+                expire: False
+                list: |
+                   kc2:kc2
+              users:
+                - name: kc2
+                  shell: /bin/bash
+                  lock_passwd: false
+                  sudo: ['ALL=(ALL) NOPASSWD:ALL']
+              growpart:
+                mode: auto
+                devices: ['/']
+                ignore_growroot_disabled: true
+              package_upgrade: true
+              packages:
+                - qemu-guest-agent
+                - screenfetch
+                - vim
+              runcmd:
+                - systemctl restart qemu-guest-agent
+                - screenfetch
+                - ip a
+            networkData: |
+              version: 1
+              config:
+                - type: physical
+                  name: eth0
+                  subnets:
+                    - type: static
+                      address: 192.168.1.39/24
+                      gateway: 192.168.1.1
+                      dns_nameservers:
+                        - 192.168.1.1

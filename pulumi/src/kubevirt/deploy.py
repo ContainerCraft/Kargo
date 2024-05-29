@@ -100,9 +100,10 @@ def deploy_kubevirt(
                 "family": "CCIO"
             },
             "developerConfiguration": {
-                "useEmulation": kubernetes_distribution == "kind",
+                "useEmulation": use_emulation,
                 "featureGates": [
                     "HostDevices",
+                    "ExpandDisks",
                     "AutoResourceLimitsGate"
                 ]
             },
