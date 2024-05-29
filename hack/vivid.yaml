@@ -2,18 +2,18 @@
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
 metadata:
-  name: ubuntu-br0-persistent-volume-vda-root
+  name: vivid-volume-vda-root
   namespace: default
 spec:
   source:
     registry:
-      url: "docker://docker.io/containercraft/ubuntu:22.04"
+      url: "docker://docker.io/containercraft/ubuntu:vivid-ttyS0"
   pvc:
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 256G
+        storage: 128G
     storageClassName: "ssd"
     volumeMode: Filesystem
 ---
@@ -21,12 +21,12 @@ spec:
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: ubuntu
+  name: vivid
   namespace: default
   labels:
     app: kc2
 spec:
-  running: false
+  running: true
   template:
     spec:
       nodeSelector:
@@ -53,11 +53,11 @@ spec:
         cpu:
           cores: 1
           sockets: 1
-          threads: 16
+          threads: 8
           model: host-passthrough
           dedicatedCpuPlacement: false
         memory:
-          guest: 32768M
+          guest: 8192M
         devices:
           rng: {}
           autoattachPodInterface: false
@@ -65,31 +65,23 @@ spec:
           autoattachGraphicsDevice: true
           networkInterfaceMultiqueue: false
           disks:
-            - name: ubuntu-br0-persistent-disk-vda-root
+            - name: vivid-disk-vda-root
               bootOrder: 1
               disk:
-                bus: virtio
+                bus: sata
             - name: cloudinitdisk
               disk:
-                bus: virtio
+                bus: sata
           interfaces:
             - name: eth0
+              model: e1000e
               bridge: {}
-        features:
-          acpi:
-            enabled: true
-          smm:
-            enabled: true
-        firmware:
-          bootloader:
-            efi:
-              secureBoot: true
         machine:
           type: q35
         resources:
           requests:
-            memory: 32768M
-      hostname: kargo
+            memory: 8192M
+      hostname: vivid
       networks:
         - name: eth0
           multus:
@@ -105,55 +97,45 @@ spec:
                 users:
                   - "kc2"
       volumes:
-        - name: ubuntu-br0-persistent-disk-vda-root
+        - name: vivid-disk-vda-root
           dataVolume:
-            name: ubuntu-br0-persistent-volume-vda-root
+            name: vivid-volume-vda-root
         - name: cloudinitdisk
           cloudInitNoCloud:
-            networkData: |
-              version: 2
-              ethernets:
-                enp1s0:
-                  dhcp4: true
-                  dhcp6: false
-                  dhcp-identifier: mac
             userData: |
               #cloud-config
               ssh_pwauth: true
               disable_root: true
               chpasswd:
+                expire: False
                 list: |
                    kc2:kc2
-                expire: False
               users:
                 - name: kc2
                   shell: /bin/bash
                   lock_passwd: false
                   sudo: ['ALL=(ALL) NOPASSWD:ALL']
-                  groups: sudo,kvm,lxd,libvirt,microk8s,xrdp,docker,ssl-cert
               growpart:
                 mode: auto
                 devices: ['/']
                 ignore_growroot_disabled: true
-              package_update: true
               package_upgrade: true
-              package_reboot_if_required: true
               packages:
-                - vim
-                - docker.io
-                - neofetch
+                - qemu-guest-agent
                 - screenfetch
-                - ubuntu-desktop
-                - gnome-tweaks
-                - firefox
-                - xrdp
+                - vim
               runcmd:
-                - "apt-get remove apport apport-gtk python3-apport python3-problem-report shim-signed apport-symptoms python3-systemd ansible -y --allow-remove-essential"
-                - "apt-get autoremove -y"
-                - "snap install helm --classic"
-                - "snap install kubectl --classic"
-                - "mkdir -p /home/kc2/.kube"
-                - "chown -R kc2:kc2 /home/kc2/.kube"
-                - "echo H4sIAAAAAAACA7WRwU7DMAyG73mKaHe6dRrTyKsghELibWYhjhy3gBDvTkIXtRJC4oJP8R/ntz/HUTziyeiPTxVBXokv2agb7SZZ6RKYxl0XrRi9Eh5gNYvWe4acje7vtl2/P3S3h65fb3f6X6L13c99I0UosofsGJMgxTJkHTDaFzA6vPkn3pRU3hNcbxLTM7gC4+FohyAqC7E9wWMiCkv2upLfrdvrUsE4AhcFWRXzIwb4i42HEV2trFQg5810av5VacL0LwucGhNSRPedM5E0g2TlbPS6ZQVrOe781mO+/OC5rqfs9v5BuTBkqWxxCEF9AXZkJoMrAgAA | base64 -d | gzip -d | lxd init --preseed"
-                - "screenfetch"
-                - "ip a"
+                - systemctl restart qemu-guest-agent
+                - screenfetch
+                - ip a
+            networkData: |
+              version: 1
+              config:
+                - type: physical
+                  name: eth0
+                  subnets:
+                    - type: static
+                      address: 192.168.1.39/24
+                      gateway: 192.168.1.1
+                      dns_nameservers:
+                        - 192.168.1.1

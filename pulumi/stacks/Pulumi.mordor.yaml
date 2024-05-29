@@ -1,4 +1,5 @@
 config:
+  kargo:cdi.enabled: "true"
   kargo:cdi.version: 1.59.0
   kargo:cert_manager.version: 1.14.5
   kargo:cilium.enable: "true"
