@@ -163,7 +163,7 @@ kind-cluster:
 	@sudo docker volume create kargo-worker-n01
 	@sudo docker volume create kargo-worker-n02
 	@sudo docker volume create kargo-control-plane-n01
-	@sudo kind create cluster --wait 1m --retain --config=hack/kind.yaml
+	@sudo kind create cluster --wait 1m --retain --validate=false --config=hack/kind.yaml
 	@sudo kind get clusters
 	@sudo kind get kubeconfig --name kargo | tee ${KUBE_CONFIG_FILE} #1>/dev/null
 	@sudo kind get kubeconfig --name kargo | tee ${HOME}/.kube/config #1>/dev/null
