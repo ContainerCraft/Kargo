@@ -28,13 +28,13 @@ project_name = pulumi.get_project()
 
 # Get the kubeconfig file path from priority order:
 #   1. Pulumi configuration value: `pulumi config set kubeconfig <path>`
-kubernetes_config_filepath = config.require("kubeconfig")
+kubernetes_config_filepath = config.require("kubernetes.kubeconfig")
 
 # Get kubeconfig context from Pulumi config or default to "kind-pulumi"
-kubernetes_context = config.get("kubeconfig.context") or "kind-kargo"
+kubernetes_context = config.get("kubernetes.context") or "kind-kargo"
 
 # Get the Kubernetes distribution from the Pulumi configuration or default to "kind"
-kubernetes_distribution = config.get("kubernetes_distribution") or "kind"
+kubernetes_distribution = config.get("kubernetes.distribution") or "kind"
 
 # Create a Kubernetes provider instance
 k8s_provider = Provider(
@@ -97,19 +97,24 @@ kubevirt_manager_enabled = config.get_bool("kubevirt_manager.enabled") or False
 ## Get the Kubernetes API endpoint IP
 ##################################################################################
 
-# Get the Kubernetes API endpoint IP
-k8s_endpoint_ip = KubernetesApiEndpointIp(
-    "kubernetes-endpoint-service-address",
-    k8s_provider
-)
+# check if kubernetes distribution is "kind" and if so execute get the kubernetes api endpoint ip
+if kubernetes_distribution == "kind":
+    # Get the Kubernetes API endpoint IP
+    k8s_endpoint_ip = KubernetesApiEndpointIp(
+        "kubernetes-endpoint-service-address",
+        k8s_provider
+    )
 
-# Extract the Kubernetes Endpoint clusterIP
-kubernetes_endpoint_service = pulumi.Output.from_input(k8s_endpoint_ip)
-kubernetes_endpoint_service_address = kubernetes_endpoint_service.endpoint.subsets[0].addresses[0].ip
-pulumi.export(
-    "kubernetes-endpoint-service-address",
-    kubernetes_endpoint_service_address
-)
+    # Extract the Kubernetes Endpoint clusterIP
+    kubernetes_endpoint_service = pulumi.Output.from_input(k8s_endpoint_ip)
+    kubernetes_endpoint_service_address = kubernetes_endpoint_service.endpoint.subsets[0].addresses[0].ip
+    pulumi.export(
+        "kubernetes-endpoint-service-address",
+        kubernetes_endpoint_service_address
+    )
+else:
+    # default to talos k8s endpoint "localhost" when not kind k8s
+    kubernetes_endpoint_service = "localhost"
 
 ##################################################################################
 ## Core Kargo Kubevirt PaaS Infrastructure
