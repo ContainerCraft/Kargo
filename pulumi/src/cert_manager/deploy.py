@@ -35,6 +35,7 @@ def deploy_cert_manager(
     # Fetch the latest version from the helm chart index
     if version is None:
         version = get_latest_helm_chart_version(chart_index_url, chart_name)
+        version = version.lstrip('v')
         pulumi.log.info(f"Setting helm release version to latest: {chart_name}/{version}")
     else:
         # Log the version override
