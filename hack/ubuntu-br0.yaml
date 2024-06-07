@@ -55,7 +55,7 @@ spec:
       networks:
         - name: eth0
           multus:
-            networkName: lan
+            networkName: br0
       terminationGracePeriodSeconds: 0
       volumes:
         - name: containerdisk

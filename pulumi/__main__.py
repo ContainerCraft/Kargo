@@ -114,7 +114,7 @@ if kubernetes_distribution == "kind":
     )
 else:
     # default to talos k8s endpoint "localhost" when not kind k8s
-    kubernetes_endpoint_service = "localhost"
+    kubernetes_endpoint_service_address = "localhost"
 
 ##################################################################################
 ## Core Kargo Kubevirt PaaS Infrastructure
