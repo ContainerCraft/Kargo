@@ -1,0 +1,1564 @@
+Successfully connected to talos console. The escape sequence is ^]
+[    0.000000] Linux version 6.6.30-talos (@buildkitsandbox) (gcc (GCC) 13.2.0, GNU ld (GNU Binutils) 2.42) #1 SMP Thu May 16 16:51:28 UTC 2024
+[    0.000000] Command line: BOOT_IMAGE=/A/vmlinuz talos.platform=nocloud console=ttyS0,115200 net.ifnames=0 init_on_alloc=1 slab_nomerge pti=on consoleblank=0 nvme_core.io_timeout=4294967295 printk.devkmsg=on ima_template=ima-ng ima_appraise=fix ima_hash=sha512
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000007ffdcfff] usable
+[    0.000000] BIOS-e820: [mem 0x000000007ffdd000-0x000000007fffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000b0000000-0x00000000bfffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fed1c000-0x00000000fed1ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000100000000-0x00000008211fffff] usable
+[    0.000000] NX (Execute Disable) protection: active
+[    0.000000] APIC: Static calls initialized
+[    0.000000] SMBIOS 2.8 present.
+[    0.000000] DMI: ContainerCraft Kargo/RHEL, BIOS 1.16.1-1.el9 04/01/2014
+[    0.000000] Hypervisor detected: KVM
+[    0.000000] kvm-clock: Using msrs 4b564d01 and 4b564d00
+[    0.000000] kvm-clock: using sched offset of 6665850790 cycles
+[    0.000002] clocksource: kvm-clock: mask: 0xffffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns
+[    0.000005] tsc: Detected 2600.000 MHz processor
+[    0.001586] last_pfn = 0x821200 max_arch_pfn = 0x400000000
+[    0.001617] MTRR map: 4 entries (3 fixed + 1 variable; max 19), built from 8 variable MTRRs
+[    0.001620] x86/PAT: Configuration [0-7]: WB  WC  UC- UC  WB  WP  UC- WT  
+[    0.001658] last_pfn = 0x7ffdd max_arch_pfn = 0x400000000
+[    0.010902] found SMP MP-table at [mem 0x000f5bb0-0x000f5bbf]
+[    0.010925] Kernel/User page tables isolation: force enabled on command line.
+[    0.010930] Using GB pages for direct mapping
+[    0.011201] RAMDISK: [mem 0x2f675000-0x33b31fff]
+[    0.011204] ACPI: Early table checksum verification disabled
+[    0.011207] ACPI: RSDP 0x00000000000F5930 000014 (v00 BOCHS )
+[    0.011215] ACPI: RSDT 0x000000007FFE2D6F 000034 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.011222] ACPI: FACP 0x000000007FFE2B67 0000F4 (v03 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.011231] ACPI: DSDT 0x000000007FFE0040 002B27 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.011235] ACPI: FACS 0x000000007FFE0000 000040
+[    0.011240] ACPI: APIC 0x000000007FFE2C5B 0000B0 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.011244] ACPI: MCFG 0x000000007FFE2D0B 00003C (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.011249] ACPI: WAET 0x000000007FFE2D47 000028 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.011253] ACPI: Reserving FACP table memory at [mem 0x7ffe2b67-0x7ffe2c5a]
+[    0.011254] ACPI: Reserving DSDT table memory at [mem 0x7ffe0040-0x7ffe2b66]
+[    0.011256] ACPI: Reserving FACS table memory at [mem 0x7ffe0000-0x7ffe003f]
+[    0.011257] ACPI: Reserving APIC table memory at [mem 0x7ffe2c5b-0x7ffe2d0a]
+[    0.011258] ACPI: Reserving MCFG table memory at [mem 0x7ffe2d0b-0x7ffe2d46]
+[    0.011259] ACPI: Reserving WAET table memory at [mem 0x7ffe2d47-0x7ffe2d6e]
+[    0.011628] No NUMA configuration found
+[    0.011629] Faking a node at [mem 0x0000000000000000-0x00000008211fffff]
+[    0.011632] NODE_DATA(0) allocated [mem 0x8211fc000-0x8211fffff]
+[    0.011750] Zone ranges:
+[    0.011751]   DMA      [mem 0x0000000000001000-0x0000000000ffffff]
+[    0.011753]   DMA32    [mem 0x0000000001000000-0x00000000ffffffff]
+[    0.011755]   Normal   [mem 0x0000000100000000-0x00000008211fffff]
+[    0.011757] Movable zone start for each node
+[    0.011758] Early memory node ranges
+[    0.011759]   node   0: [mem 0x0000000000001000-0x000000000009efff]
+[    0.011760]   node   0: [mem 0x0000000000100000-0x000000007ffdcfff]
+[    0.011762]   node   0: [mem 0x0000000100000000-0x00000008211fffff]
+[    0.011765] Initmem setup node 0 [mem 0x0000000000001000-0x00000008211fffff]
+[    0.011780] On node 0, zone DMA: 1 pages in unavailable ranges
+[    0.011964] On node 0, zone DMA: 97 pages in unavailable ranges
+[    0.359518] On node 0, zone Normal: 35 pages in unavailable ranges
+[    0.360802] On node 0, zone Normal: 28160 pages in unavailable ranges
+[    0.362192] ACPI: PM-Timer IO Port: 0x608
+[    0.362208] ACPI: LAPIC_NMI (acpi_id[0xff] dfl dfl lint[0x1])
+[    0.362239] IOAPIC[0]: apic_id 0, version 17, address 0xfec00000, GSI 0-23
+[    0.362243] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.362245] ACPI: INT_SRC_OVR (bus 0 bus_irq 5 global_irq 5 high level)
+[    0.362247] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.362249] ACPI: INT_SRC_OVR (bus 0 bus_irq 10 global_irq 10 high level)
+[    0.362250] ACPI: INT_SRC_OVR (bus 0 bus_irq 11 global_irq 11 high level)
+[    0.362255] ACPI: Using ACPI (MADT) for SMP configuration information
+[    0.362257] TSC deadline timer available
+[    0.362258] smpboot: Allowing 8 CPUs, 0 hotplug CPUs
+[    0.362280] kvm-guest: APIC: eoi() replaced with kvm_guest_apic_eoi_write()
+[    0.362303] [mem 0xc0000000-0xfed1bfff] available for PCI devices
+[    0.362304] Booting paravirtualized kernel on KVM
+[    0.362306] clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645519600211568 ns
+[    0.369698] setup_percpu: NR_CPUS:512 nr_cpumask_bits:8 nr_cpu_ids:8 nr_node_ids:1
+[    0.371254] percpu: Embedded 58 pages/cpu s197584 r8192 d31792 u262144
+[    0.371311] Kernel command line: BOOT_IMAGE=/A/vmlinuz talos.platform=nocloud console=ttyS0,115200 net.ifnames=0 init_on_alloc=1 slab_nomerge pti=on consoleblank=0 nvme_core.io_timeout=4294967295 printk.devkmsg=on ima_template=ima-ng ima_appraise=fix ima_hash=sha512
+[    0.371570] Unknown kernel command line parameters "BOOT_IMAGE=/A/vmlinuz pti=on", will be passed to user space.
+[    0.371580] random: crng init done
+[    0.394039] Dentry cache hash table entries: 4194304 (order: 13, 33554432 bytes, linear)
+[    0.405334] Inode-cache hash table entries: 2097152 (order: 12, 16777216 bytes, linear)
+[    0.405603] Fallback order for Node 0: 0 
+[    0.405608] Built 1 zonelists, mobility grouping on.  Total pages: 7874709
+[    0.405610] Policy zone: Normal
+[    0.407170] mem auto-init: stack:all(zero), heap alloc:on, heap free:off
+[    0.407176] software IO TLB: area num 8.
+[    0.494642] Memory: 31247188K/31999468K available (24576K kernel code, 4977K rwdata, 14624K rodata, 4952K init, 932K bss, 752020K reserved, 0K cma-reserved)
+[    0.495104] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=8, Nodes=1
+[    0.495117] Kernel/User page tables isolation: enabled
+[    0.495200] ftrace: allocating 69890 entries in 274 pages
+[    0.509347] ftrace: allocated 274 pages with 3 groups
+[    0.509771] rcu: Hierarchical RCU implementation.
+[    0.509773] rcu: 	RCU restricting CPUs from NR_CPUS=512 to nr_cpu_ids=8.
+[    0.509774] 	Rude variant of Tasks RCU enabled.
+[    0.509775] 	Tracing variant of Tasks RCU enabled.
+[    0.509775] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.509776] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=8
+[    0.514720] NR_IRQS: 33024, nr_irqs: 488, preallocated irqs: 16
+[    0.514978] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.515172] kfence: initialized - using 2097152 bytes for 255 objects at 0x(____ptrval____)-0x(____ptrval____)
+[    0.522304] Console: colour VGA+ 80x25
+[    0.522342] printk: console [ttyS0] enabled
+[    0.645634] ACPI: Core revision 20230628
+[    0.646397] APIC: Switch to symmetric I/O mode setup
+[    0.647455] x2apic enabled
+[    0.648193] APIC: Switched APIC routing to: physical x2apic
+[    0.649903] clocksource: tsc-early: mask: 0xffffffffffffffff max_cycles: 0x257a3c3232d, max_idle_ns: 440795236700 ns
+[    0.651950] Calibrating delay loop (skipped) preset value.. 5200.00 BogoMIPS (lpj=10400000)
+[    0.653614] x86/cpu: User Mode Instruction Prevention (UMIP) activated
+[    0.654858] Last level iTLB entries: 4KB 0, 2MB 0, 4MB 0
+[    0.655934] Last level dTLB entries: 4KB 0, 2MB 0, 4MB 0, 1GB 0
+[    0.655946] Spectre V1 : Mitigation: usercopy/swapgs barriers and __user pointer sanitization
+[    0.655946] Spectre V2 : Spectre BHI mitigation: SW BHB clearing on vm exit
+[    0.655946] Spectre V2 : Spectre BHI mitigation: SW BHB clearing on syscall
+[    0.655946] Spectre V2 : Mitigation: IBRS
+[    0.655946] Spectre V2 : Spectre v2 / SpectreRSB mitigation: Filling RSB on context switch
+[    0.655946] Spectre V2 : Spectre v2 / SpectreRSB : Filling RSB on VMEXIT
+[    0.655946] RETBleed: Mitigation: IBRS
+[    0.655946] Spectre V2 : mitigation: Enabling conditional Indirect Branch Prediction Barrier
+[    0.655946] Spectre V2 : User space: Mitigation: STIBP via prctl
+[    0.655946] Speculative Store Bypass: Mitigation: Speculative Store Bypass disabled via prctl
+[    0.655946] MDS: Mitigation: Clear CPU buffers
+[    0.655946] TAA: Mitigation: Clear CPU buffers
+[    0.655946] MMIO Stale Data: Vulnerable: Clear CPU buffers attempted, no microcode
+[    0.655946] GDS: Unknown: Dependent on hypervisor status
+[    0.655946] x86/fpu: Supporting XSAVE feature 0x001: 'x87 floating point registers'
+[    0.655946] x86/fpu: Supporting XSAVE feature 0x002: 'SSE registers'
+[    0.655946] x86/fpu: Supporting XSAVE feature 0x004: 'AVX registers'
+[    0.655946] x86/fpu: Supporting XSAVE feature 0x020: 'AVX-512 opmask'
+[    0.655946] x86/fpu: Supporting XSAVE feature 0x040: 'AVX-512 Hi256'
+[    0.655946] x86/fpu: Supporting XSAVE feature 0x080: 'AVX-512 ZMM_Hi256'
+[    0.655946] x86/fpu: Supporting XSAVE feature 0x200: 'Protection Keys User registers'
+[    0.655946] x86/fpu: xstate_offset[2]:  576, xstate_sizes[2]:  256
+[    0.655946] x86/fpu: xstate_offset[5]:  832, xstate_sizes[5]:   64
+[    0.655946] x86/fpu: xstate_offset[6]:  896, xstate_sizes[6]:  512
+[    0.655946] x86/fpu: xstate_offset[7]: 1408, xstate_sizes[7]: 1024
+[    0.655946] x86/fpu: xstate_offset[9]: 2432, xstate_sizes[9]:    8
+[    0.655946] x86/fpu: Enabled xstate features 0x2e7, context size is 2440 bytes, using 'compacted' format.
+[    0.655946] Freeing SMP alternatives memory: 60K
+[    0.655946] pid_max: default: 32768 minimum: 301
+[    0.655946] LSM: initializing lsm=lockdown,capability,yama,bpf,apparmor,integrity
+[    0.655946] Yama: becoming mindful.
+[    0.655946] LSM support for eBPF active
+[    0.655946] AppArmor: AppArmor initialized
+[    0.655946] Mount-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.655946] Mountpoint-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.655946] smpboot: CPU0: Intel Xeon Processor (Cascadelake) (family: 0x6, model: 0x55, stepping: 0x6)
+[    0.655946] RCU Tasks Rude: Setting shift to 3 and lim to 1 rcu_task_cb_adjust=1.
+[    0.655946] RCU Tasks Trace: Setting shift to 3 and lim to 1 rcu_task_cb_adjust=1.
+[    0.655978] Performance Events: unsupported p6 CPU model 85 no PMU driver, software events only.
+[    0.657574] signal: max sigframe size: 3632
+[    0.658403] rcu: Hierarchical SRCU implementation.
+[    0.659257] rcu: 	Max phase no-delay instances is 1000.
+[    0.660390] smp: Bringing up secondary CPUs ...
+[    0.661415] smpboot: x86: Booting SMP configuration:
+[    0.662302] .... node  #0, CPUs:      #1 #2 #3 #4 #5 #6 #7
+[    0.664091] MDS CPU bug present and SMT on, data leak possible. See https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/mds.html for more details.
+[    0.667453] TAA CPU bug present and SMT on, data leak possible. See https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/tsx_async_abort.html for more details.
+[    0.667954] MMIO Stale Data CPU bug present and SMT on, data leak possible. See https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/processor_mmio_stale_data.html for more details.
+[    0.672024] smp: Brought up 1 node, 8 CPUs
+[    0.672782] smpboot: Max logical packages: 1
+[    0.673557] smpboot: Total of 8 processors activated (41600.00 BogoMIPS)
+[    0.677194] devtmpfs: initialized
+[    0.680140] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.682029] futex hash table entries: 2048 (order: 5, 131072 bytes, linear)
+[    0.683479] PM: RTC time: 20:47:13, date: 2024-06-08
+[    0.685965] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.687309] audit: initializing netlink subsys (disabled)
+[    0.688005] audit: type=2000 audit(1717879633.950:1): state=initialized audit_enabled=0 res=1
+[    0.688063] thermal_sys: Registered thermal governor 'step_wise'
+[    0.690158] thermal_sys: Registered thermal governor 'user_space'
+[    0.691295] cpuidle: using governor menu
+[    0.692978] acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+[    0.694268] dca service started, version 1.12.1
+[    0.695174] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0xb0000000-0xbfffffff] (base 0xb0000000)
+[    0.695951] PCI: MMCONFIG at [mem 0xb0000000-0xbfffffff] reserved as E820 entry
+[    0.697274] PCI: Using configuration type 1 for base access
+[    0.698783] kprobes: kprobe jump-optimization is enabled. All kprobes are optimized if possible.
+[    0.700482] HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+[    0.701256] HugeTLB: 28 KiB vmemmap can be freed for a 2.00 MiB page
+[    0.732089] cryptd: max_cpu_qlen set to 1000
+[    0.736463] ACPI: Added _OSI(Module Device)
+[    0.738820] ACPI: Added _OSI(Processor Device)
+[    0.739955] ACPI: Added _OSI(3.0 _SCP Extensions)
+[    0.742333] ACPI: Added _OSI(Processor Aggregator Device)
+[    0.746620] ACPI: 1 ACPI AML tables successfully acquired and loaded
+[    0.749992] ACPI: _OSC evaluation for CPUs failed, trying _PDC
+[    0.751382] ACPI: Interpreter enabled
+[    0.751959] ACPI: PM: (supports S0 S5)
+[    0.752766] ACPI: Using IOAPIC for interrupt routing
+[    0.753847] PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
+[    0.755766] PCI: Using E820 reservations for host bridge windows
+[    0.756058] ACPI: Enabled 2 GPEs in block 00 to 3F
+[    0.759460] ACPI: PCI Root Bridge [PCI0] (domain 0000 [bus 00-ff])
+[    0.759953] acpi PNP0A08:00: _OSC: OS supports [ExtendedConfig ASPM ClockPM Segments MSI HPX-Type3]
+[    0.761618] acpi PNP0A08:00: _OSC: platform does not support [PCIeHotplug LTR]
+[    0.763005] acpi PNP0A08:00: _OSC: OS now controls [PME AER PCIeCapability]
+[    0.764191] PCI host bridge to bus 0000:00
+[    0.764922] pci_bus 0000:00: root bus resource [io  0x0000-0x0cf7 window]
+[    0.766148] pci_bus 0000:00: root bus resource [io  0x0d00-0xffff window]
+[    0.767437] pci_bus 0000:00: root bus resource [mem 0x000a0000-0x000bffff window]
+[    0.767949] pci_bus 0000:00: root bus resource [mem 0x80000000-0xafffffff window]
+[    0.769290] pci_bus 0000:00: root bus resource [mem 0xc0000000-0xfebfffff window]
+[    0.770636] pci_bus 0000:00: root bus resource [mem 0x840000000-0x103fffffff window]
+[    0.771949] pci_bus 0000:00: root bus resource [bus 00-ff]
+[    0.772990] pci 0000:00:00.0: [8086:29c0] type 00 class 0x060000
+[    0.774557] pci 0000:00:01.0: [1234:1111] type 00 class 0x030000
+[    0.777566] pci 0000:00:01.0: reg 0x10: [mem 0xfa000000-0xfaffffff pref]
+[    0.784066] pci 0000:00:01.0: reg 0x18: [mem 0xfea10000-0xfea10fff]
+[    0.799305] pci 0000:00:01.0: reg 0x30: [mem 0xfea00000-0xfea0ffff pref]
+[    0.800173] pci 0000:00:01.0: Video device with shadowed ROM at [mem 0x000c0000-0x000dffff]
+[    0.802938] pci 0000:00:02.0: [1b36:000c] type 01 class 0x060400
+[    0.808682] pci 0000:00:02.0: reg 0x10: [mem 0xfea11000-0xfea11fff]
+[    0.815048] pci 0000:00:02.1: [1b36:000c] type 01 class 0x060400
+[    0.821339] pci 0000:00:02.1: reg 0x10: [mem 0xfea12000-0xfea12fff]
+[    0.827063] pci 0000:00:02.2: [1b36:000c] type 01 class 0x060400
+[    0.834543] pci 0000:00:02.2: reg 0x10: [mem 0xfea13000-0xfea13fff]
+[    0.840699] pci 0000:00:02.3: [1b36:000c] type 01 class 0x060400
+[    0.846348] pci 0000:00:02.3: reg 0x10: [mem 0xfea14000-0xfea14fff]
+[    0.851510] pci 0000:00:02.4: [1b36:000c] type 01 class 0x060400
+[    0.858070] pci 0000:00:02.4: reg 0x10: [mem 0xfea15000-0xfea15fff]
+[    0.864112] pci 0000:00:02.5: [1b36:000c] type 01 class 0x060400
+[    0.870204] pci 0000:00:02.5: reg 0x10: [mem 0xfea16000-0xfea16fff]
+[    0.875376] pci 0000:00:02.6: [1b36:000c] type 01 class 0x060400
+[    0.882586] pci 0000:00:02.6: reg 0x10: [mem 0xfea17000-0xfea17fff]
+[    0.895721] pci 0000:00:02.7: [1b36:000c] type 01 class 0x060400
+[    0.900773] pci 0000:00:02.7: reg 0x10: [mem 0xfea18000-0xfea18fff]
+[    0.906252] pci 0000:00:03.0: [1b36:000c] type 01 class 0x060400
+[    0.909320] pci 0000:00:03.0: reg 0x10: [mem 0xfea19000-0xfea19fff]
+[    0.916145] pci 0000:00:03.1: [1b36:000c] type 01 class 0x060400
+[    0.919349] pci 0000:00:03.1: reg 0x10: [mem 0xfea1a000-0xfea1afff]
+[    0.926845] pci 0000:00:03.2: [1b36:000c] type 01 class 0x060400
+[    0.930111] pci 0000:00:03.2: reg 0x10: [mem 0xfea1b000-0xfea1bfff]
+[    0.939018] pci 0000:00:03.3: [1b36:000c] type 01 class 0x060400
+[    0.942023] pci 0000:00:03.3: reg 0x10: [mem 0xfea1c000-0xfea1cfff]
+[    0.949653] pci 0000:00:03.4: [1b36:000c] type 01 class 0x060400
+[    0.952679] pci 0000:00:03.4: reg 0x10: [mem 0xfea1d000-0xfea1dfff]
+[    0.960654] pci 0000:00:1f.0: [8086:2918] type 00 class 0x060100
+[    0.962124] pci 0000:00:1f.0: quirk: [io  0x0600-0x067f] claimed by ICH6 ACPI/GPIO/TCO
+[    0.963742] pci 0000:00:1f.2: [8086:2922] type 00 class 0x010601
+[    0.972622] pci 0000:00:1f.2: reg 0x20: [io  0xc040-0xc05f]
+[    0.974994] pci 0000:00:1f.2: reg 0x24: [mem 0xfea1e000-0xfea1efff]
+[    0.977600] pci 0000:00:1f.3: [8086:2930] type 00 class 0x0c0500
+[    0.985162] pci 0000:00:1f.3: reg 0x20: [io  0x0700-0x073f]
+[    0.988166] acpiphp: Slot [0] registered
+[    0.989017] pci 0000:01:00.0: [1af4:1041] type 00 class 0x020000
+[    0.992584] pci 0000:01:00.0: reg 0x14: [mem 0xfe800000-0xfe800fff]
+[    0.999398] pci 0000:01:00.0: reg 0x20: [mem 0xfc800000-0xfc803fff 64bit pref]
+[    1.002711] pci 0000:00:02.0: PCI bridge to [bus 01]
+[    1.003617] pci 0000:00:02.0:   bridge window [mem 0xfe800000-0xfe9fffff]
+[    1.003976] pci 0000:00:02.0:   bridge window [mem 0xfc800000-0xfc9fffff 64bit pref]
+[    1.009109] acpiphp: Slot [0-1] registered
+[    1.009839] pci 0000:00:02.1: PCI bridge to [bus 02]
+[    1.010731] pci 0000:00:02.1:   bridge window [mem 0xfe600000-0xfe7fffff]
+[    1.011923] pci 0000:00:02.1:   bridge window [mem 0xfc600000-0xfc7fffff 64bit pref]
+[    1.012915] acpiphp: Slot [0-2] registered
+[    1.013656] pci 0000:00:02.2: PCI bridge to [bus 03]
+[    1.014550] pci 0000:00:02.2:   bridge window [mem 0xfe400000-0xfe5fffff]
+[    1.015749] pci 0000:00:02.2:   bridge window [mem 0xfc400000-0xfc5fffff 64bit pref]
+[    1.016852] acpiphp: Slot [0-3] registered
+[    1.017585] pci 0000:00:02.3: PCI bridge to [bus 04]
+[    1.018468] pci 0000:00:02.3:   bridge window [mem 0xfe200000-0xfe3fffff]
+[    1.019684] pci 0000:00:02.3:   bridge window [mem 0xfc200000-0xfc3fffff 64bit pref]
+[    1.020858] acpiphp: Slot [0-4] registered
+[    1.021744] pci 0000:05:00.0: [1af4:1048] type 00 class 0x010000
+[    1.026297] pci 0000:05:00.0: reg 0x14: [mem 0xfe000000-0xfe000fff]
+[    1.031078] pci 0000:05:00.0: reg 0x20: [mem 0xfc000000-0xfc003fff 64bit pref]
+[    1.037420] pci 0000:00:02.4: PCI bridge to [bus 05]
+[    1.038345] pci 0000:00:02.4:   bridge window [mem 0xfe000000-0xfe1fffff]
+[    1.039581] pci 0000:00:02.4:   bridge window [mem 0xfc000000-0xfc1fffff 64bit pref]
+[    1.040932] acpiphp: Slot [0-5] registered
+[    1.041809] pci 0000:06:00.0: [1af4:1043] type 00 class 0x078000
+[    1.047954] pci 0000:06:00.0: reg 0x14: [mem 0xfde00000-0xfde00fff]
+[    1.054980] pci 0000:06:00.0: reg 0x20: [mem 0xfbe00000-0xfbe03fff 64bit pref]
+[    1.058921] pci 0000:00:02.5: PCI bridge to [bus 06]
+[    1.059818] pci 0000:00:02.5:   bridge window [mem 0xfde00000-0xfdffffff]
+[    1.059979] pci 0000:00:02.5:   bridge window [mem 0xfbe00000-0xfbffffff 64bit pref]
+[    1.062250] acpiphp: Slot [0-6] registered
+[    1.063102] pci 0000:07:00.0: [1af4:1042] type 00 class 0x010000
+[    1.071951] pci 0000:07:00.0: reg 0x14: [mem 0xfdc00000-0xfdc00fff]
+[    1.077619] pci 0000:07:00.0: reg 0x20: [mem 0xfbc00000-0xfbc03fff 64bit pref]
+[    1.084881] pci 0000:00:02.6: PCI bridge to [bus 07]
+[    1.085772] pci 0000:00:02.6:   bridge window [mem 0xfdc00000-0xfddfffff]
+[    1.086985] pci 0000:00:02.6:   bridge window [mem 0xfbc00000-0xfbdfffff 64bit pref]
+[    1.092104] acpiphp: Slot [0-7] registered
+[    1.092968] pci 0000:08:00.0: [1af4:1042] type 00 class 0x010000
+[    1.096582] pci 0000:08:00.0: reg 0x14: [mem 0xfda00000-0xfda00fff]
+[    1.101228] pci 0000:08:00.0: reg 0x20: [mem 0xfba00000-0xfba03fff 64bit pref]
+[    1.109168] pci 0000:00:02.7: PCI bridge to [bus 08]
+[    1.110965] pci 0000:00:02.7:   bridge window [mem 0xfda00000-0xfdbfffff]
+[    1.111981] pci 0000:00:02.7:   bridge window [mem 0xfba00000-0xfbbfffff 64bit pref]
+[    1.114392] acpiphp: Slot [0-8] registered
+[    1.115256] pci 0000:09:00.0: [1af4:1042] type 00 class 0x010000
+[    1.118515] pci 0000:09:00.0: reg 0x14: [mem 0xfd800000-0xfd800fff]
+[    1.125742] pci 0000:09:00.0: reg 0x20: [mem 0xfb800000-0xfb803fff 64bit pref]
+[    1.129243] pci 0000:00:03.0: PCI bridge to [bus 09]
+[    1.130147] pci 0000:00:03.0:   bridge window [mem 0xfd800000-0xfd9fffff]
+[    1.131331] pci 0000:00:03.0:   bridge window [mem 0xfb800000-0xfb9fffff 64bit pref]
+[    1.133605] acpiphp: Slot [0-9] registered
+[    1.135103] pci 0000:0a:00.0: [1af4:1042] type 00 class 0x010000
+[    1.139750] pci 0000:0a:00.0: reg 0x14: [mem 0xfd600000-0xfd600fff]
+[    1.143645] pci 0000:0a:00.0: reg 0x20: [mem 0xfb600000-0xfb603fff 64bit pref]
+[    1.146419] pci 0000:00:03.1: PCI bridge to [bus 0a]
+[    1.147294] pci 0000:00:03.1:   bridge window [mem 0xfd600000-0xfd7fffff]
+[    1.147977] pci 0000:00:03.1:   bridge window [mem 0xfb600000-0xfb7fffff 64bit pref]
+[    1.154033] acpiphp: Slot [0-10] registered
+[    1.156039] pci 0000:0b:00.0: [1af4:1045] type 00 class 0x00ff00
+[    1.162118] pci 0000:0b:00.0: reg 0x20: [mem 0xfb400000-0xfb403fff 64bit pref]
+[    1.165236] pci 0000:00:03.2: PCI bridge to [bus 0b]
+[    1.166121] pci 0000:00:03.2:   bridge window [mem 0xfd400000-0xfd5fffff]
+[    1.167305] pci 0000:00:03.2:   bridge window [mem 0xfb400000-0xfb5fffff 64bit pref]
+[    1.172204] acpiphp: Slot [0-11] registered
+[    1.173495] pci 0000:0c:00.0: [1af4:1044] type 00 class 0x00ff00
+[    1.178380] pci 0000:0c:00.0: reg 0x14: [mem 0xfd200000-0xfd200fff]
+[    1.186048] pci 0000:0c:00.0: reg 0x20: [mem 0xfb200000-0xfb203fff 64bit pref]
+[    1.189947] pci 0000:00:03.3: PCI bridge to [bus 0c]
+[    1.190840] pci 0000:00:03.3:   bridge window [mem 0xfd200000-0xfd3fffff]
+[    1.191977] pci 0000:00:03.3:   bridge window [mem 0xfb200000-0xfb3fffff 64bit pref]
+[    1.196639] acpiphp: Slot [0-12] registered
+[    1.197389] pci 0000:00:03.4: PCI bridge to [bus 0d]
+[    1.198269] pci 0000:00:03.4:   bridge window [mem 0xfd000000-0xfd1fffff]
+[    1.199455] pci 0000:00:03.4:   bridge window [mem 0xfb000000-0xfb1fffff 64bit pref]
+[    1.212721] ACPI: PCI: Interrupt link LNKA configured for IRQ 10
+[    1.213894] ACPI: PCI: Interrupt link LNKB configured for IRQ 10
+[    1.215093] ACPI: PCI: Interrupt link LNKC configured for IRQ 11
+[    1.216011] ACPI: PCI: Interrupt link LNKD configured for IRQ 11
+[    1.217111] ACPI: PCI: Interrupt link LNKE configured for IRQ 10
+[    1.220035] ACPI: PCI: Interrupt link LNKF configured for IRQ 10
+[    1.221155] ACPI: PCI: Interrupt link LNKG configured for IRQ 11
+[    1.222249] ACPI: PCI: Interrupt link LNKH configured for IRQ 11
+[    1.223328] ACPI: PCI: Interrupt link GSIA configured for IRQ 16
+[    1.223962] ACPI: PCI: Interrupt link GSIB configured for IRQ 17
+[    1.225017] ACPI: PCI: Interrupt link GSIC configured for IRQ 18
+[    1.226066] ACPI: PCI: Interrupt link GSID configured for IRQ 19
+[    1.227163] ACPI: PCI: Interrupt link GSIE configured for IRQ 20
+[    1.227957] ACPI: PCI: Interrupt link GSIF configured for IRQ 21
+[    1.229053] ACPI: PCI: Interrupt link GSIG configured for IRQ 22
+[    1.230123] ACPI: PCI: Interrupt link GSIH configured for IRQ 23
+[    1.232215] iommu: Default domain type: Translated
+[    1.232821] iommu: DMA domain TLB invalidation policy: strict mode
+[    1.234197] SCSI subsystem initialized
+[    1.234884] ACPI: bus type USB registered
+[    1.235975] usbcore: registered new interface driver usbfs
+[    1.236974] usbcore: registered new interface driver hub
+[    1.237978] usbcore: registered new device driver usb
+[    1.238911] pps_core: LinuxPPS API ver. 1 registered
+[    1.239804] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    1.239952] PTP clock support registered
+[    1.240722] EDAC MC: Ver: 3.0.0
+[    1.241057] NET: Registered PF_ATMPVC protocol family
+[    1.243952] NET: Registered PF_ATMSVC protocol family
+[    1.244968] NetLabel: Initializing
+[    1.245591] NetLabel:  domain hash size = 128
+[    1.246400] NetLabel:  protocols = UNLABELED CIPSOv4 CALIPSO
+[    1.247464] NetLabel:  unlabeled traffic allowed by default
+[    1.247960] PCI: Using ACPI for IRQ routing
+[    1.311296] pci 0000:00:01.0: vgaarb: setting as boot VGA device
+[    1.311296] pci 0000:00:01.0: vgaarb: bridge control possible
+[    1.311296] pci 0000:00:01.0: vgaarb: VGA device added: decodes=io+mem,owns=io+mem,locks=none
+[    1.311954] vgaarb: loaded
+[    1.313235] clocksource: Switched to clocksource kvm-clock
+[    1.313492] VFS: Disk quotas dquot_6.6.0
+[    1.314230] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[    1.315872] AppArmor: AppArmor Filesystem Enabled
+[    1.316768] pnp: PnP ACPI init
+[    1.317566] system 00:04: [mem 0xb0000000-0xbfffffff window] has been reserved
+[    1.319077] pnp: PnP ACPI: found 5 devices
+[    1.330142] clocksource: acpi_pm: mask: 0xffffff max_cycles: 0xffffff, max_idle_ns: 2085701024 ns
+[    1.331873] NET: Registered PF_INET protocol family
+[    1.334260] IP idents hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+[    1.338366] tcp_listen_portaddr_hash hash table entries: 16384 (order: 6, 262144 bytes, linear)
+[    1.340311] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    1.343140] TCP established hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+[    1.346169] TCP bind hash table entries: 65536 (order: 9, 2097152 bytes, linear)
+[    1.347625] TCP: Hash tables configured (established 262144 bind 65536)
+[    1.349401] UDP hash table entries: 16384 (order: 7, 524288 bytes, linear)
+[    1.351081] UDP-Lite hash table entries: 16384 (order: 7, 524288 bytes, linear)
+[    1.352585] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    1.354234] RPC: Registered named UNIX socket transport module.
+[    1.355312] RPC: Registered udp transport module.
+[    1.356145] RPC: Registered tcp transport module.
+[    1.356988] RPC: Registered tcp-with-tls transport module.
+[    1.357977] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    1.359145] NET: Registered PF_XDP protocol family
+[    1.360026] pci 0000:00:02.0: bridge window [io  0x1000-0x0fff] to [bus 01] add_size 1000
+[    1.361516] pci 0000:00:02.1: bridge window [io  0x1000-0x0fff] to [bus 02] add_size 1000
+[    1.363104] pci 0000:00:02.2: bridge window [io  0x1000-0x0fff] to [bus 03] add_size 1000
+[    1.364651] pci 0000:00:02.3: bridge window [io  0x1000-0x0fff] to [bus 04] add_size 1000
+[    1.366203] pci 0000:00:02.4: bridge window [io  0x1000-0x0fff] to [bus 05] add_size 1000
+[    1.367771] pci 0000:00:02.5: bridge window [io  0x1000-0x0fff] to [bus 06] add_size 1000
+[    1.369264] pci 0000:00:02.6: bridge window [io  0x1000-0x0fff] to [bus 07] add_size 1000
+[    1.370816] pci 0000:00:02.7: bridge window [io  0x1000-0x0fff] to [bus 08] add_size 1000
+[    1.372378] pci 0000:00:03.0: bridge window [io  0x1000-0x0fff] to [bus 09] add_size 1000
+[    1.373923] pci 0000:00:03.1: bridge window [io  0x1000-0x0fff] to [bus 0a] add_size 1000
+[    1.375505] pci 0000:00:03.2: bridge window [io  0x1000-0x0fff] to [bus 0b] add_size 1000
+[    1.377074] pci 0000:00:03.3: bridge window [io  0x1000-0x0fff] to [bus 0c] add_size 1000
+[    1.378661] pci 0000:00:03.4: bridge window [io  0x1000-0x0fff] to [bus 0d] add_size 1000
+[    1.380214] pci 0000:00:02.0: BAR 13: assigned [io  0x1000-0x1fff]
+[    1.381396] pci 0000:00:02.1: BAR 13: assigned [io  0x2000-0x2fff]
+[    1.382630] pci 0000:00:02.2: BAR 13: assigned [io  0x3000-0x3fff]
+[    1.383838] pci 0000:00:02.3: BAR 13: assigned [io  0x4000-0x4fff]
+[    1.385053] pci 0000:00:02.4: BAR 13: assigned [io  0x5000-0x5fff]
+[    1.386202] pci 0000:00:02.5: BAR 13: assigned [io  0x6000-0x6fff]
+[    1.387359] pci 0000:00:02.6: BAR 13: assigned [io  0x7000-0x7fff]
+[    1.388472] pci 0000:00:02.7: BAR 13: assigned [io  0x8000-0x8fff]
+[    1.389629] pci 0000:00:03.0: BAR 13: assigned [io  0x9000-0x9fff]
+[    1.390861] pci 0000:00:03.1: BAR 13: assigned [io  0xa000-0xafff]
+[    1.392013] pci 0000:00:03.2: BAR 13: assigned [io  0xb000-0xbfff]
+[    1.393131] pci 0000:00:03.3: BAR 13: assigned [io  0xd000-0xdfff]
+[    1.394296] pci 0000:00:03.4: BAR 13: assigned [io  0xe000-0xefff]
+[    1.395507] pci 0000:00:02.0: PCI bridge to [bus 01]
+[    1.396490] pci 0000:00:02.0:   bridge window [io  0x1000-0x1fff]
+[    1.399780] pci 0000:00:02.0:   bridge window [mem 0xfe800000-0xfe9fffff]
+[    1.402398] pci 0000:00:02.0:   bridge window [mem 0xfc800000-0xfc9fffff 64bit pref]
+[    1.406542] pci 0000:00:02.1: PCI bridge to [bus 02]
+[    1.407518] pci 0000:00:02.1:   bridge window [io  0x2000-0x2fff]
+[    1.410642] pci 0000:00:02.1:   bridge window [mem 0xfe600000-0xfe7fffff]
+[    1.413153] pci 0000:00:02.1:   bridge window [mem 0xfc600000-0xfc7fffff 64bit pref]
+[    1.417187] pci 0000:00:02.2: PCI bridge to [bus 03]
+[    1.418245] pci 0000:00:02.2:   bridge window [io  0x3000-0x3fff]
+[    1.424290] pci 0000:00:02.2:   bridge window [mem 0xfe400000-0xfe5fffff]
+[    1.426876] pci 0000:00:02.2:   bridge window [mem 0xfc400000-0xfc5fffff 64bit pref]
+[    1.430877] pci 0000:00:02.3: PCI bridge to [bus 04]
+[    1.436509] pci 0000:00:02.3:   bridge window [io  0x4000-0x4fff]
+[    1.439009] pci 0000:00:02.3:   bridge window [mem 0xfe200000-0xfe3fffff]
+[    1.440943] pci 0000:00:02.3:   bridge window [mem 0xfc200000-0xfc3fffff 64bit pref]
+[    1.443822] pci 0000:00:02.4: PCI bridge to [bus 05]
+[    1.444734] pci 0000:00:02.4:   bridge window [io  0x5000-0x5fff]
+[    1.446999] pci 0000:00:02.4:   bridge window [mem 0xfe000000-0xfe1fffff]
+[    1.452075] pci 0000:00:02.4:   bridge window [mem 0xfc000000-0xfc1fffff 64bit pref]
+[    1.454981] pci 0000:00:02.5: PCI bridge to [bus 06]
+[    1.455911] pci 0000:00:02.5:   bridge window [io  0x6000-0x6fff]
+[    1.458133] pci 0000:00:02.5:   bridge window [mem 0xfde00000-0xfdffffff]
+[    1.460227] pci 0000:00:02.5:   bridge window [mem 0xfbe00000-0xfbffffff 64bit pref]
+[    1.468213] pci 0000:00:02.6: PCI bridge to [bus 07]
+[    1.469608] pci 0000:00:02.6:   bridge window [io  0x7000-0x7fff]
+[    1.472541] pci 0000:00:02.6:   bridge window [mem 0xfdc00000-0xfddfffff]
+[    1.474427] pci 0000:00:02.6:   bridge window [mem 0xfbc00000-0xfbdfffff 64bit pref]
+[    1.480477] pci 0000:00:02.7: PCI bridge to [bus 08]
+[    1.481370] pci 0000:00:02.7:   bridge window [io  0x8000-0x8fff]
+[    1.483464] pci 0000:00:02.7:   bridge window [mem 0xfda00000-0xfdbfffff]
+[    1.485340] pci 0000:00:02.7:   bridge window [mem 0xfba00000-0xfbbfffff 64bit pref]
+[    1.488326] pci 0000:00:03.0: PCI bridge to [bus 09]
+[    1.492829] pci 0000:00:03.0:   bridge window [io  0x9000-0x9fff]
+[    1.495183] pci 0000:00:03.0:   bridge window [mem 0xfd800000-0xfd9fffff]
+[    1.497094] pci 0000:00:03.0:   bridge window [mem 0xfb800000-0xfb9fffff 64bit pref]
+[    1.499786] pci 0000:00:03.1: PCI bridge to [bus 0a]
+[    1.500671] pci 0000:00:03.1:   bridge window [io  0xa000-0xafff]
+[    1.503060] pci 0000:00:03.1:   bridge window [mem 0xfd600000-0xfd7fffff]
+[    1.509510] pci 0000:00:03.1:   bridge window [mem 0xfb600000-0xfb7fffff 64bit pref]
+[    1.512238] pci 0000:00:03.2: PCI bridge to [bus 0b]
+[    1.513120] pci 0000:00:03.2:   bridge window [io  0xb000-0xbfff]
+[    1.515300] pci 0000:00:03.2:   bridge window [mem 0xfd400000-0xfd5fffff]
+[    1.517223] pci 0000:00:03.2:   bridge window [mem 0xfb400000-0xfb5fffff 64bit pref]
+[    1.524156] pci 0000:00:03.3: PCI bridge to [bus 0c]
+[    1.525042] pci 0000:00:03.3:   bridge window [io  0xd000-0xdfff]
+[    1.527350] pci 0000:00:03.3:   bridge window [mem 0xfd200000-0xfd3fffff]
+[    1.529313] pci 0000:00:03.3:   bridge window [mem 0xfb200000-0xfb3fffff 64bit pref]
+[    1.532179] pci 0000:00:03.4: PCI bridge to [bus 0d]
+[    1.536662] pci 0000:00:03.4:   bridge window [io  0xe000-0xefff]
+[    1.539036] pci 0000:00:03.4:   bridge window [mem 0xfd000000-0xfd1fffff]
+[    1.540955] pci 0000:00:03.4:   bridge window [mem 0xfb000000-0xfb1fffff 64bit pref]
+[    1.543808] pci_bus 0000:00: resource 4 [io  0x0000-0x0cf7 window]
+[    1.544880] pci_bus 0000:00: resource 5 [io  0x0d00-0xffff window]
+[    1.549851] pci_bus 0000:00: resource 6 [mem 0x000a0000-0x000bffff window]
+[    1.551133] pci_bus 0000:00: resource 7 [mem 0x80000000-0xafffffff window]
+[    1.552347] pci_bus 0000:00: resource 8 [mem 0xc0000000-0xfebfffff window]
+[    1.553564] pci_bus 0000:00: resource 9 [mem 0x840000000-0x103fffffff window]
+[    1.554903] pci_bus 0000:01: resource 0 [io  0x1000-0x1fff]
+[    1.555887] pci_bus 0000:01: resource 1 [mem 0xfe800000-0xfe9fffff]
+[    1.556996] pci_bus 0000:01: resource 2 [mem 0xfc800000-0xfc9fffff 64bit pref]
+[    1.558336] pci_bus 0000:02: resource 0 [io  0x2000-0x2fff]
+[    1.559365] pci_bus 0000:02: resource 1 [mem 0xfe600000-0xfe7fffff]
+[    1.560485] pci_bus 0000:02: resource 2 [mem 0xfc600000-0xfc7fffff 64bit pref]
+[    1.561787] pci_bus 0000:03: resource 0 [io  0x3000-0x3fff]
+[    1.562784] pci_bus 0000:03: resource 1 [mem 0xfe400000-0xfe5fffff]
+[    1.563912] pci_bus 0000:03: resource 2 [mem 0xfc400000-0xfc5fffff 64bit pref]
+[    1.565210] pci_bus 0000:04: resource 0 [io  0x4000-0x4fff]
+[    1.566232] pci_bus 0000:04: resource 1 [mem 0xfe200000-0xfe3fffff]
+[    1.567363] pci_bus 0000:04: resource 2 [mem 0xfc200000-0xfc3fffff 64bit pref]
+[    1.568678] pci_bus 0000:05: resource 0 [io  0x5000-0x5fff]
+[    1.569717] pci_bus 0000:05: resource 1 [mem 0xfe000000-0xfe1fffff]
+[    1.570907] pci_bus 0000:05: resource 2 [mem 0xfc000000-0xfc1fffff 64bit pref]
+[    1.572285] pci_bus 0000:06: resource 0 [io  0x6000-0x6fff]
+[    1.573320] pci_bus 0000:06: resource 1 [mem 0xfde00000-0xfdffffff]
+[    1.574582] pci_bus 0000:06: resource 2 [mem 0xfbe00000-0xfbffffff 64bit pref]
+[    1.575937] pci_bus 0000:07: resource 0 [io  0x7000-0x7fff]
+[    1.576995] pci_bus 0000:07: resource 1 [mem 0xfdc00000-0xfddfffff]
+[    1.578179] pci_bus 0000:07: resource 2 [mem 0xfbc00000-0xfbdfffff 64bit pref]
+[    1.579534] pci_bus 0000:08: resource 0 [io  0x8000-0x8fff]
+[    1.580541] pci_bus 0000:08: resource 1 [mem 0xfda00000-0xfdbfffff]
+[    1.581672] pci_bus 0000:08: resource 2 [mem 0xfba00000-0xfbbfffff 64bit pref]
+[    1.582956] pci_bus 0000:09: resource 0 [io  0x9000-0x9fff]
+[    1.583962] pci_bus 0000:09: resource 1 [mem 0xfd800000-0xfd9fffff]
+[    1.585099] pci_bus 0000:09: resource 2 [mem 0xfb800000-0xfb9fffff 64bit pref]
+[    1.586481] pci_bus 0000:0a: resource 0 [io  0xa000-0xafff]
+[    1.587505] pci_bus 0000:0a: resource 1 [mem 0xfd600000-0xfd7fffff]
+[    1.588656] pci_bus 0000:0a: resource 2 [mem 0xfb600000-0xfb7fffff 64bit pref]
+[    1.589995] pci_bus 0000:0b: resource 0 [io  0xb000-0xbfff]
+[    1.590998] pci_bus 0000:0b: resource 1 [mem 0xfd400000-0xfd5fffff]
+[    1.592122] pci_bus 0000:0b: resource 2 [mem 0xfb400000-0xfb5fffff 64bit pref]
+[    1.593431] pci_bus 0000:0c: resource 0 [io  0xd000-0xdfff]
+[    1.594562] pci_bus 0000:0c: resource 1 [mem 0xfd200000-0xfd3fffff]
+[    1.595809] pci_bus 0000:0c: resource 2 [mem 0xfb200000-0xfb3fffff 64bit pref]
+[    1.597198] pci_bus 0000:0d: resource 0 [io  0xe000-0xefff]
+[    1.598220] pci_bus 0000:0d: resource 1 [mem 0xfd000000-0xfd1fffff]
+[    1.599342] pci_bus 0000:0d: resource 2 [mem 0xfb000000-0xfb1fffff 64bit pref]
+[    1.601831] PCI: CLS 0 bytes, default 64
+[    1.602614] PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+[    1.602968] Unpacking initramfs...
+[    1.603830] software IO TLB: mapped [mem 0x000000007bfdd000-0x000000007ffdd000] (64MB)
+[    1.607668] RAPL PMU: API unit is 2^-32 Joules, 0 fixed counters, 10737418240 ms ovfl timer
+[    1.629059] kvm_amd: CPU 0 isn't AMD or Hygon
+[    1.629902] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x257a3c3232d, max_idle_ns: 440795236700 ns
+[    1.647503] Initialise system trusted keyrings
+[    1.650453] Key type blacklist registered
+[    1.653221] workingset: timestamp_bits=40 max_order=23 bucket_order=0
+[    1.655957] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[    1.658548] NFS: Registering the id_resolver key type
+[    1.660024] Key type id_resolver registered
+[    1.660969] Key type id_legacy registered
+[    1.661955] nfs4filelayout_init: NFSv4 File Layout Driver Registering...
+[    1.663489] nfs4flexfilelayout_init: NFSv4 Flexfile Layout Driver Registering...
+[    1.666203] Key type cifs.spnego registered
+[    1.667230] Key type cifs.idmap registered
+[    1.668279] fuse: init (API version 7.39)
+[    1.669427] SGI XFS with ACLs, security attributes, quota, no debug enabled
+[    1.671898] ceph: loaded (mds proto 32)
+[    1.673179] integrity: Platform Keyring initialized
+[    1.681564] NET: Registered PF_ALG protocol family
+[    1.682721] Key type asymmetric registered
+[    1.683661] Asymmetric key parser 'x509' registered
+[    1.684853] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 249)
+[    1.687028] io scheduler mq-deadline registered
+[    1.689925] io scheduler kyber registered
+[    1.692475] io scheduler bfq registered
+[    1.695954] ACPI: \_SB_.GSIG: Enabled at IRQ 22
+[    1.702837] pcieport 0000:00:02.0: PME: Signaling with IRQ 24
+[    1.704789] pcieport 0000:00:02.0: AER: enabled with IRQ 24
+[    1.708579] pcieport 0000:00:02.1: PME: Signaling with IRQ 25
+[    1.710113] pcieport 0000:00:02.1: AER: enabled with IRQ 25
+[    1.713832] pcieport 0000:00:02.2: PME: Signaling with IRQ 26
+[    1.715604] pcieport 0000:00:02.2: AER: enabled with IRQ 26
+[    1.719464] pcieport 0000:00:02.3: PME: Signaling with IRQ 27
+[    1.722917] pcieport 0000:00:02.3: AER: enabled with IRQ 27
+[    1.725930] pcieport 0000:00:02.4: PME: Signaling with IRQ 28
+[    1.727354] pcieport 0000:00:02.4: AER: enabled with IRQ 28
+[    1.730488] pcieport 0000:00:02.5: PME: Signaling with IRQ 29
+[    1.735463] pcieport 0000:00:02.5: AER: enabled with IRQ 29
+[    1.740403] pcieport 0000:00:02.6: PME: Signaling with IRQ 30
+[    1.742757] pcieport 0000:00:02.6: AER: enabled with IRQ 30
+[    1.746259] pcieport 0000:00:02.7: PME: Signaling with IRQ 31
+[    1.747691] pcieport 0000:00:02.7: AER: enabled with IRQ 31
+[    1.749186] ACPI: \_SB_.GSIH: Enabled at IRQ 23
+[    1.751471] pcieport 0000:00:03.0: PME: Signaling with IRQ 32
+[    1.754435] pcieport 0000:00:03.0: AER: enabled with IRQ 32
+[    1.757456] pcieport 0000:00:03.1: PME: Signaling with IRQ 33
+[    1.758920] pcieport 0000:00:03.1: AER: enabled with IRQ 33
+[    1.761982] pcieport 0000:00:03.2: PME: Signaling with IRQ 34
+[    1.763479] pcieport 0000:00:03.2: AER: enabled with IRQ 34
+[    1.766753] pcieport 0000:00:03.3: PME: Signaling with IRQ 35
+[    1.768293] pcieport 0000:00:03.3: AER: enabled with IRQ 35
+[    1.771880] pcieport 0000:00:03.4: PME: Signaling with IRQ 36
+[    1.773263] pcieport 0000:00:03.4: AER: enabled with IRQ 36
+[    1.776368] hv_vmbus: registering driver hyperv_fb
+[    1.777306] IPMI message handler: version 39.2
+[    1.778115] ipmi device interface
+[    1.778987] ipmi_si: IPMI System Interface driver
+[    1.779893] ipmi_si: Unable to find any System Interface(s)
+[    1.780904] IPMI poweroff: Copyright (C) 2004 MontaVista Software - IPMI Powerdown via sys_reboot
+[    1.782705] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input0
+[    1.784111] ACPI: button: Power Button [PWRF]
+[    1.785635] ioatdma: Intel(R) QuickData Technology Driver 5.00
+[    1.787023] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+[    1.788349] 00:00: ttyS0 at I/O 0x3f8 (irq = 4, base_baud = 115200) is a 16550A
+[    1.790826] Non-volatile memory driver v1.3
+[    1.791879] Linux agpgart interface v0.103
+[    1.793074] AMD-Vi: AMD IOMMUv2 functionality not available on this system - This is not a bug.
+[    1.795116] ACPI: bus type drm_connector registered
+[    1.805938] loop: module loaded
+[    1.806873] rbd: loaded (major 252)
+[    1.807717] Guest personality initialized and is inactive
+[    1.809098] VMCI host device registered (name=vmci, major=10, minor=126)
+[    1.810631] Initialized host personality
+[    1.811556] Loading iSCSI transport class v2.0-870.
+[    1.813076] iscsi: registered transport (tcp)
+[    1.814272] hv_vmbus: registering driver hv_storvsc
+[    1.817550] wireguard: WireGuard 1.0.0 loaded. See www.wireguard.com for information.
+[    1.822555] wireguard: Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+[    1.830539] tun: Universal TUN/TAP device driver, 1.6
+[    1.832099] hv_vmbus: registering driver hv_netvsc
+[    1.833705] usbcore: registered new interface driver cdc_acm
+[    1.835400] cdc_acm: USB Abstract Control Model driver for USB modems and ISDN adapters
+[    1.837528] usbcore: registered new interface driver uas
+[    1.839268] usbcore: registered new interface driver usb-storage
+[    1.841475] usbcore: registered new interface driver usbserial_generic
+[    1.842892] usbserial: USB Serial support registered for generic
+[    1.844091] i8042: PNP: PS/2 Controller [PNP0303:KBD,PNP0f13:MOU] at 0x60,0x64 irq 1,12
+[    1.846392] serio: i8042 KBD port at 0x60,0x64 irq 1
+[    1.847470] serio: i8042 AUX port at 0x60,0x64 irq 12
+[    1.848480] hv_vmbus: registering driver hyperv_keyboard
+[    1.849716] mousedev: PS/2 mouse device common for all mice
+[    1.850896] rtc_cmos 00:03: RTC can wake from S4
+[    1.852626] rtc_cmos 00:03: registered as rtc0
+[    1.853846] rtc_cmos 00:03: alarms up to one day, y3k, 242 bytes nvram
+[    1.855946] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input1
+[    1.856011] device-mapper: core: CONFIG_IMA_DISABLE_HTABLE is disabled. Duplicate IMA measurements will not be recorded in the IMA log.
+[    1.861839] device-mapper: ioctl: 4.48.0-ioctl (2023-03-01) initialised: dm-devel@redhat.com
+[    1.864464] intel_pstate: CPU model not supported
+[    1.865603] sdhci: Secure Digital Host Controller Interface driver
+[    1.867062] sdhci: Copyright(c) Pierre Ossman
+[    1.868535] hid: raw HID events driver (C) Jiri Kosina
+[    1.869810] usbcore: registered new interface driver usbhid
+[    1.871090] usbhid: USB HID core driver
+[    1.872214] hv_utils: Registering HyperV Utility Driver
+[    1.873526] hv_vmbus: registering driver hv_utils
+[    1.874680] hv_vmbus: registering driver hv_balloon
+[    1.875976] NET: Registered PF_LLC protocol family
+[    1.877163] GACT probability NOT on
+[    1.878024] Mirror/redirect action on
+[    1.878970] Simple TC action Loaded
+[    1.880100] netem: version 1.3
+[    1.880873] u32 classifier
+[    1.881553]     input device check on
+[    1.882472]     Actions configured
+[    1.911311] xt_time: kernel timezone is -0000
+[    1.912616] IPVS: Registered protocols (TCP, UDP)
+[    1.913984] IPVS: Connection hash table configured (size=4096, memory=32Kbytes)
+[    1.916394] IPVS: ipvs loaded.
+[    1.917328] IPVS: [rr] scheduler registered.
+[    1.918543] IPVS: [wrr] scheduler registered.
+[    1.919750] IPVS: [lc] scheduler registered.
+[    1.920917] IPVS: [sh] scheduler registered.
+[    1.922024] ipip: IPv4 and MPLS over IPv4 tunneling driver
+[    1.923125] gre: GRE over IPv4 demultiplexor driver
+[    1.924036] Initializing XFRM netlink socket
+[    1.924998] NET: Registered PF_INET6 protocol family
+[    1.926473] Segment Routing with IPv6
+[    1.927151] In-situ OAM (IOAM) with IPv6
+[    1.927859] mip6: Mobile IPv6
+[    1.928399] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    1.929819] NET: Registered PF_PACKET protocol family
+[    1.930738] Bridge firewalling registered
+[    1.931577] NET: Registered PF_X25 protocol family
+[    1.932388] X25: Linux Version 0.2
+[    1.933054] RPC: Registered rdma transport module.
+[    1.933931] RPC: Registered rdma backchannel transport module.
+[    1.935235] l2tp_core: L2TP core driver, V2.0
+[    1.936024] NET: Registered PF_PHONET protocol family
+[    1.936922] 8021q: 802.1Q VLAN Support v1.8
+[    1.942370] DCCP: Activated CCID 2 (TCP-like)
+[    1.943156] DCCP: Activated CCID 3 (TCP-Friendly Rate Control)
+[    1.944222] DCCP is deprecated and scheduled to be removed in 2025, please contact the netdev mailing list
+[    1.946508] NET: Registered PF_RDS protocol family
+[    1.949643] Key type dns_resolver registered
+[    1.952271] Key type ceph registered
+[    1.954625] libceph: loaded (mon/osd proto 15/24)
+[    1.956477] openvswitch: Open vSwitch switching datapath
+[    1.958863] NET: Registered PF_VSOCK protocol family
+[    1.960478] mpls_gso: MPLS GSO support
+[    1.962924] IPI shorthand broadcast: enabled
+[    1.963695] AVX2 version of gcm_enc/dec engaged.
+[    1.964706] AES CTR mode by8 optimization enabled
+[    1.972237] sched_clock: Marking stable (1832004196, 136960729)->(2227762409, -258797484)
+[    1.974231] registered taskstats version 1
+[    1.975257] Loading compiled-in X.509 certificates
+[    1.977014] Loaded X.509 cert 'Sidero Labs, Inc.: Build time throw-away kernel key: 4e20eaa350eb4d98fd4f02d1e02d61e811bda2fd'
+[    1.984058] AppArmor: AppArmor sha1 policy hashing enabled
+[    1.985246] ima: No TPM chip found, activating TPM-bypass!
+[    1.986412] ima: Allocated hash algorithm: sha512
+[    1.987392] ima: No architecture policies found
+[    1.989140] PM:   Magic number: 12:957:800
+[    1.990182] printk: console [netcon0] enabled
+[    1.991210] netconsole: network logging started
+[    1.992528] clk: Disabling unused clocks
+[    2.045655] Freeing initrd memory: 70388K
+[    2.058618] Freeing unused kernel image (initmem) memory: 4952K
+[    2.060834] Write protecting the kernel read-only data: 40960k
+[    2.064743] Freeing unused kernel image (rodata/data gap) memory: 1760K
+[    2.068349] x86/mm: Checked W+X mappings: passed, no W+X pages found.
+[    2.069430] x86/mm: Checking user space page tables
+[    2.070744] x86/mm: Checked W+X mappings: passed, no W+X pages found.
+[    2.071887] Run /init as init process
+[    2.084821] [talos] [initramfs] TPM device is not available
+[    2.085596] [talos] [initramfs] TPM device is not available, skipping PCR extension
+[    2.086597] [talos] [initramfs] booting Talos v1.7.2
+[    2.087250] [talos] [initramfs] CPU: Intel Xeon Processor (Cascadelake), 1 core(s), 8 thread(s) per core
+[    2.088510] [talos] [initramfs] x86_64 microarchitecture level: 4
+[    2.089361] [talos] [initramfs] mounting the rootfs
+[    2.090269] [talos] [initramfs] enabling system extension schematic d1cba4b30888a004f2da2ec088afa62af8bf97b049367afec139490bec401a73
+[    2.091810] [talos] [initramfs] enabling system extension qemu-guest-agent 8.2.2
+[    2.092857] [talos] [initramfs] enabling system extension iscsi-tools v0.1.4
+[    2.093949] loop0: detected capacity change from 0 to 8
+[    2.109401] loop1: detected capacity change from 0 to 1136
+[    2.133491] loop2: detected capacity change from 0 to 4776
+[    2.149326] loop3: detected capacity change from 0 to 130048
+[    2.175914] [talos] [initramfs] entering the rootfs
+[    2.177239] [talos] [initramfs] moving mounts to the new rootfs
+[    2.180276] [talos] [initramfs] changing working directory into /root
+[    2.182038] [talos] [initramfs] moving /root to /
+[    2.183273] [talos] [initramfs] changing root directory
+[    2.184077] [talos] [initramfs] cleaning up initramfs
+[    2.185190] [talos] [initramfs] TPM device is not available, skipping PCR extension
+[    2.186299] [talos] [initramfs] executing /sbin/init
+[    2.485272] input: ImExPS/2 Generic Explorer Mouse as /devices/platform/i8042/serio1/input/input3
+2024/06/08 20:47:16 limited GOMAXPROCS to 4
+[    3.752450] [talos] initialize sequence: 11 phase(s)
+[    3.753208] [talos] phase systemRequirements (1/11): 6 tasks(s)
+[    3.754581] [talos] task mountBPFFS (3/6): starting
+[    3.763873] [talos] task enforceKSPPRequirements (1/6): starting
+[    3.766901] [talos] task setupSystemDirectory (2/6): starting
+[    3.769231] [talos] task mountCgroups (4/6): starting
+[    3.771709] [talos] task mountPseudoFilesystems (5/6): starting
+[    3.774005] [talos] task setupSystemDirectory (2/6): done, 10.154135ms
+[    3.776759] [talos] task mountCgroups (4/6): done, 7.022936ms
+[    3.778690] [talos] task mountPseudoFilesystems (5/6): done, 7.536284ms
+[    3.781198] [talos] task setRLimit (6/6): starting
+[    3.782093] [talos] task setRLimit (6/6): done, 27.666621ms
+[    3.802933] [talos] task enforceKSPPRequirements (1/6): done, 48.096957ms
+[    3.823417] [talos] waiting for devices to be ready...
+[    3.836658] [talos] setting resolvers {"component": "controller-runtime", "controller": "network.ResolverSpecController", "resolvers": ["1.1.1.1", "8.8.8.8"]}
+[    3.838645] [talos] setting resolvers {"component": "controller-runtime", "controller": "network.ResolverSpecController", "resolvers": ["1.1.1.1", "8.8.8.8"]}
+[    3.841377] [talos] setting time servers {"component": "controller-runtime", "controller": "network.TimeServerSpecController", "addresses": ["time.cloudflare.com"]}
+[    3.843472] [talos] setting time servers {"component": "controller-runtime", "controller": "network.TimeServerSpecController", "addresses": ["time.cloudflare.com"]}
+[    3.845913] [talos] pre-created iptables-nft table 'mangle'/'KUBE-IPTABLES-HINT' {"component": "controller-runtime", "controller": "network.NfTablesChainController"}
+[    3.848291] [talos] nftables chains updated {"component": "controller-runtime", "controller": "network.NfTablesChainController", "chains": []}
+[    3.850044] [talos] assigned address {"component": "controller-runtime", "controller": "network.AddressSpecController", "address": "127.0.0.1/8", "link": "lo"}
+[    3.852277] [talos] task mountBPFFS (3/6): done, 93.970026ms
+[    3.853188] [talos] phase systemRequirements (1/11): done, 99.97157ms
+[    3.854123] [talos] service[ext-iscsid](Starting): Starting service
+[    3.855074] [talos] phase integrity (2/11): 1 tasks(s)
+[    3.857643] [talos] task writeIMAPolicy (1/1): starting
+[    3.860348] audit: type=1807 audit(1717879637.118:2): action=dont_measure fsmagic=0x9fa0 res=1
+[    3.860787] ima: policy update completed
+[    3.861605] audit: type=1807 audit(1717879637.118:3): action=dont_measure fsmagic=0x62656572 res=1
+[    3.861607] audit: type=1807 audit(1717879637.118:4): action=dont_measure fsmagic=0x64626720 res=1
+[    3.861609] audit: type=1807 audit(1717879637.118:5): action=dont_measure fsmagic=0x1021994 res=1
+[    3.861613] audit: type=1807 audit(1717879637.118:6): action=dont_measure fsmagic=0x1cd1 res=1
+[    3.861614] audit: type=1807 audit(1717879637.118:7): action=dont_measure fsmagic=0x42494e4d res=1
+[    3.861615] audit: type=1807 audit(1717879637.118:8): action=dont_measure fsmagic=0x73636673 res=1
+[    3.861616] audit: type=1807 audit(1717879637.118:9): action=dont_measure fsmagic=0xf97cff8c res=1
+[    3.861618] audit: type=1807 audit(1717879637.118:10): action=dont_measure fsmagic=0x43415d53 res=1
+[    3.869472] [talos] service[ext-iscsid](Waiting): Waiting for service "containerd" to be "up", service "cri" to be "up", service "ext-tgtd" to be "up", network
+[    3.879582] [talos] service[ext-qemu-guest-agent](Starting): Starting service
+[    3.880874] [talos] service[ext-qemu-guest-agent](Waiting): Waiting for service "containerd" to be "up", file "/system/run/machined/machine.sock" to exist, file "/dev/virtio-ports/org.qemu.guest_agent.0" to exist
+[    3.884119] [talos] service[ext-tgtd](Starting): Starting service
+[    3.885365] [talos] service[ext-tgtd](Waiting): Waiting for service "containerd" to be "up", service "cri" to be "up", network
+[    3.889017] [talos] task writeIMAPolicy (1/1): done, 31.37434ms
+[    3.890210] [talos] phase integrity (2/11): done, 36.073149ms
+[    3.891315] [talos] phase etc (3/11): 3 tasks(s)
+[    3.892242] [talos] task setUserEnvVars (3/3): starting
+[    3.893261] [talos] task setUserEnvVars (3/3): done, 1.029875ms
+[    3.894384] [talos] task CreateSystemCgroups (1/3): starting
+[    3.895506] [talos] task createOSReleaseFile (2/3): starting
+[    3.904419] [talos] task createOSReleaseFile (2/3): done, 12.087885ms
+[    3.914623] [talos] task CreateSystemCgroups (1/3): done, 22.305925ms
+[    3.916218] [talos] phase etc (3/11): done, 24.900893ms
+[    3.917464] [talos] phase earlyServices (4/11): 4 tasks(s)
+[    3.918768] [talos] task startContainerd (4/4): starting
+[    3.919903] [talos] service[containerd](Starting): Starting service
+[    3.921175] [talos] task startUdevd (1/4): starting
+[    3.922190] [talos] task startMachined (2/4): starting
+[    3.923214] [talos] task startSyslogd (3/4): starting
+[    3.924225] [talos] service[containerd](Preparing): Running pre state
+[    3.925544] [talos] service[syslogd](Starting): Starting service
+[    3.926777] [talos] service[syslogd](Waiting): Waiting for service "machined" to be "up"
+[    3.928410] [talos] TPM device is not available, skipping PCR extension
+[    3.929513] [talos] service[containerd](Preparing): Creating service runner
+[    3.930580] [talos] task startSyslogd (3/4): done, 7.910448ms
+[    3.931468] [talos] service[udevd](Starting): Starting service
+[    3.932405] [talos] service[udevd](Preparing): Running pre state
+[    3.933378] [talos] service[machined](Starting): Starting service
+[    3.935947] [talos] service[machined](Preparing): Running pre state
+[    3.937778] [talos] service[machined](Preparing): Creating service runner
+[    3.939365] [talos] service[machined](Running): Service started as goroutine
+[    3.964105] [talos] service[containerd](Running): Process Process(["/bin/containerd" "--address" "/system/run/containerd/containerd.sock" "--state" "/system/run/containerd" "--root" "/system/var/lib/containerd"]) started with PID 1234
+[    3.996131] [talos] service[udevd](Preparing): Creating service runner
+[    4.000015] [talos] service[udevd](Running): Process Process(["/sbin/udevd" "--resolve-names=never"]) started with PID 1236
+[    4.880412] [talos] service[ext-iscsid](Waiting): Waiting for service "containerd" to be "up", service "cri" to be registered, service "ext-tgtd" to be "up", network
+[    4.887240] [talos] service[ext-qemu-guest-agent](Waiting): Waiting for service "containerd" to be "up", file "/dev/virtio-ports/org.qemu.guest_agent.0" to exist
+[    4.893555] [talos] service[ext-tgtd](Waiting): Waiting for service "containerd" to be "up", service "cri" to be registered, network
+[    4.940349] [talos] service[machined](Running): Health check successful
+[    4.943595] [talos] task startMachined (2/4): done, 1.024681496s
+[    4.946295] [talos] service[syslogd](Preparing): Running pre state
+[    4.949237] [talos] service[syslogd](Preparing): Creating service runner
+[    4.952394] [talos] service[syslogd](Running): Service started as goroutine
+[    5.714176] udevd[1236]: starting version 3.2.14
+[    5.723116] udevd[1236]: starting eudev-3.2.14
+[    5.952767] [talos] service[syslogd](Running): Health check successful
+[    6.191346] ACPI: \_SB_.GSIA: Enabled at IRQ 16
+[    6.192796] ahci 0000:00:1f.2: AHCI 0001.0000 32 slots 6 ports 1.5 Gbps 0x3f impl SATA mode
+[    6.193956] ahci 0000:00:1f.2: flags: 64bit ncq only 
+[    6.195498] lpc_ich 0000:00:1f.0: I/O space for GPIO uninitialized
+[    6.198438] scsi host0: ahci
+[    6.198874] i801_smbus 0000:00:1f.3: SMBus using PCI interrupt
+[    6.199217] scsi host1: ahci
+[    6.200102] i2c i2c-0: 2/2 memory slots populated (from DMI)
+[    6.200434] scsi host2: ahci
+[    6.201084] i2c i2c-0: Memory type 0x07 not supported yet, not instantiating SPD
+[    6.203002] scsi host3: ahci
+[    6.203606] scsi host4: ahci
+[    6.204413] scsi host5: ahci
+[    6.206145] ata1: SATA max UDMA/133 abar m4096@0xfea1e000 port 0xfea1e100 irq 37
+[    6.207619] ata2: SATA max UDMA/133 abar m4096@0xfea1e000 port 0xfea1e180 irq 37
+[    6.208980] ata3: SATA max UDMA/133 abar m4096@0xfea1e000 port 0xfea1e200 irq 37
+[    6.209987] ata4: SATA max UDMA/133 abar m4096@0xfea1e000 port 0xfea1e280 irq 37
+[    6.211825] ata5: SATA max UDMA/133 abar m4096@0xfea1e000 port 0xfea1e300 irq 37
+[    6.213426] ata6: SATA max UDMA/133 abar m4096@0xfea1e000 port 0xfea1e380 irq 37
+[    6.217575] scsi host6: Virtio SCSI HBA
+[    6.273179] virtio_blk virtio3: 8/0/0 default/read/poll queues
+[    6.284473] virtio_blk virtio3: [vda] 2551808 512-byte logical blocks (1.31 GB/1.22 GiB)
+[    6.292315]  vda: vda1 vda2 vda3 vda4 vda5 vda6
+[    6.299490] virtio_blk virtio4: 8/0/0 default/read/poll queues
+[    6.308168] virtio_blk virtio4: [vdb] 2048 512-byte logical blocks (1.05 MB/1.00 MiB)
+[    6.322126] virtio_blk virtio5: 8/0/0 default/read/poll queues
+[    6.329823] virtio_blk virtio5: [vdc] 126834688 512-byte logical blocks (64.9 GB/60.5 GiB)
+[    6.337457] virtio_blk virtio6: 8/0/0 default/read/poll queues
+[    6.341398] virtio_blk virtio6: [vdd] 126834688 512-byte logical blocks (64.9 GB/60.5 GiB)
+[    6.528826] ata1: SATA link down (SStatus 0 SControl 300)
+[    6.531819] ata4: SATA link down (SStatus 0 SControl 300)
+[    6.534937] ata6: SATA link down (SStatus 0 SControl 300)
+[    6.536241] ata2: SATA link down (SStatus 0 SControl 300)
+[    6.538273] ata3: SATA link down (SStatus 0 SControl 300)
+[    6.540937] ata5: SATA link down (SStatus 0 SControl 300)
+[    6.548029] iTCO_vendor_support: vendor-support=0
+[    6.550858] iTCO_wdt iTCO_wdt.1.auto: Found a ICH9 TCO device (Version=2, TCOBASE=0x0660)
+[    6.553777] iTCO_wdt iTCO_wdt.1.auto: initialized. heartbeat=30 sec (nowayout=0)
+[    6.565073] Free page reporting enabled
+[    6.577415] [talos] service[udevd](Running): Health check successful
+[    6.579394] [talos] task startUdevd (1/4): done, 2.66051274s
+[    6.595502] [talos] found config disk (cidata) at /dev/vdb
+[    6.598409] [talos] fetching meta config from: cidata/meta-data
+[    6.601035] [talos] fetching network config from: cidata/network-config
+[    6.603529] [talos] failed to read network-config
+[    6.605236] [talos] fetching machine config from: cidata/user-data
+[    6.608503] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "628.916026ms", "error": "network-config metadata version=0 is not supported"}
+[    6.609455] 8021q: adding VLAN 0 to HW filter on device eth0
+[    6.885296] [talos] service[ext-qemu-guest-agent](Waiting): Waiting for service "containerd" to be "up"
+[    6.935873] [talos] service[containerd](Running): Health check failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+[    7.241633] [talos] waiting for devices to be ready...
+[    7.259842] [talos] found config disk (cidata) at /dev/vdb
+[    7.263076] [talos] fetching meta config from: cidata/meta-data
+[    7.264986] [talos] fetching network config from: cidata/network-config
+[    7.266494] [talos] failed to read network-config
+[    7.267559] [talos] fetching machine config from: cidata/user-data
+[    7.269731] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "615.945222ms", "error": "network-config metadata version=0 is not supported"}
+[    7.890601] [talos] waiting for devices to be ready...
+[    7.908452] [talos] found config disk (cidata) at /dev/vdb
+[    7.911875] [talos] fetching meta config from: cidata/meta-data
+[    7.914300] [talos] fetching network config from: cidata/network-config
+[    7.915982] [talos] failed to read network-config
+[    7.917016] [talos] fetching machine config from: cidata/user-data
+[    7.919165] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "1.641742785s", "error": "network-config metadata version=0 is not supported"}
+[    8.850820] [talos] failed looking up "time.cloudflare.com", ignored {"component": "controller-runtime", "controller": "time.SyncController", "error": "lookup time.cloudflare.com on [::1]:53: read udp [::1]:55419->[::1]:53: read: connection refused"}
+[    9.566323] [talos] waiting for devices to be ready...
+[    9.585622] [talos] found config disk (cidata) at /dev/vdb
+[    9.589791] [talos] fetching meta config from: cidata/meta-data
+[    9.592180] [talos] fetching network config from: cidata/network-config
+[    9.594291] [talos] failed to read network-config
+[    9.595790] [talos] fetching machine config from: cidata/user-data
+[    9.598596] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "2.062919765s", "error": "network-config metadata version=0 is not supported"}
+[    9.861658] [talos] failed looking up "time.cloudflare.com", ignored {"component": "controller-runtime", "controller": "time.SyncController", "error": "lookup time.cloudflare.com on 8.8.8.8:53: dial udp 8.8.8.8:53: connect: network is unreachable"}
+[    9.935191] [talos] service[containerd](Running): Health check successful
+[    9.938685] [talos] task startContainerd (4/4): done, 6.01991499s
+[    9.941355] [talos] phase earlyServices (4/11): done, 6.023888823s
+[    9.943394] [talos] service[ext-qemu-guest-agent](Preparing): Running pre state
+[    9.945842] [talos] phase usb (5/11): 1 tasks(s)
+[    9.948162] [talos] task waitForUSB (1/1): starting
+[    9.950595] [talos] service[ext-qemu-guest-agent](Preparing): Creating service runner
+[    9.954679] [talos] task waitForUSB (1/1): waiting 1 second(s) for USB storage
+[   10.667899] [talos] service[ext-qemu-guest-agent](Running): Started task ext-qemu-guest-agent (PID 2208) for container ext-qemu-guest-agent
+[   10.872547] [talos] failed looking up "time.cloudflare.com", ignored {"component": "controller-runtime", "controller": "time.SyncController", "error": "lookup time.cloudflare.com on 8.8.8.8:53: dial udp 8.8.8.8:53: connect: network is unreachable"}
+[   10.882865] [talos] service[ext-iscsid](Waiting): Waiting for service "cri" to be registered, service "ext-tgtd" to be "up", network
+[   10.888091] [talos] service[ext-tgtd](Waiting): Waiting for service "cri" to be registered, network
+[   10.958944] [talos] task waitForUSB (1/1): done, 1.010762569s
+[   10.961967] [talos] phase usb (5/11): done, 1.018408148s
+[   10.964510] [talos] phase meta (6/11): 1 tasks(s)
+[   10.966812] [talos] task reloadMeta (1/1): starting
+[   10.985330] [talos] META: loaded 0 keys
+[   10.986541] [talos] task reloadMeta (1/1): done, 19.726633ms
+[   10.988469] [talos] phase meta (6/11): done, 23.964122ms
+[   10.989268] [talos] phase dashboard (7/11): 1 tasks(s)
+[   10.990111] [talos] task startDashboard (1/1): starting
+[   10.991255] [talos] service[dashboard](Starting): Starting service
+[   10.993761] [talos] service[dashboard](Waiting): Waiting for service "machined" to be "up", file "/system/run/machined/machine.sock" to exist
+[   10.996223] [talos] task startDashboard (1/1): done, 3.715931ms
+[   10.998574] [talos] phase dashboard (7/11): done, 9.30308ms
+[   10.999743] [talos] service[dashboard](Preparing): Running pre state
+[   11.001643] [talos] service[dashboard](Preparing): Creating service runner
+[   11.006187] [talos] service[dashboard](Running): Process Process(["/sbin/dashboard"]) started with PID 2227
+[   11.013454] [talos] phase mountSystem (9/11): 1 tasks(s)
+[   11.013558] [talos] task mountStatePartition (1/1): starting
+[   11.027986] [talos] task mountStatePartition (1/1): mount skipped
+[   11.030028] [talos] task mountStatePartition (1/1): done, 16.49483ms
+[   11.032137] [talos] phase mountSystem (9/11): done, 18.690955ms
+[   11.034034] [talos] phase config (10/11): 1 tasks(s)
+[   11.035661] [talos] task loadConfig (1/1): starting
+[   11.037295] [talos] downloading config {"component": "controller-runtime", "controller": "config.AcquireController", "platform": "nocloud"}
+[   11.039881] [talos] waiting for devices to be ready...
+[   11.049168] [talos] found config disk (cidata) at /dev/vdb
+[   11.051508] [talos] fetching meta config from: cidata/meta-data
+[   11.053109] [talos] fetching network config from: cidata/network-config
+[   11.054196] [talos] failed to read network-config
+[   11.054935] [talos] fetching machine config from: cidata/user-data
+[   11.058357] [talos] machine config loaded successfully {"component": "controller-runtime", "controller": "config.AcquireController", "sources": ["nocloud"]}
+[   11.060527] [talos] task loadConfig (1/1): done, 24.868746ms
+[   11.061445] [talos] phase config (10/11): done, 27.416302ms
+[   11.062287] [talos] phase unmountSystem (11/11): 1 tasks(s)
+[   11.063120] [talos] task unmountStatePartition (1/1): starting
+[   11.063982] [talos] task unmountStatePartition (1/1): unmount skipped
+[   11.067225] [talos] created dns upstream {"component": "controller-runtime", "controller": "network.DNSUpstreamController", "addr": "1.1.1.1"}
+[   11.069817] [talos] kubeprism KubePrism is enabled {"component": "controller-runtime", "controller": "k8s.KubePrismController", "endpoint": "127.0.0.1:7445"}
+[   11.072889] [talos] setting resolvers {"component": "controller-runtime", "controller": "network.ResolverSpecController", "resolvers": ["8.8.8.8"]}
+[   11.075057] [talos] no suitable node IP found, please make sure .machine.kubelet.nodeIP filters and pod/service subnets are set up correctly {"component": "controller-runtime", "controller": "k8s.NodeIPController"}
+[   11.077969] [talos] setting hostname {"component": "controller-runtime", "controller": "network.HostnameSpecController", "hostname": "cp1", "domainname": "dev.kargo.dev"}
+[   11.081160] [talos] task unmountStatePartition (1/1): done, 3.092618ms
+[   11.082176] [talos] created new link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "br0", "kind": "bridge"}
+[   11.084251] [talos] created dns upstream {"component": "controller-runtime", "controller": "network.DNSUpstreamController", "addr": "8.8.8.8"}
+[   11.086929] [talos] assigned address {"component": "controller-runtime", "controller": "network.AddressSpecController", "address": "192.168.1.61/24", "link": "br0"}
+[   11.089887] [talos] updated dns server nameservers {"component": "dns-resolve-cache", "addrs": ["1.1.1.1:53"]}
+[   11.091468] [talos] controller failed {"component": "controller-runtime", "controller": "network.RouteSpecController", "error": "1 error occurred:\n\t* error adding route: netlink receive: network is unreachable, message {Family:2 DstLength:0 SrcLength:0 Tos:0 Table:0 Protocol:4 Scope:0 Type:1 Flags:0 Attributes:{Dst:<nil> Src:<nil> Gateway:192.168.1.1 OutIface:9 Priority:1024 Table:254 Mark:0 Pref:<nil> Expires:<nil> Metrics:<nil> Multipath:[]}}\n\n"}
+[   11.098238] [talos] setting hostname {"component": "controller-runtime", "controller": "network.HostnameSpecController", "hostname": "cp1", "domainname": "dev.kargo.dev"}
+[   11.101194] [talos] phase unmountSystem (11/11): done, 19.930058ms
+[   11.102985] [talos] updated bridge settings {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "br0"}
+[   11.105055] [talos] destroyed dns upstream {"component": "controller-runtime", "controller": "network.DNSUpstreamController", "addr": "1.1.1.1"}
+[   11.107747] [talos] updated dns server nameservers {"component": "dns-resolve-cache", "addrs": ["8.8.8.8:53"]}
+[   11.109333] [talos] initialize sequence: done: 7.350554917s
+[   11.112806] br0: port 1(eth0) entered blocking state
+[   11.113370] [talos] install sequence: 0 phase(s)
+[   11.113892] br0: port 1(eth0) entered disabled state
+[   11.114954] [talos] install sequence: done: 1.582868ms
+[   11.115766] virtio_net virtio0 eth0: entered allmulticast mode
+[   11.116703] [talos] service[apid](Starting): Starting service
+[   11.117773] virtio_net virtio0 eth0: entered promiscuous mode
+[   11.119015] [talos] service[apid](Waiting): Waiting for service "containerd" to be "up", api certificates
+[   11.121660] [talos] boot sequence: 16 phase(s)
+[   11.122339] [talos] phase saveStateEncryptionConfig (1/16): 1 tasks(s)
+[   11.123394] [talos] enslaved/unslaved link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "eth0", "parent": "br0"}
+[   11.126340] [talos] task SaveStateEncryptionConfig (1/1): starting
+[   11.127163] br0: port 1(eth0) entered blocking state
+[   11.127569] [talos] task SaveStateEncryptionConfig (1/1): done, 4.12025ms
+[   11.128515] br0: port 1(eth0) entered listening state
+[   11.129725] [talos] phase saveStateEncryptionConfig (1/16): done, 7.384256ms
+[   11.130828] 8021q: adding VLAN 0 to HW filter on device eth0
+[   11.131906] [talos] phase mountState (2/16): 1 tasks(s)
+[   11.134094] [talos] task mountStatePartition (1/1): starting
+[   11.136118] [talos] formatting the partition "/dev/vda5" as "xfs" with label "STATE"
+[   11.218698] XFS (vda5): Mounting V5 Filesystem 98c276ad-b40d-4a5b-9022-91639e7a68b8
+[   11.235430] XFS (vda5): Ending clean mount
+[   11.240105] [talos] task mountStatePartition (1/1): done, 106.001627ms
+[   11.243638] [talos] node identity established {"component": "controller-runtime", "controller": "cluster.NodeIdentityController", "node_id": "Vpy9KAKr3MPAYWeHfKLe532HANC2aATV2U9ie9G8DcCA"}
+[   11.250117] [talos] phase mountState (2/16): done, 111.906446ms
+[   11.251217] [talos] phase saveConfig (3/16): 1 tasks(s)
+[   11.252038] [talos] nftables chains updated {"component": "controller-runtime", "controller": "network.NfTablesChainController", "chains": ["kubespan_outgoing", "kubespan_prerouting"]}
+[   11.254533] [talos] created new link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "kind": "wireguard"}
+[   11.257423] [talos] task saveConfig (1/1): starting
+[   11.258462] [talos] nftables chains updated {"component": "controller-runtime", "controller": "network.NfTablesChainController", "chains": ["kubespan_outgoing", "kubespan_prerouting"]}
+[   11.261669] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 0}
+[   11.264013] [talos] task saveConfig (1/1): done, 11.931998ms
+[   11.265009] [talos] phase saveConfig (3/16): done, 13.792051ms
+[   11.266274] [talos] phase memorySizeCheck (4/16): 1 tasks(s)
+[   11.267519] [talos] task memorySizeCheck (1/1): starting
+[   11.268783] [talos] memory size is OK
+[   11.269569] [talos] memory size is 30590 MiB
+[   11.270559] [talos] task memorySizeCheck (1/1): done, 3.038555ms
+[   11.271882] [talos] assigned address {"component": "controller-runtime", "controller": "network.AddressSpecController", "address": "fd66:faa9:994a:ec02:24:3bff:fea6:55d7/64", "link": "kubespan"}
+[   11.275420] [talos] phase memorySizeCheck (4/16): done, 5.61312ms
+[   11.276675] [talos] phase diskSizeCheck (5/16): 1 tasks(s)
+[   11.277817] [talos] task diskSizeCheck (1/1): starting
+[   11.278882] [talos] WARNING: disk size is less than recommended
+[   11.280071] [talos] WARNING: Talos may not work properly
+[   11.280870] [talos] WARNING: minimum recommended disk size is 6144 MiB
+[   11.282077] [talos] WARNING: current total disk size is 1246 MiB
+[   11.283168] [talos] task diskSizeCheck (1/1): done, 5.35415ms
+[   11.284287] [talos] phase diskSizeCheck (5/16): done, 7.615513ms
+[   11.285538] [talos] phase env (6/16): 1 tasks(s)
+[   11.286433] [talos] task setUserEnvVars (1/1): starting
+[   11.287536] [talos] task setUserEnvVars (1/1): done, 1.103468ms
+[   11.288780] [talos] phase env (6/16): done, 3.243167ms
+[   11.289672] [talos] phase dbus (7/16): 1 tasks(s)
+[   11.290691] [talos] task startDBus (1/1): starting
+[   11.292375] [talos] task startDBus (1/1): done, 1.680606ms
+[   11.293465] [talos] phase dbus (7/16): done, 3.789758ms
+[   11.294468] [talos] phase ephemeral (8/16): 1 tasks(s)
+[   11.295488] [talos] task mountEphemeralPartition (1/1): starting
+[   11.298431] [talos] formatting the partition "/dev/vda6" as "xfs" with label "EPHEMERAL"
+[   11.333723] XFS (vda6): Mounting V5 Filesystem 396d6c78-371f-4d3f-98b2-3e0fe942b809
+[   11.343419] XFS (vda6): Ending clean mount
+[   11.347073] XFS (vda6): Quotacheck needed: Please wait.
+[   11.354377] XFS (vda6): Quotacheck: Done.
+[   11.374034] [talos] no suitable node IP found, please make sure .machine.kubelet.nodeIP filters and pod/service subnets are set up correctly {"component": "controller-runtime", "controller": "k8s.NodeIPController"}
+[   11.381812] [talos] service[apid](Preparing): Running pre state
+[   11.395839] [talos] task mountEphemeralPartition (1/1): done, 100.340593ms
+[   11.397476] [talos] phase ephemeral (8/16): done, 103.00853ms
+[   11.398833] [talos] phase var (9/16): 1 tasks(s)
+[   11.400013] [talos] task setupVarDirectory (1/1): starting
+[   11.402941] [talos] task setupVarDirectory (1/1): done, 2.929135ms
+[   11.404416] [talos] phase var (9/16): done, 5.581429ms
+[   11.405494] [talos] phase overlay (10/16): 1 tasks(s)
+[   11.406595] [talos] task mountOverlayFilesystems (1/1): starting
+[   11.407885] [talos] service[apid](Preparing): Creating service runner
+[   11.410824] [talos] task mountOverlayFilesystems (1/1): done, 4.238924ms
+[   11.411861] [talos] phase overlay (10/16): done, 6.368344ms
+[   11.412660] [talos] phase udevSetup (11/16): 1 tasks(s)
+[   11.413494] [talos] task writeUdevRules (1/1): starting
+[   11.414460] [talos] task writeUdevRules (1/1): done, 967.25µs
+[   11.415351] [talos] phase udevSetup (11/16): done, 2.690878ms
+[   11.416190] [talos] phase userDisks (12/16): 1 tasks(s)
+[   11.417058] [talos] task mountUserDisks (1/1): starting
+[   11.453439] [talos] created route {"component": "controller-runtime", "controller": "network.RouteSpecController", "destination": "default", "gateway": "", "table": "RoutingTable(180)", "link": "kubespan", "priority": 1, "family": "inet4"}
+[   11.460632] [talos] task mountUserDisks (1/1): creating new partition table on /dev/vdc
+[   11.461973] [talos] task mountUserDisks (1/1): logical/physical block size: 512/512
+[   11.463125] [talos] task mountUserDisks (1/1): minimum/optimal I/O size: 512/512
+[   11.464222] [talos] created route {"component": "controller-runtime", "controller": "network.RouteSpecController", "destination": "default", "gateway": "", "table": "RoutingTable(180)", "link": "kubespan", "priority": 1, "family": "inet6"}
+[   11.470541] [talos] task mountUserDisks (1/1): partitioning /dev/vdc -  "12 GB"
+[   11.471710] [talos] task mountUserDisks (1/1): created /dev/vdc1 () size 23437500 blocks
+[   11.472885] [talos] task mountUserDisks (1/1): partitioning /dev/vdc -  "12 GB"
+[   11.473995] [talos] task mountUserDisks (1/1): created /dev/vdc2 () size 23437500 blocks
+[   11.475151] [talos] task mountUserDisks (1/1): partitioning /dev/vdc -  "32 GB"
+[   11.476239] [talos] task mountUserDisks (1/1): created /dev/vdc3 () size 62500000 blocks
+[   11.477479] [talos] created route {"component": "controller-runtime", "controller": "network.RouteSpecController", "destination": "default", "gateway": "192.168.1.1", "table": "main", "link": "br0", "priority": 1024, "family": "inet4"}
+[   11.484166] [talos] task mountUserDisks (1/1): formatting the partition "/dev/vdc1" as "xfs" with label ""
+[   11.515740] [talos] task mountUserDisks (1/1): formatting the partition "/dev/vdc2" as "xfs" with label ""
+[   11.519941] [talos] hello failed {"component": "controller-runtime", "controller": "cluster.DiscoveryServiceController", "error": "rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp: lookup discovery.talos.dev on 8.8.8.8:53: dial udp 8.8.8.8:53: connect: network is unreachable\"", "endpoint": "discovery.talos.dev:443"}
+[   11.548784] [talos] service[apid](Running): Started task apid (PID 2316) for container apid
+[   11.551167] [talos] task mountUserDisks (1/1): formatting the partition "/dev/vdc3" as "xfs" with label ""
+[   11.586734]  vdc: vdc1 vdc2 vdc3
+[   11.621027] [talos] task mountUserDisks (1/1): creating new partition table on /dev/vdd
+[   11.622241] [talos] task mountUserDisks (1/1): logical/physical block size: 512/512
+[   11.623582] [talos] task mountUserDisks (1/1): minimum/optimal I/O size: 512/512
+[   11.628982] [talos] task mountUserDisks (1/1): partitioning /dev/vdd -  "0 B"
+[   11.630128] [talos] task mountUserDisks (1/1): created /dev/vdd1 () size 126830592 blocks
+[   11.634146] [talos] task mountUserDisks (1/1): formatting the partition "/dev/vdd1" as "xfs" with label ""
+[   11.665344] [talos] waiting for devices to be ready...
+[   11.677913]  vdd: vdd1
+[   11.681958] XFS (vdc1): Mounting V5 Filesystem fb6a0e3b-9add-496e-b685-a841e4264bc0
+[   11.687403] [talos] found config disk (cidata) at /dev/vdb
+[   11.693502] [talos] fetching meta config from: cidata/meta-data
+[   11.695082] [talos] fetching network config from: cidata/network-config
+[   11.696595] [talos] failed to read network-config
+[   11.697835] [talos] fetching machine config from: cidata/user-data
+[   11.698365] XFS (vdc1): Ending clean mount
+[   11.700900] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "2.725402368s", "error": "network-config metadata version=0 is not supported"}
+[   11.706513] XFS (vdc1): Quotacheck needed: Please wait.
+[   11.712153] XFS (vdc1): Quotacheck: Done.
+[   11.716292] XFS (vdc2): Mounting V5 Filesystem 81355e84-851d-47b3-a7a3-3e489b8440e0
+[   11.723887] XFS (vdc2): Ending clean mount
+[   11.725364] XFS (vdc2): Quotacheck needed: Please wait.
+[   11.728956] XFS (vdc2): Quotacheck: Done.
+[   11.733080] XFS (vdc3): Mounting V5 Filesystem d5d5f61a-8e9d-4095-90f3-8d6a52557d08
+[   11.746044] XFS (vdc3): Ending clean mount
+[   11.748106] XFS (vdc3): Quotacheck needed: Please wait.
+[   11.752714] XFS (vdc3): Quotacheck: Done.
+[   11.755898] XFS (vdd1): Mounting V5 Filesystem 04a0d37b-89e1-4bc2-beb5-44fb46bf3826
+[   11.767433] XFS (vdd1): Ending clean mount
+[   11.770015] XFS (vdd1): Quotacheck needed: Please wait.
+[   11.775516] XFS (vdd1): Quotacheck: Done.
+[   11.777411] [talos] task mountUserDisks (1/1): done, 360.342936ms
+[   11.778851] [talos] phase userDisks (12/16): done, 362.656913ms
+[   11.780116] [talos] phase userSetup (13/16): 1 tasks(s)
+[   11.781291] [talos] task writeUserFiles (1/1): starting
+[   11.782501] [talos] task writeUserFiles (1/1): done, 1.209912ms
+[   11.783692] [talos] phase userSetup (13/16): done, 3.579397ms
+[   11.784613] [talos] phase lvm (14/16): 1 tasks(s)
+[   11.785368] [talos] task activateLogicalVolumes (1/1): starting
+[   11.879989] [talos] service[ext-iscsid](Waiting): Waiting for service "cri" to be registered, service "ext-tgtd" to be "up"
+[   11.888120] [talos] service[ext-tgtd](Waiting): Waiting for service "cri" to be registered
+[   11.959326] [talos] task activateLogicalVolumes (1/1): done, 173.941145ms
+[   11.962663] [talos] phase lvm (14/16): done, 178.042924ms
+[   11.965288] [talos] phase extendPCRStartAll (15/16): 1 tasks(s)
+[   11.967641] [talos] task extendPCRStartAll (1/1): starting
+[   11.969483] [talos] TPM device is not available, skipping PCR extension
+[   11.971796] [talos] task extendPCRStartAll (1/1): done, 4.157011ms
+[   11.973781] [talos] phase extendPCRStartAll (15/16): done, 8.497221ms
+[   11.975739] [talos] phase startEverything (16/16): 1 tasks(s)
+[   11.976638] [talos] task startAllServices (1/1): starting
+[   11.977483] [talos] service[cri](Starting): Starting service
+[   11.978351] [talos] service[cri](Waiting): Waiting for network
+[   11.979452] [talos] service[trustd](Starting): Starting service
+[   11.982437] [talos] service[trustd](Waiting): Waiting for service "containerd" to be "up", time sync, network
+[   11.986655] [talos] service[cri](Preparing): Running pre state
+[   11.988412] [talos] service[etcd](Starting): Starting service
+[   11.990228] [talos] service[cri](Preparing): Creating service runner
+[   11.991554] [talos] service[etcd](Waiting): Waiting for service "cri" to be "up", time sync, network, etcd spec
+[   11.996634] [talos] task startAllServices (1/1): waiting for 13 services
+[   11.998037] [talos] service[cri](Running): Process Process(["/bin/containerd" "--address" "/run/containerd/containerd.sock" "--config" "/etc/cri/containerd.toml"]) started with PID 2402
+[   12.001453] [talos] task startAllServices (1/1): service "apid" to be "up", service "containerd" to be "up", service "cri" to be "up", service "dashboard" to be "up", service "etcd" to be "up", service "ext-iscsid" to be "up", service "ext-qemu-guest-agent" to be "up", service "ext-tgtd" to be "up", service "kubelet" to be "up", service "machined" to be "up", service "syslogd" to be "up", service "trustd" to be "up", service "udevd" to be "up"
+[   12.088708] [talos] hello failed {"component": "controller-runtime", "controller": "cluster.DiscoveryServiceController", "error": "rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp: lookup discovery.talos.dev on 8.8.8.8:53: dial udp 8.8.8.8:53: connect: network is unreachable\"", "endpoint": "discovery.talos.dev:443"}
+[   12.415309] [talos] service[apid](Running): Health check successful
+[   12.896290] [talos] service[ext-tgtd](Waiting): Waiting for service "cri" to be "up"
+[   12.898802] [talos] service[ext-iscsid](Waiting): Waiting for service "cri" to be "up", service "ext-tgtd" to be "up"
+[   12.987525] [talos] service[trustd](Waiting): Waiting for time sync
+[   12.995333] [talos] service[cri](Running): Health check successful
+[   12.995492] [talos] service[ext-tgtd](Preparing): Running pre state
+[   12.996081] [talos] service[ext-tgtd](Preparing): Creating service runner
+[   12.996696] [talos] service[etcd](Waiting): Waiting for time sync
+[   13.178924] [talos] service[ext-tgtd](Running): Started task ext-tgtd (PID 2458) for container ext-tgtd
+[   13.179065] [talos] service[ext-iscsid](Preparing): Running pre state
+[   13.179544] [talos] service[ext-iscsid](Preparing): Creating service runner
+[   13.279253] [talos] hello failed {"component": "controller-runtime", "controller": "cluster.DiscoveryServiceController", "error": "rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp: lookup discovery.talos.dev on 8.8.8.8:53: dial udp 8.8.8.8:53: connect: network is unreachable\"", "endpoint": "discovery.talos.dev:443"}
+[   13.336015] [talos] service[ext-iscsid](Running): Started task ext-iscsid (PID 2498) for container ext-iscsid
+[   14.430186] [talos] waiting for devices to be ready...
+[   14.450434] [talos] found config disk (cidata) at /dev/vdb
+[   14.453360] [talos] fetching meta config from: cidata/meta-data
+[   14.454939] [talos] fetching network config from: cidata/network-config
+[   14.456297] [talos] failed to read network-config
+[   14.457279] [talos] fetching machine config from: cidata/user-data
+[   14.459156] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "3.928389379s", "error": "network-config metadata version=0 is not supported"}
+[   14.659842] [talos] hello failed {"component": "controller-runtime", "controller": "cluster.DiscoveryServiceController", "error": "rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp: lookup discovery.talos.dev on 8.8.8.8:53: dial udp 8.8.8.8:53: connect: network is unreachable\"", "endpoint": "discovery.talos.dev:443"}
+[   16.901161] [talos] hello failed {"component": "controller-runtime", "controller": "cluster.DiscoveryServiceController", "error": "rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp: lookup discovery.talos.dev on 8.8.8.8:53: dial udp 8.8.8.8:53: connect: network is unreachable\"", "endpoint": "discovery.talos.dev:443"}
+[   18.392238] [talos] waiting for devices to be ready...
+[   18.409732] [talos] found config disk (cidata) at /dev/vdb
+[   18.411364] [talos] fetching meta config from: cidata/meta-data
+[   18.411760] [talos] fetching network config from: cidata/network-config
+[   18.411782] [talos] failed to read network-config
+[   18.417924] [talos] fetching machine config from: cidata/user-data
+[   18.419799] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "8.47909317s", "error": "network-config metadata version=0 is not supported"}
+[   19.040108] [talos] hello failed {"component": "controller-runtime", "controller": "cluster.DiscoveryServiceController", "error": "rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp: lookup discovery.talos.dev on 8.8.8.8:53: dial udp 8.8.8.8:53: connect: network is unreachable\"", "endpoint": "discovery.talos.dev:443"}
+[   20.852405] br0: port 1(eth0) received tcn bpdu
+[   20.858397] br0: topology change detected, propagating
+[   21.278682] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[   21.998113] [talos] hello failed {"component": "controller-runtime", "controller": "cluster.DiscoveryServiceController", "error": "rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp: lookup discovery.talos.dev on 8.8.8.8:53: dial udp 8.8.8.8:53: connect: network is unreachable\"", "endpoint": "discovery.talos.dev:443"}
+[   26.217051] br0: port 1(eth0) entered learning state
+[   26.899428] [talos] waiting for devices to be ready...
+[   26.916475] [talos] found config disk (cidata) at /dev/vdb
+[   26.919938] [talos] fetching meta config from: cidata/meta-data
+[   26.921554] [talos] fetching network config from: cidata/network-config
+[   26.923095] [talos] failed to read network-config
+[   26.924096] [talos] fetching machine config from: cidata/user-data
+[   26.926141] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "6.233591943s", "error": "network-config metadata version=0 is not supported"}
+[   27.002042] [talos] task startAllServices (1/1): service "etcd" to be "up", service "kubelet" to be "up", service "trustd" to be "up"
+[   27.772569] [talos] hello failed {"component": "controller-runtime", "controller": "cluster.DiscoveryServiceController", "error": "rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp: lookup discovery.talos.dev on 8.8.8.8:53: dial udp 8.8.8.8:53: connect: network is unreachable\"", "endpoint": "discovery.talos.dev:443"}
+[   31.885820] [talos] failed looking up "time.cloudflare.com", ignored {"component": "controller-runtime", "controller": "time.SyncController", "error": "lookup time.cloudflare.com on 8.8.8.8:53: read udp 192.168.1.61:51125->8.8.8.8:53: i/o timeout"}
+[   31.904562] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[   33.163794] [talos] waiting for devices to be ready...
+[   33.179896] [talos] found config disk (cidata) at /dev/vdb
+[   33.183071] [talos] fetching meta config from: cidata/meta-data
+[   33.184590] [talos] fetching network config from: cidata/network-config
+[   33.185868] [talos] failed to read network-config
+[   33.186783] [talos] fetching machine config from: cidata/user-data
+[   33.188517] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "16.419392842s", "error": "network-config metadata version=0 is not supported"}
+[   34.897233] [talos] error serving dns request {"component": "dns-resolve-cache", "error": "read udp 192.168.1.61:37730->8.8.8.8:53: i/o timeout"}
+[   34.903923] [talos] error serving dns request {"component": "dns-resolve-cache", "error": "read udp 192.168.1.61:46794->8.8.8.8:53: i/o timeout"}
+[   35.810625] [talos] error serving dns request {"component": "dns-resolve-cache", "error": "read udp 192.168.1.61:58872->8.8.8.8:53: i/o timeout"}
+[   35.817023] [talos] error serving dns request {"component": "dns-resolve-cache", "error": "read udp 192.168.1.61:57247->8.8.8.8:53: i/o timeout"}
+[   39.897759] [talos] error serving dns request {"component": "dns-resolve-cache", "error": "read udp 192.168.1.61:52171->8.8.8.8:53: i/o timeout"}
+[   39.903188] [talos] error serving dns request {"component": "dns-resolve-cache", "error": "read udp 192.168.1.61:48588->8.8.8.8:53: i/o timeout"}
+[   40.811482] [talos] error serving dns request {"component": "dns-resolve-cache", "error": "read udp 192.168.1.61:59889->8.8.8.8:53: i/o timeout"}
+[   40.819477] [talos] error serving dns request {"component": "dns-resolve-cache", "error": "read udp 192.168.1.61:52304->8.8.8.8:53: i/o timeout"}
+[   40.830332] [talos] hello failed {"component": "controller-runtime", "controller": "cluster.DiscoveryServiceController", "error": "rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp: lookup discovery.talos.dev: i/o timeout\"", "endpoint": "discovery.talos.dev:443"}
+[   41.321078] br0: port 1(eth0) entered forwarding state
+[   41.323601] br0: topology change detected, propagating
+[   41.350999] [talos] service[kubelet](Starting): Starting service
+[   41.352887] [talos] service[kubelet](Waiting): Waiting for service "cri" to be "up", time sync, network
+[   42.001820] [talos] task startAllServices (1/1): service "etcd" to be "up", service "kubelet" to be "up", service "trustd" to be "up"
+[   42.356687] [talos] service[kubelet](Waiting): Waiting for time sync
+[   42.474519] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[   42.971856] [talos] failed looking up "time.cloudflare.com", ignored {"component": "controller-runtime", "controller": "time.SyncController", "error": "lookup time.cloudflare.com on 127.0.0.53:53: read udp 127.0.0.1:44109->127.0.0.53:53: i/o timeout"}
+[   44.041225] [talos] adjusting time (jump) by 501.380389ms via 162.159.200.1, state TIME_OK, status STA_NANO {"component": "controller-runtime", "controller": "time.SyncController"}
+[   44.049278] [talos] synchronized RTC with system clock {"component": "controller-runtime", "controller": "time.SyncController"}
+[   44.055061] [talos] service[kubelet](Preparing): Running pre state
+[   44.058491] [talos] service[trustd](Preparing): Running pre state
+[   44.061966] [talos] service[trustd](Preparing): Creating service runner
+[   44.061985] [talos] service[etcd](Preparing): Running pre state
+[   44.223657] [talos] service[trustd](Running): Started task trustd (PID 2548) for container trustd
+[   45.069484] [talos] service[trustd](Running): Health check successful
+[   47.148475] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: no route to host"}
+[   47.656665] [talos] service[etcd](Preparing): Creating service runner
+[   47.820732] [talos] service[etcd](Running): Started task etcd (PID 2599) for container etcd
+[   49.072122] [talos] controller failed {"component": "controller-runtime", "controller": "kubeaccess.CRDController", "error": "error from crd controller: error creating etcd client: error building etcd client: context deadline exceeded"}
+[   49.612175] [talos] waiting for devices to be ready...
+[   49.624509] [talos] found config disk (cidata) at /dev/vdb
+[   49.627095] [talos] fetching meta config from: cidata/meta-data
+[   49.628660] [talos] fetching network config from: cidata/network-config
+[   49.630130] [talos] failed to read network-config
+[   49.631114] [talos] fetching machine config from: cidata/user-data
+[   49.632948] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "27.507513715s", "error": "network-config metadata version=0 is not supported"}
+[   51.053509] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: no route to host"}
+[   52.700172] [talos] service[etcd](Running): Health check successful
+[   52.711445] [talos] rendered new static pod {"component": "controller-runtime", "controller": "k8s.StaticPodServerController", "id": "kube-apiserver"}
+[   52.715551] [talos] rendered new static pod {"component": "controller-runtime", "controller": "k8s.StaticPodServerController", "id": "kube-controller-manager"}
+[   52.718237] [talos] rendered new static pod {"component": "controller-runtime", "controller": "k8s.StaticPodServerController", "id": "kube-scheduler"}
+[   54.041861] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[   57.002594] [talos] task startAllServices (1/1): service "kubelet" to be "up"
+[   57.321597] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: no route to host"}
+[   57.981535] [talos] service[kubelet](Preparing): Creating service runner
+[   57.998698] [talos] enabled shared IP {"component": "controller-runtime", "controller": "network.OperatorSpecController", "operator": "vip", "link": "br0", "ip": "192.168.1.60"}
+[   57.999984] [talos] assigned address {"component": "controller-runtime", "controller": "network.AddressSpecController", "address": "192.168.1.60/32", "link": "br0"}
+[   58.000511] [talos] sent gratuitous ARP {"component": "controller-runtime", "controller": "network.AddressSpecController", "address": "192.168.1.60", "link": "br0"}
+[   58.156341] [talos] service[kubelet](Running): Started task kubelet (PID 2650) for container kubelet
+[   60.024050] [talos] service[kubelet](Running): Health check successful
+[   60.026111] [talos] task startAllServices (1/1): done, 48.049463504s
+[   60.027574] [talos] phase startEverything (16/16): done, 48.051835233s
+[   60.029097] [talos] boot sequence: done: 48.90999192s
+[   61.406842] [talos] peer address overlap {"component": "controller-runtime", "controller": "kubespan.PeerSpecController", "this_peer": "t8E0WKnqipF9hBeSqdhR7bkz1+FbpfC2ee/ZREAbXQg=", "other_peer": "lQwloa3emsH2Q6AnlDWf1el701Tv1SZJ5wrTr/hMiWw=", "this_ips": ["192.168.1.60-192.168.1.61", "fd03:802f:11a8:9639:f017:2bff:fe4f:48c0-fd03:802f:11a8:9639:f017:2bff:fe4f:48c0", "fd66:faa9:994a:ec02:f017:2bff:fe4f:48c0-fd66:faa9:994a:ec02:f017:2bff:fe4f:48c0"], "other_ips": ["192.168.1.60-192.168.1.61", "fd03:802f:11a8:9639:683e:29ff:fede:e5cf-fd03:802f:11a8:9639:683e:29ff:fede:e5cf", "fd66:faa9:994a:ec02:683e:29ff:fede:e5cf-fd66:faa9:994a:ec02:683e:29ff:fede:e5cf"]}
+[   61.430208] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 1}
+[   61.434019] [talos] nftables chains updated {"component": "controller-runtime", "controller": "network.NfTablesChainController", "chains": ["kubespan_outgoing", "kubespan_prerouting"]}
+[   61.445181] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[   61.445223] [talos] peer address overlap {"component": "controller-runtime", "controller": "kubespan.PeerSpecController", "this_peer": "t8E0WKnqipF9hBeSqdhR7bkz1+FbpfC2ee/ZREAbXQg=", "other_peer": "lQwloa3emsH2Q6AnlDWf1el701Tv1SZJ5wrTr/hMiWw=", "this_ips": ["192.168.1.60-192.168.1.61", "fd03:802f:11a8:9639:f017:2bff:fe4f:48c0-fd03:802f:11a8:9639:f017:2bff:fe4f:48c0", "fd66:faa9:994a:ec02:f017:2bff:fe4f:48c0-fd66:faa9:994a:ec02:f017:2bff:fe4f:48c0"], "other_ips": ["192.168.1.60-192.168.1.61", "fd03:802f:11a8:9639:683e:29ff:fede:e5cf-fd03:802f:11a8:9639:683e:29ff:fede:e5cf", "fd66:faa9:994a:ec02:683e:29ff:fede:e5cf-fd66:faa9:994a:ec02:683e:29ff:fede:e5cf"]}
+[   61.445353] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[   61.447372] [talos] nftables chains updated {"component": "controller-runtime", "controller": "network.NfTablesChainController", "chains": ["kubespan_outgoing", "kubespan_prerouting"]}
+[   66.439746] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[   69.497688] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[   71.746538] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": net/http: TLS handshake timeout - error from a previous attempt: EOF"}
+[   73.854391] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[   76.075527] [talos] adjusting time (slew) by 77.267564ms via 162.159.200.1, state TIME_OK, status STA_PLL | STA_NANO {"component": "controller-runtime", "controller": "time.SyncController"}
+[   77.135643] [talos] waiting for devices to be ready...
+[   77.154230] [talos] found config disk (cidata) at /dev/vdb
+[   77.157540] [talos] fetching meta config from: cidata/meta-data
+[   77.159665] [talos] fetching network config from: cidata/network-config
+[   77.161671] [talos] failed to read network-config
+[   77.162836] [talos] fetching machine config from: cidata/user-data
+[   77.164540] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "33.382713743s", "error": "network-config metadata version=0 is not supported"}
+[   79.800612] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[   82.001363] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": net/http: TLS handshake timeout"}
+[   85.057614] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[   89.111202] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[   92.497362] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[   94.525917] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  100.993446] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  103.841531] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  104.387453] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  110.463319] [talos] waiting for devices to be ready...
+[  110.480623] [talos] found config disk (cidata) at /dev/vdb
+[  110.483025] [talos] fetching meta config from: cidata/meta-data
+[  110.485012] [talos] fetching network config from: cidata/network-config
+[  110.486565] [talos] failed to read network-config
+[  110.487651] [talos] fetching machine config from: cidata/user-data
+[  110.489888] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "23.683910521s", "error": "network-config metadata version=0 is not supported"}
+[  110.874132] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  115.280446] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  119.888178] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  122.369858] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  125.138245] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  127.437128] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  130.908232] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  134.113179] [talos] waiting for devices to be ready...
+[  134.132143] [talos] found config disk (cidata) at /dev/vdb
+[  134.134048] [talos] fetching meta config from: cidata/meta-data
+[  134.134521] [talos] fetching network config from: cidata/network-config
+[  134.134581] [talos] failed to read network-config
+[  134.134589] [talos] fetching machine config from: cidata/user-data
+[  134.136679] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "1m15.565693158s", "error": "network-config metadata version=0 is not supported"}
+[  135.193657] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  140.540255] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  150.425402] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  151.666980] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  153.566329] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  160.832352] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  166.089207] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  170.619039] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  175.278657] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  181.685646] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  185.379442] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  190.758907] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  197.211720] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  199.637001] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  209.526977] [talos] waiting for devices to be ready...
+[  209.542189] [talos] found config disk (cidata) at /dev/vdb
+[  209.544651] [talos] fetching meta config from: cidata/meta-data
+[  209.546075] [talos] fetching network config from: cidata/network-config
+[  209.547227] [talos] failed to read network-config
+[  209.548072] [talos] fetching machine config from: cidata/user-data
+[  209.551550] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "1m27.146809505s", "error": "network-config metadata version=0 is not supported"}
+[  212.837022] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  214.683021] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  220.684954] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  228.368977] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  233.698774] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  237.462268] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  243.934499] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  250.612046] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  259.662732] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  274.535563] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  275.089767] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  280.538882] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  284.325332] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  288.710381] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  290.657316] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  296.517350] [talos] waiting for devices to be ready...
+[  296.535074] [talos] found config disk (cidata) at /dev/vdb
+[  296.536845] [talos] fetching meta config from: cidata/meta-data
+[  296.537270] [talos] fetching network config from: cidata/network-config
+[  296.537294] [talos] failed to read network-config
+[  296.537303] [talos] fetching machine config from: cidata/user-data
+[  296.539161] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "36.717498411s", "error": "network-config metadata version=0 is not supported"}
+[  306.206919] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  310.467368] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  321.642780] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  323.660083] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  328.375999] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  333.177885] [talos] waiting for devices to be ready...
+[  333.196624] [talos] found config disk (cidata) at /dev/vdb
+[  333.198361] [talos] fetching meta config from: cidata/meta-data
+[  333.198929] [talos] fetching network config from: cidata/network-config
+[  333.202351] [talos] failed to read network-config
+[  333.202358] [talos] fetching machine config from: cidata/user-data
+[  333.204447] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "43.365780828s", "error": "network-config metadata version=0 is not supported"}
+[  336.898315] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  340.395898] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  352.251608] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  367.592282] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  370.330728] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  376.454339] [talos] waiting for devices to be ready...
+[  376.474062] [talos] found config disk (cidata) at /dev/vdb
+[  376.477532] [talos] fetching meta config from: cidata/meta-data
+[  376.480059] [talos] fetching network config from: cidata/network-config
+[  376.480130] [talos] failed to read network-config
+[  376.480140] [talos] fetching machine config from: cidata/user-data
+[  376.481435] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "1m21.141058482s", "error": "network-config metadata version=0 is not supported"}
+[  379.958979] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  382.919607] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  384.967130] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  398.278531] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  400.264066] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  413.842898] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  421.430632] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  429.337378] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  430.199840] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  431.206400] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  436.855949] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  444.696435] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  457.459738] [talos] waiting for devices to be ready...
+[  457.476874] [talos] found config disk (cidata) at /dev/vdb
+[  457.478601] [talos] fetching meta config from: cidata/meta-data
+[  457.479047] [talos] fetching network config from: cidata/network-config
+[  457.482581] [talos] failed to read network-config
+[  457.482589] [talos] fetching machine config from: cidata/user-data
+[  457.483817] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "33.725943881s", "error": "network-config metadata version=0 is not supported"}
+[  460.137582] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  460.380960] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  471.123471] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  476.042174] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  490.063169] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  491.137172] [talos] waiting for devices to be ready...
+[  491.155965] [talos] found config disk (cidata) at /dev/vdb
+[  491.158756] [talos] fetching meta config from: cidata/meta-data
+[  491.159580] [talos] fetching network config from: cidata/network-config
+[  491.164340] [talos] failed to read network-config
+[  491.164359] [talos] fetching machine config from: cidata/user-data
+[  491.166478] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "59.127272426s", "error": "network-config metadata version=0 is not supported"}
+[  491.404263] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  501.466199] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  502.467300] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  506.932364] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  513.918641] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  519.988045] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  522.351987] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  537.643254] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  549.912120] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  550.156919] [talos] waiting for devices to be ready...
+[  550.174457] [talos] found config disk (cidata) at /dev/vdb
+[  550.177764] [talos] fetching meta config from: cidata/meta-data
+[  550.180164] [talos] fetching network config from: cidata/network-config
+[  550.181387] [talos] failed to read network-config
+[  550.182278] [talos] fetching machine config from: cidata/user-data
+[  550.184481] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "41.784991421s", "error": "network-config metadata version=0 is not supported"}
+[  550.201492] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  552.921398] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  564.125812] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  564.226658] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  568.549977] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  579.838837] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  584.262227] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  584.567712] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  591.867232] [talos] waiting for devices to be ready...
+[  591.885209] [talos] found config disk (cidata) at /dev/vdb
+[  591.888136] [talos] fetching meta config from: cidata/meta-data
+[  591.888518] [talos] fetching network config from: cidata/network-config
+[  591.888554] [talos] failed to read network-config
+[  591.888562] [talos] fetching machine config from: cidata/user-data
+[  591.889993] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "1m10.264379767s", "error": "network-config metadata version=0 is not supported"}
+[  599.545488] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  609.764687] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  615.107682] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  619.819330] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  630.578104] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  639.689682] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  641.219105] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  645.990496] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  652.925828] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  657.994506] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  661.455109] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  661.987367] [talos] waiting for devices to be ready...
+[  662.006005] [talos] found config disk (cidata) at /dev/vdb
+[  662.010026] [talos] fetching meta config from: cidata/meta-data
+[  662.011954] [talos] fetching network config from: cidata/network-config
+[  662.015265] [talos] failed to read network-config
+[  662.017525] [talos] fetching machine config from: cidata/user-data
+[  662.020814] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "56.705461924s", "error": "network-config metadata version=0 is not supported"}
+[  669.615925] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  677.075798] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  683.062894] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  692.380470] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  699.541018] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  708.015884] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  710.436218] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  718.610008] [talos] waiting for devices to be ready...
+[  718.627378] [talos] found config disk (cidata) at /dev/vdb
+[  718.630158] [talos] fetching meta config from: cidata/meta-data
+[  718.630596] [talos] fetching network config from: cidata/network-config
+[  718.630637] [talos] failed to read network-config
+[  718.630646] [talos] fetching machine config from: cidata/user-data
+[  718.632862] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "1m1.826929869s", "error": "network-config metadata version=0 is not supported"}
+[  723.238953] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  729.468656] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  737.263569] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  738.776090] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  747.664162] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  754.429762] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  759.395928] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  769.794102] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  780.341561] [talos] waiting for devices to be ready...
+[  780.357361] [talos] found config disk (cidata) at /dev/vdb
+[  780.360536] [talos] fetching meta config from: cidata/meta-data
+[  780.362296] [talos] fetching network config from: cidata/network-config
+[  780.365922] [talos] failed to read network-config
+[  780.368424] [talos] fetching machine config from: cidata/user-data
+[  780.371496] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "1m27.326571647s", "error": "network-config metadata version=0 is not supported"}
+[  785.258264] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  789.324655] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  790.225312] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  796.196089] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  800.521789] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  816.079637] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  819.254261] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  826.133534] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  831.456320] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  837.827869] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  846.940842] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  849.186395] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  855.674055] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  862.413751] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  867.486892] [talos] waiting for devices to be ready...
+[  867.506116] [talos] found config disk (cidata) at /dev/vdb
+[  867.508995] [talos] fetching meta config from: cidata/meta-data
+[  867.509409] [talos] fetching network config from: cidata/network-config
+[  867.509438] [talos] failed to read network-config
+[  867.509445] [talos] fetching machine config from: cidata/user-data
+[  867.510535] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "38.528594467s", "error": "network-config metadata version=0 is not supported"}
+[  876.032107] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  877.687718] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  879.119117] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  890.559239] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  893.394303] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  905.966693] [talos] waiting for devices to be ready...
+[  905.983855] [talos] found config disk (cidata) at /dev/vdb
+[  905.987087] [talos] fetching meta config from: cidata/meta-data
+[  905.988067] [talos] fetching network config from: cidata/network-config
+[  905.991148] [talos] failed to read network-config
+[  905.991154] [talos] fetching machine config from: cidata/user-data
+[  905.993246] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "1m7.042913935s", "error": "network-config metadata version=0 is not supported"}
+[  909.055614] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  909.108379] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  911.920231] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  924.398024] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  938.993591] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 2}
+[  940.067519] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  942.141484] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[  947.230907] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[  948.910112] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  955.558614] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  961.164665] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 1}
+[  961.171887] [talos] nftables chains updated {"component": "controller-runtime", "controller": "network.NfTablesChainController", "chains": ["kubespan_outgoing", "kubespan_prerouting"]}
+[  961.230462] [talos] nftables chains updated {"component": "controller-runtime", "controller": "network.NfTablesChainController", "chains": ["kubespan_outgoing", "kubespan_prerouting"]}
+[  970.815728] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  972.883720] [talos] waiting for devices to be ready...
+[  972.900330] [talos] found config disk (cidata) at /dev/vdb
+[  972.903175] [talos] fetching meta config from: cidata/meta-data
+[  972.905343] [talos] fetching network config from: cidata/network-config
+[  972.908498] [talos] failed to read network-config
+[  972.910763] [talos] fetching machine config from: cidata/user-data
+[  972.914764] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "1m7.1050447s", "error": "network-config metadata version=0 is not supported"}
+[  984.259159] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[  986.428231] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[  998.843344] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 1}
+[ 1001.894392] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1017.393862] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1017.841418] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[ 1024.784078] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[ 1028.767905] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 1}
+[ 1032.860610] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1039.855525] [talos] waiting for devices to be ready...
+[ 1039.877107] [talos] found config disk (cidata) at /dev/vdb
+[ 1039.880419] [talos] fetching meta config from: cidata/meta-data
+[ 1039.882874] [talos] fetching network config from: cidata/network-config
+[ 1039.885010] [talos] failed to read network-config
+[ 1039.886556] [talos] fetching machine config from: cidata/user-data
+[ 1039.888596] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "48.64202673s", "error": "network-config metadata version=0 is not supported"}
+[ 1041.641188] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[ 1048.387382] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1058.693898] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 1}
+[ 1063.927484] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1069.965533] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[ 1079.297199] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1088.422233] [talos] waiting for devices to be ready...
+[ 1088.441371] [talos] found config disk (cidata) at /dev/vdb
+[ 1088.443075] [talos] fetching meta config from: cidata/meta-data
+[ 1088.443518] [talos] fetching network config from: cidata/network-config
+[ 1088.448684] [talos] failed to read network-config
+[ 1088.448694] [talos] fetching machine config from: cidata/user-data
+[ 1088.450426] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "41.204909997s", "error": "network-config metadata version=0 is not supported"}
+[ 1088.619435] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 1}
+[ 1094.730559] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1110.107381] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1114.109184] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[ 1116.550185] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[ 1118.544747] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 1}
+[ 1120.966166] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[ 1125.419954] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1129.576249] [talos] waiting for devices to be ready...
+[ 1129.594788] [talos] found config disk (cidata) at /dev/vdb
+[ 1129.598627] [talos] fetching meta config from: cidata/meta-data
+[ 1129.601939] [talos] fetching network config from: cidata/network-config
+[ 1129.604778] [talos] failed to read network-config
+[ 1129.606774] [talos] fetching machine config from: cidata/user-data
+[ 1129.610215] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "38.730950162s", "error": "network-config metadata version=0 is not supported"}
+[ 1140.668187] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1144.905340] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[ 1148.469898] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 1}
+[ 1156.326984] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1168.234882] [talos] waiting for devices to be ready...
+[ 1168.251747] [talos] found config disk (cidata) at /dev/vdb
+[ 1168.253512] [talos] fetching meta config from: cidata/meta-data
+[ 1168.254568] [talos] fetching network config from: cidata/network-config
+[ 1168.258636] [talos] failed to read network-config
+[ 1168.258645] [talos] fetching machine config from: cidata/user-data
+[ 1168.260065] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "42.96523964s", "error": "network-config metadata version=0 is not supported"}
+[ 1171.735151] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1178.075010] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[ 1178.398556] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 1}
+[ 1187.097905] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1191.765710] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.NodeApplyController", "error": "1 error(s) occurred:\n\ttimeout"}
+[ 1202.765159] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1208.323628] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 1}
+[ 1211.126209] [talos] waiting for devices to be ready...
+[ 1211.146556] [talos] found config disk (cidata) at /dev/vdb
+[ 1211.150275] [talos] fetching meta config from: cidata/meta-data
+[ 1211.152068] [talos] fetching network config from: cidata/network-config
+[ 1211.153437] [talos] failed to read network-config
+[ 1211.154438] [talos] fetching machine config from: cidata/user-data
+[ 1211.156533] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "41.958966685s", "error": "network-config metadata version=0 is not supported"}
+[ 1214.799298] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.ManifestApplyController", "error": "error creating mapping for object apiextensions.k8s.io/v1/CustomResourceDefinition/serviceaccounts.talos.dev: Get \"https://127.0.0.1:7445/api?timeout=32s\": EOF"}
+[ 1218.432520] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1226.650147] [talos] kubernetes endpoint watch error {"component": "controller-runtime", "controller": "k8s.EndpointController", "error": "failed to list *v1.Endpoints: Get \"https://192.168.1.60:6443/api/v1/namespaces/default/endpoints?fieldSelector=metadata.name%3Dkubernetes&limit=500&resourceVersion=0\": dial tcp 192.168.1.60:6443: connect: connection refused"}
+[ 1234.017102] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+[ 1238.252392] [talos] reconfigured wireguard link {"component": "controller-runtime", "controller": "network.LinkSpecController", "link": "kubespan", "peers": 1}
+^C^C^C^C[ 1249.425495] [talos] controller failed {"component": "controller-runtime", "controller": "k8s.KubeletStaticPodController", "error": "error refreshing pod status: error fetching pod status: an error on the server (\"Authorization error (user=apiserver-kubelet-client, verb=get, resource=nodes, subresource=proxy)\") has prevented the request from succeeding"}
+^C^C^C^C^C^Cc^C^C^C[ 1253.034694] [talos] waiting for devices to be ready...
+[ 1253.052496] [talos] found config disk (cidata) at /dev/vdb
+[ 1253.056069] [talos] fetching meta config from: cidata/meta-data
+[ 1253.056660] [talos] fetching network config from: cidata/network-config
+[ 1253.056680] [talos] failed to read network-config
+[ 1253.056691] [talos] fetching machine config from: cidata/user-data
+[ 1253.057690] [talos] restarting platform network config {"component": "controller-runtime", "controller": "network.PlatformConfigController", "interval": "1m18.988319165s", "error": "network-config metadata version=0 is not supported"}
+
+You were disconnected from the console. This has one of the following reasons:
+ - another user connected to the console of the target vm
+ - network issues
+websocket: close 1006 (abnormal closure): unexpected EOF
