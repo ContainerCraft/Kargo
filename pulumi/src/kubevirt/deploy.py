@@ -40,38 +40,34 @@ def deploy_kubevirt(
     if version is None:
         kubevirt_stable_version_url = 'https://storage.googleapis.com/kubevirt-prow/release/kubevirt/kubevirt/stable.txt'
         version = requests.get(kubevirt_stable_version_url).text.strip()
-        version = version.lstrip('v')  # Strip the leading 'v'
+        version = version.lstrip("v")
         pulumi.log.info(f"Setting version to latest stable: kubevirt/{version}")
     else:
         # Log the version override
-        version = version.lstrip('v')  # Ensure the leading 'v' is stripped
         pulumi.log.info(f"Using KubeVirt version: kubevirt/{version}")
 
     # Download the KubeVirt operator YAML
     kubevirt_operator_url = f'https://github.com/kubevirt/kubevirt/releases/download/v{version}/kubevirt-operator.yaml'
     response = requests.get(kubevirt_operator_url)
-    kubevirt_yaml = list(yaml.safe_load_all(response.text))
+    kubevirt_yaml = yaml.safe_load_all(response.text)
 
     # Edit the YAML in memory to remove the Namespace and adjust other resources
     transformed_yaml = []
     for resource in kubevirt_yaml:
-        if isinstance(resource, dict):  # Ensure resource is a dictionary
-            if resource.get('kind') == 'Namespace':
-                pulumi.log.debug(f"Skipping Namespace resource: {resource['metadata']['name']}")
-                continue  # Skip adding this namespace to the edited YAML
-            if 'metadata' in resource:
-                resource['metadata']['namespace'] = ns_name
-                pulumi.log.debug(f"Setting namespace for {resource['kind']} to {ns_name}")
-            transformed_yaml.append(resource)
-        else:
-            pulumi.log.debug(f"Skipping non-dict YAML part: {resource}")
+        if resource and resource.get('kind') == 'Namespace':
+            pulumi.log.debug(f"Transforming Namespace resource: {resource['metadata']['name']}")
+            continue  # Skip adding this namespace to the edited YAML
+        if resource and 'metadata' in resource:
+            resource['metadata']['namespace'] = ns_name
+            pulumi.log.debug(f"Setting namespace for {resource['kind']} to {ns_name}")
+        transformed_yaml.append(resource)
 
     # Write the edited YAML to a temporary file
     with tempfile.NamedTemporaryFile(delete=False, mode='w') as temp_file:
         yaml.dump_all(transformed_yaml, temp_file)
         temp_file_path = temp_file.name
 
-    # Ensure the file is closed before using it
+    # Ensure the tempfile is closed before passing it to ConfigFile
     temp_file.close()
 
     # Pass the edited YAML directly to ConfigFile
@@ -129,7 +125,7 @@ def deploy_kubevirt(
         kind="KubeVirt",
         metadata=ObjectMetaArgs(
             name="kubevirt",
-            namespace=ns_name  # Use the actual namespace string
+            namespace=ns_name,
         ),
         spec=kubevirt_custom_resource_spec,
         opts=pulumi.ResourceOptions(

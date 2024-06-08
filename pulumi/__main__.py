@@ -1,3 +1,4 @@
+import os
 import pulumi
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes import Provider
@@ -28,7 +29,7 @@ project_name = pulumi.get_project()
 
 # Get the kubeconfig file path from priority order:
 #   1. Pulumi configuration value: `pulumi config set kubeconfig <path>`
-kubernetes_config_filepath = config.require("kubernetes.kubeconfig")
+kubernetes_config_filepath =  os.environ.get("KUBECONFIG") or config.require("kubernetes.kubeconfig")
 
 # Get kubeconfig context from Pulumi config or default to "kind-pulumi"
 kubernetes_context = config.get("kubernetes.context") or "kind-kargo"
