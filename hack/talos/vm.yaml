@@ -16,7 +16,6 @@ spec:
     storageClassName: "ssd"
     volumeMode: Filesystem
 ---
----
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
 metadata:
