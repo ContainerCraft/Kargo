@@ -44,6 +44,7 @@ spec:
   running: true
   template:
     spec:
+      hostname: talos
       domain:
         clock:
           utc: {}
@@ -83,7 +84,6 @@ spec:
           interfaces:
             - name: eth0
               bridge: {}
-      hostname: talos
       networks:
         - name: eth0
           multus:
