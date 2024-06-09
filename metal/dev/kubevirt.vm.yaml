@@ -2,6 +2,23 @@
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
 metadata:
+  name: vdb
+  namespace: default
+spec:
+  source:
+    blank: {}
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 64Gi
+    storageClassName: "ssd"
+    volumeMode: Filesystem
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
   name: vdc
   namespace: default
 spec:
@@ -44,7 +61,7 @@ spec:
   running: true
   template:
     spec:
-      hostname: talos
+      hostname: cp1
       domain:
         clock:
           utc: {}
@@ -63,16 +80,16 @@ spec:
             memory: 32768M
         devices:
           rng: {}
-          autoattachPodInterface: false
           autoattachSerialConsole: true
           autoattachGraphicsDevice: true
           networkInterfaceMultiqueue: false
+          autoattachPodInterface: false
           disks:
             - name: containerdisk
               bootOrder: 1
               disk:
                 bus: virtio
-            - name: cloudinitdisk
+            - name: vdb
               disk:
                 bus: virtio
             - name: vdc
@@ -81,6 +98,9 @@ spec:
             - name: vdd
               disk:
                 bus: virtio
+            #- name: cloudinitdisk
+            #  disk:
+            #    bus: virtio
           interfaces:
             - name: eth0
               bridge: {}
@@ -93,14 +113,17 @@ spec:
         - name: containerdisk
           containerDisk:
             image: docker.io/containercraft/talos:1.7.2-nocloud-amd64
-            imagePullPolicy: Always
-        - name: cloudinitdisk
-          cloudInitNoCloud:
-            secretRef:
-              name: talos-userdata-cp1
+            imagePullPolicy: IfNotPresent
+        - name: vdb
+          dataVolume:
+            name: vdb
         - name: vdc
           dataVolume:
             name: vdc
         - name: vdd
           dataVolume:
             name: vdd
+#       - name: cloudinitdisk
+#         cloudInitNoCloud:
+#           secretRef:
+#             name: talos-userdata-cp1

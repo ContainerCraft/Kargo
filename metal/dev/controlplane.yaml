@@ -1,40 +1,34 @@
 version: v1alpha1
-debug: false
 persist: true
+debug: true
 machine:
-    type: init
+    type: controlplane
     nodeLabels:
         kargo.dev/node: ""
         kargo.dev/name: dev
         kargo.dev/domain: kargo.dev
         kargo.dev/controlplane: ""
         kargo.dev/version: v1alpha0
-    certSANs:
-        - 192.168.1.60
-        - 192.168.1.61
-        - 192.168.1.62
-        - 192.168.1.63
-        - api.dev.kargo.arpa
-    kubelet:
-        disableManifestsDirectory: true
-        defaultRuntimeSeccompProfileEnabled: true
-        extraArgs:
-            feature-gates: ServerSideApply=true
-        extraMounts:
-            - type: bind
-              source: /etc/cni/net.d
-              destination: /etc/cni/net.d
-              options:
-                - bind
-                - rshared
-                - rw
-            - type: bind
-              source: /opt/cni/bin
-              destination: /opt/cni/bin
-              options:
-                - bind
-                - rshared
-                - rw
+    install:
+        wipe: true
+        disk: /dev/vdb
+        image: factory.talos.dev/installer/d1cba4b30888a004f2da2ec088afa62af8bf97b049367afec139490bec401a73:v1.7.2
+        extraKernelArgs:
+            - reboot=k
+            - console=ttyS0
+            - ipv6.disable=1
+            - talos.platform=metal
+    disks:
+        - device: /dev/vdc
+          partitions:
+              - mountpoint: /var/lib/kubelet
+                size: 12GB
+              - mountpoint: /var/lib/etcd
+                size: 12GB
+              - mountpoint: /var/lib/containerd
+        - device: /dev/vdd
+          partitions:
+              - mountpoint: /var/mnt/block/dev/vdd
     network:
         hostname: cp1.dev.kargo.dev
         nameservers: [8.8.8.8]
@@ -71,27 +65,32 @@ machine:
               aliases:
                 - cp3
                 - cp3.dev.kargo.dev
-    disks:
-        - device: /dev/vdc
-          partitions:
-              - mountpoint: /var/lib/kubelet
-                size: 12GB
-              - mountpoint: /var/lib/etcd
-                size: 12GB
-              - mountpoint: /var/lib/containerd
-                size: 32GB
-        - device: /dev/vdd
-          partitions:
-              - mountpoint: /var/mnt/block/dev/vdd
-    install:
-        wipe: true
-        disk: /dev/vda
-        image: factory.talos.dev/installer/d1cba4b30888a004f2da2ec088afa62af8bf97b049367afec139490bec401a73:v1.7.2
-        extraKernelArgs:
-            - reboot=k
-            - console=ttyS0
-            - ipv6.disable=1
-            - talos.platform=metal
+    certSANs:
+        - 192.168.1.60
+        - 192.168.1.61
+        - 192.168.1.62
+        - 192.168.1.63
+        - api.dev.kargo.arpa
+    kubelet:
+        disableManifestsDirectory: true
+        defaultRuntimeSeccompProfileEnabled: true
+        extraArgs:
+            feature-gates: ServerSideApply=true
+        extraMounts:
+            - type: bind
+              source: /etc/cni/net.d
+              destination: /etc/cni/net.d
+              options:
+                - bind
+                - rshared
+                - rw
+            - type: bind
+              source: /opt/cni/bin
+              destination: /opt/cni/bin
+              options:
+                - bind
+                - rshared
+                - rw
     features:
         rbac: true
         stableHostname: false
