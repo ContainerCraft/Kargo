@@ -3,16 +3,16 @@ apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
 metadata:
   name: vdb
-  namespace: default
 spec:
   source:
-    blank: {}
+    registry:
+      url: "docker://docker.io/containercraft/talos:latest"
   pvc:
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 64Gi
+        storage: 48Gi
     storageClassName: "ssd"
     volumeMode: Filesystem
 ---
@@ -29,7 +29,7 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 64Gi
+        storage: 48Gi
     storageClassName: "ssd"
     volumeMode: Filesystem
 ---
@@ -65,7 +65,13 @@ spec:
       domain:
         clock:
           utc: {}
-          timer: {}
+          timer:
+            hpet:
+              present: false
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
         cpu:
           cores: 1
           sockets: 1
@@ -75,9 +81,15 @@ spec:
           type: q35
         memory:
           guest: 32768M
-        resources:
-          requests:
-            memory: 32768M
+        features:
+          acpi:
+            enabled: true
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
         devices:
           rng: {}
           autoattachSerialConsole: true
@@ -85,11 +97,11 @@ spec:
           networkInterfaceMultiqueue: false
           autoattachPodInterface: false
           disks:
-            - name: containerdisk
-              bootOrder: 1
+            - name: cloudinitdisk
               disk:
                 bus: virtio
             - name: vdb
+              bootOrder: 1
               disk:
                 bus: virtio
             - name: vdc
@@ -98,11 +110,10 @@ spec:
             - name: vdd
               disk:
                 bus: virtio
-            #- name: cloudinitdisk
-            #  disk:
-            #    bus: virtio
           interfaces:
             - name: eth0
+              model: virtio
+              macAddress: 6a:7d:62:36:fc:a0
               bridge: {}
       networks:
         - name: eth0
@@ -110,10 +121,10 @@ spec:
             networkName: br0
       terminationGracePeriodSeconds: 0
       volumes:
-        - name: containerdisk
-          containerDisk:
-            image: docker.io/containercraft/talos:1.7.2-nocloud-amd64
-            imagePullPolicy: IfNotPresent
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            secretRef:
+              name: talos-userdata-cp1
         - name: vdb
           dataVolume:
             name: vdb
@@ -123,7 +134,3 @@ spec:
         - name: vdd
           dataVolume:
             name: vdd
-#       - name: cloudinitdisk
-#         cloudInitNoCloud:
-#           secretRef:
-#             name: talos-userdata-cp1

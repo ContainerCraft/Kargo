@@ -52,7 +52,6 @@ machine:
                       enabled: false
                   interfaces:
                       - eth0
-                      - eth1
               vip:
                 ip: 192.168.1.60
         extraHostEntries:
@@ -79,10 +78,10 @@ machine:
             - talos.platform=metal
             - console=ttyS0
             - reboot=k
-    disks:
-        - device: /dev/vdb
-          partitions:
-              - mountpoint: /var/mnt/block/dev/vdb
+#   disks:
+#       - device: /dev/vdb
+#         partitions:
+#             - mountpoint: /var/mnt/block/dev/vdb
     features:
         rbac: true
         stableHostname: false
@@ -104,18 +103,18 @@ cluster:
             - 10.244.0.0/16
         serviceSubnets:
             - 10.96.0.0/12
-#       cni:
-#           name: none
-#   proxy:
-#       disabled: true
+        cni:
+            name: none
+    proxy:
+        disabled: true
     apiServer:
+        disablePodSecurityPolicy: true
         certSANs:
             - 192.168.1.60
             - 192.168.1.61
             - 192.168.1.62
             - 192.168.1.63
             - api.dev.kargo.dev
-        disablePodSecurityPolicy: true
         admissionControl:
             - name: PodSecurity
               configuration:
