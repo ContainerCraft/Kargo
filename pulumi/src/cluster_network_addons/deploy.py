@@ -46,6 +46,7 @@ def deploy_cnao(
         file=crd_manifest_url,
         opts=pulumi.ResourceOptions(
             parent=namespace,
+            depends_on=depends,
             provider=k8s_provider,
         )
     )
@@ -55,11 +56,11 @@ def deploy_cnao(
         "network-addons-operator",
         file=operator_manifest_url,
         opts=pulumi.ResourceOptions(
-            parent=namespace,
+            parent=nado_crd_resource,
+            depends_on=depends,
             provider=k8s_provider,
         )
     )
-    depends.append(nado_operator_resource)
 
     network_addons_config = CustomResource(
         "network-addons-config",
@@ -69,11 +70,13 @@ def deploy_cnao(
             "name": "cluster",
         },
         opts=pulumi.ResourceOptions(
-            parent=namespace,
+            parent=nado_operator_resource,
+            depends_on=depends,
             provider=k8s_provider,
         ),
         spec={
             "macvtap": {},
+            "linuxBridge": {},
             "imagePullPolicy": "IfNotPresent",
             "selfSignConfiguration": {
                 "caRotateInterval": "168h",
@@ -81,7 +84,8 @@ def deploy_cnao(
                 "certRotateInterval": "24h",
                 "certOverlapInterval": "8h",
             }
-            #"linuxBridge": {},
+        }
+    )
             #"multus": {},
             #"multusDynamicNetworks": {},
             #"kubeSecondaryDNS": {},
@@ -109,8 +113,6 @@ def deploy_cnao(
             #        }
             #    }
             #},
-        }
-    )
 
     return version, nado_operator_resource
 

@@ -88,34 +88,34 @@ machine:
         interfaces:
             - interface: br0
               vip:
-                ip: 192.168.1.60
+                  ip: 192.168.1.60
               addresses:
-                - 192.168.1.61/24
+                  - 192.168.1.61/24
               routes:
-                - gateway: 192.168.1.1
-                  network: 0.0.0.0/0
-                  metric: 1024
+                  - gateway: 192.168.1.1
+                    network: 0.0.0.0/0
+                    metric: 1024
               bridge:
-                interfaces:
-                    - eth0
+                  interfaces:
+                      - eth0
               mtu: 1500
         extraHostEntries:
             - ip: 192.168.1.60
               aliases:
-                - api
-                - api.dev.kargo.dev
+                  - api
+                  - api.dev.kargo.dev
             - ip: 192.168.1.164
               aliases:
-                - cp1
-                - cp1.dev.kargo.dev
+                  - cp1
+                  - cp1.dev.kargo.dev
             - ip: 192.168.1.166
               aliases:
-                - cp2
-                - cp2.dev.kargo.dev
+                  - cp2
+                  - cp2.dev.kargo.dev
             - ip: 192.168.1.169
               aliases:
-                - cp3
-                - cp3.dev.kargo.dev
+                  - cp3
+                  - cp3.dev.kargo.dev
     # # `interfaces` is used to define the network interface configuration.
     # interfaces:
     #     - interface: enp0s1 # The interface name.
@@ -461,9 +461,9 @@ cluster:
         serviceSubnets:
             - 10.96.0.0/12
 
-        # # The CNI used.
-        # cni:
-        #     name: custom # Name of CNI to use.
+        # The CNI used.
+        cni:
+            name: none
         #     # URLs containing manifests to apply for the CNI.
         #     urls:
         #         - https://docs.projectcalico.org/archive/v3.20/manifests/canal.yaml
@@ -492,20 +492,20 @@ cluster:
             - name: PodSecurity # Name is the name of the admission controller.
               # Configuration is an embedded configuration object to be used as the plugin's
               configuration:
-                apiVersion: pod-security.admission.config.k8s.io/v1alpha1
-                defaults:
-                    audit: restricted
-                    audit-version: latest
-                    enforce: baseline
-                    enforce-version: latest
-                    warn: restricted
-                    warn-version: latest
-                exemptions:
-                    namespaces:
-                        - kube-system
-                    runtimeClasses: []
-                    usernames: []
-                kind: PodSecurityConfiguration
+                  apiVersion: pod-security.admission.config.k8s.io/v1alpha1
+                  defaults:
+                      audit: restricted
+                      audit-version: latest
+                      enforce: baseline
+                      enforce-version: latest
+                      warn: restricted
+                      warn-version: latest
+                  exemptions:
+                      namespaces:
+                          - kube-system
+                      runtimeClasses: []
+                      usernames: []
+                  kind: PodSecurityConfiguration
         # Configure the API server audit policy.
         auditPolicy:
             apiVersion: audit.k8s.io/v1
@@ -517,10 +517,10 @@ cluster:
         image: registry.k8s.io/kube-controller-manager:v1.30.1 # The container image used in the controller manager manifest.
     # Kube-proxy server-specific configuration options
     proxy:
+        # # Disable kube-proxy deployment on cluster bootstrap.
+        disabled: true
         image: registry.k8s.io/kube-proxy:v1.30.1 # The container image used in the kube-proxy manifest.
 
-        # # Disable kube-proxy deployment on cluster bootstrap.
-        # disabled: false
     # Scheduler server specific configuration options.
     scheduler:
         image: registry.k8s.io/kube-scheduler:v1.30.1 # The container image used in the scheduler manifest.
@@ -562,7 +562,6 @@ cluster:
     #       kind: Namespace
     #       metadata:
     #       	name: ci
-
 
     # # A key used for the [encryption of secret data at rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/).
 

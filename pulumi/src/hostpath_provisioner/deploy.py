@@ -21,6 +21,7 @@ def deploy(
         tag_url = 'https://github.com/kubevirt/hostpath-provisioner-operator/releases/latest'
         tag = requests.get(tag_url, allow_redirects=False).headers.get('location')
         version = tag.split('/')[-1] if tag else '0.17.0'
+        version = version.lstrip('v')
         pulumi.log.info(f"Setting version to latest stable: hostpath-provisioner/{version}")
     else:
         pulumi.log.info(f"Using version: hostpath-provisioner/{version}")

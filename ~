@@ -1,0 +1,164 @@
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    deprecated.daemonset.template.generation: "2"
+  creationTimestamp: "2024-05-27T00:57:22Z"
+  generation: 2
+  labels:
+    app: multus
+    name: multus
+    tier: node
+  name: kube-multus-ds
+  namespace: kube-system
+  resourceVersion: "6502937"
+  uid: f42f6fda-be32-436b-a98d-f603a0a3d40b
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: multus
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: multus
+        name: multus
+        tier: node
+    spec:
+      containers:
+      - command:
+        - /usr/src/multus-cni/bin/multus-daemon
+        env:
+        - name: MULTUS_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        image: ghcr.io/k8snetworkplumbingwg/multus-cni:snapshot-thick
+        imagePullPolicy: IfNotPresent
+        name: kube-multus
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        securityContext:
+          privileged: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /host/etc/cni/net.d
+          name: cni
+        - mountPath: /opt/cni/bin
+          name: cnibin
+        - mountPath: /host/run
+          name: host-run
+        - mountPath: /var/lib/cni/multus
+          name: host-var-lib-cni-multus
+        - mountPath: /var/lib/kubelet
+          name: host-var-lib-kubelet
+        - mountPath: /run/k8s.cni.cncf.io
+          name: host-run-k8s-cni-cncf-io
+        - mountPath: /var/run/netns
+          mountPropagation: HostToContainer
+          name: host-run-netns
+        - mountPath: /etc/cni/net.d/multus.d
+          name: multus-daemon-config
+          readOnly: true
+        - mountPath: /hostroot
+          mountPropagation: HostToContainer
+          name: hostroot
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      hostPID: true
+      initContainers:
+      - command:
+        - cp
+        - /usr/src/multus-cni/bin/multus-shim
+        - /host/opt/cni/bin/multus-shim
+        image: ghcr.io/k8snetworkplumbingwg/multus-cni:snapshot-thick
+        imagePullPolicy: IfNotPresent
+        name: install-multus-binary
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+        securityContext:
+          privileged: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /host/opt/cni/bin
+          mountPropagation: Bidirectional
+          name: cnibin
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: multus
+      serviceAccountName: multus
+      terminationGracePeriodSeconds: 10
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /etc/cni/net.d
+          type: ""
+        name: cni
+      - hostPath:
+          path: /opt/cni/bin
+          type: ""
+        name: cnibin
+      - hostPath:
+          path: /
+          type: ""
+        name: hostroot
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: daemon-config.json
+            path: daemon-config.json
+          name: multus-daemon-config
+        name: multus-daemon-config
+      - hostPath:
+          path: /run
+          type: ""
+        name: host-run
+      - hostPath:
+          path: /var/lib/cni/multus
+          type: ""
+        name: host-var-lib-cni-multus
+      - hostPath:
+          path: /var/lib/kubelet
+          type: ""
+        name: host-var-lib-kubelet
+      - hostPath:
+          path: /run/k8s.cni.cncf.io
+          type: ""
+        name: host-run-k8s-cni-cncf-io
+      - hostPath:
+          path: /var/run/netns
+          type: ""
+        name: host-run-netns
+  updateStrategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+status:
+  currentNumberScheduled: 1
+  desiredNumberScheduled: 1
+  numberAvailable: 1
+  numberMisscheduled: 0
+  numberReady: 1
+  observedGeneration: 2
+  updatedNumberScheduled: 1
