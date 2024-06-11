@@ -36,10 +36,10 @@ def deploy_kubernetes_dashboard(
     # Fetch the latest version from the helm chart index if version is not set
     if version is None:
         version = get_latest_helm_chart_version(chart_index_url, chart_name)
-        pulumi.log.info(f"Setting version to latest stable: {chart_name}/{version}")
+        pulumi.log.info(f"Setting helm release version to latest stable: {chart_name}/{version}")
     else:
         # Log the version override
-        pulumi.log.info(f"Using {chart_name} version: {version}")
+        pulumi.log.info(f"Using helm release version: {chart_name}/{version}")
 
     release = k8s.helm.v3.Release(
             "kubernetes-dashboard",

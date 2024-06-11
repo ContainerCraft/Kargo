@@ -22,9 +22,9 @@ def deploy(
         tag = requests.get(tag_url, allow_redirects=False).headers.get('location')
         version = tag.split('/')[-1] if tag else '0.17.0'
         version = version.lstrip('v')
-        pulumi.log.info(f"Setting version to latest stable: hostpath-provisioner/{version}")
+        pulumi.log.info(f"Setting helm release version to latest stable: hostpath-provisioner/{version}")
     else:
-        pulumi.log.info(f"Using version: hostpath-provisioner/{version}")
+        pulumi.log.info(f"Using helm release version: hostpath-provisioner/{version}")
 
     # Create namespace
     ns_retain = True
@@ -82,8 +82,8 @@ def deploy(
         "hostpath-provisioner-operator",
         file=url_operator,
         opts=ResourceOptions(
-            parent=namespace,
-            depends_on=[webhook],
+            parent=webhook,
+            depends_on=depends,
             provider=k8s_provider,
             transformations=[add_namespace]
         )
@@ -95,7 +95,8 @@ def deploy(
         "hostpathprovisioners",
         id="hostpathprovisioners.hostpathprovisioner.kubevirt.io",
         opts=ResourceOptions(
-            parent=operator,
+            parent=webhook,
+            depends_on=operator,
             provider=k8s_provider,
             custom_timeouts=pulumi.CustomTimeouts(
                 create="5m",
@@ -128,7 +129,7 @@ def deploy(
         },
         opts=pulumi.ResourceOptions(
             parent=crd,
-            depends_on=[crd, operator],
+            depends_on=operator,
             provider=k8s_provider,
             ignore_changes=["status"],
             custom_timeouts=pulumi.CustomTimeouts(
@@ -156,7 +157,7 @@ def deploy(
         },
         opts=ResourceOptions(
             parent=hostpath_provisioner,
-            depends_on=[hostpath_provisioner],
+            depends_on=operator,
             provider=k8s_provider
         )
     )

@@ -35,10 +35,10 @@ def deploy_cnao(
         tag = requests.get(tag_url, allow_redirects=False).headers.get('location')
         version = tag.split('/')[-1]
         version = version.lstrip('v')
-        pulumi.log.info(f"Setting CNAO Version to latest: cnao/{version}")
+        pulumi.log.info(f"Setting helm release version to latest: cnao/{version}")
     else:
         # Log the version override
-        pulumi.log.info(f"Using CNAO Version: cnao/{version}")
+        pulumi.log.info(f"Using helm release version: cnao/{version}")
 
     crd_manifest_url = f"https://github.com/kubevirt/cluster-network-addons-operator/releases/download/v{version}/network-addons-config.crd.yaml"
     nado_crd_resource = k8s.yaml.ConfigFile(
