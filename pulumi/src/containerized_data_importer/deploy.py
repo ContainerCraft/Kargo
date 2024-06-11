@@ -16,10 +16,10 @@ def deploy_cdi(
         tag = requests.get(tag_url, allow_redirects=False).headers.get('location')
         version = tag.split('/')[-1]
         version = version.lstrip('v')
-        pulumi.log.info(f"Setting version to latest stable: cdi/{version}")
+        pulumi.log.info(f"Setting helm release version to latest stable: cdi/{version}")
     else:
         # Log the version override
-        pulumi.log.info(f"Using KubeVirt version: cdi/{version}")
+        pulumi.log.info(f"Using helm release version: cdi/{version}")
 
     # Deploy the CDI operator
     cdi_operator_url = f'https://github.com/kubevirt/containerized-data-importer/releases/download/v{version}/cdi-operator.yaml'

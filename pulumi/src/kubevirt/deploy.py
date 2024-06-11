@@ -44,7 +44,7 @@ def deploy_kubevirt(
         pulumi.log.info(f"Setting version to latest stable: kubevirt/{version}")
     else:
         # Log the version override
-        pulumi.log.info(f"Using KubeVirt version: kubevirt/{version}")
+        pulumi.log.info(f"Using helm release version: kubevirt/{version}")
 
     # Download the KubeVirt operator YAML
     kubevirt_operator_url = f'https://github.com/kubevirt/kubevirt/releases/download/v{version}/kubevirt-operator.yaml'
@@ -66,7 +66,7 @@ def deploy_kubevirt(
     with tempfile.NamedTemporaryFile(delete=False, mode='w') as temp_file:
         yaml.dump_all(transformed_yaml, temp_file)
         temp_file_path = temp_file.name
-        pulumi.log.info(f"Deploying KubeVirt from local file path: {temp_file_path}")
+        #pulumi.log.info(f"Deploying KubeVirt from local file path: {temp_file_path}")
 
     # Ensure the tempfile is closed before passing it to ConfigFile
     temp_file.close()
@@ -83,7 +83,7 @@ def deploy_kubevirt(
     )
 
     # Ensure the temporary file is deleted after Pulumi uses it
-    #pulumi.Output.all().apply(lambda _: os.unlink(temp_file_path))
+    pulumi.Output.all().apply(lambda _: os.unlink(temp_file_path))
 
     # Determine useEmulation based on the kubernetes_distribution
     use_emulation = True if kubernetes_distribution == "kind" else False

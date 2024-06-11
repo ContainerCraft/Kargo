@@ -58,9 +58,9 @@ def deploy_prometheus(
     if version is None:
         chart_index_url = f"{chart_url}/{chart_index_path}"
         version = get_latest_helm_chart_version(chart_index_url, chart_name)
-        pulumi.log.info(f"Setting version to latest stable: {chart_name}/{version}")
+        pulumi.log.info(f"Setting helm release version to latest stable: {chart_name}/{version}")
     else:
-        pulumi.log.info(f"Using {chart_name} version: {version}")
+        pulumi.log.info(f"Using helm release version: {chart_name}/{version}")
 
     release = k8s.helm.v3.Release(
         'helm-release-prometheus',

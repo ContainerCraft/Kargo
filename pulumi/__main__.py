@@ -1,4 +1,5 @@
 import os
+import requests
 import pulumi
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes import Provider
@@ -14,8 +15,8 @@ from src.hostpath_provisioner.deploy import deploy as deploy_hostpath_provisione
 from src.openunison.deploy import deploy_openunison
 from src.prometheus.deploy import deploy_prometheus
 from src.kubernetes_dashboard.deploy import deploy_kubernetes_dashboard
-#from src.kv_manager.deploy import deploy_ui_for_kubevirt
-#from src.ceph.deploy import deploy_rook_operator
+from src.kv_manager.deploy import deploy_ui_for_kubevirt
+from src.ceph.deploy import deploy_rook_operator
 
 ##################################################################################
 # Load the Pulumi Config
@@ -60,11 +61,11 @@ cilium_enabled = config.get_bool('cilium.enabled') or False
 
 # Enable cert-manager with the following command:
 #   ~$ pulumi config set cert_manager.enable true
-cert_manager_enabled = config.get_bool('cert_manager.enabled') or True
+cert_manager_enabled = config.get_bool('cert_manager.enabled') or False
 
 # Enable KubeVirt with the following command:
 #   ~$ pulumi config set kubevirt.enable true
-kubevirt_enabled = config.get_bool('kubevirt.enabled') or True
+kubevirt_enabled = config.get_bool('kubevirt.enabled') or False
 
 # Enable containerized data importer with the following command:
 #   ~$ pulumi config set cdi.enabled true
@@ -126,430 +127,353 @@ else:
 ##################################################################################
 
 ##################################################################################
-# Deploy Cilium CNI
-if cilium_enabled:
-    # Get Cilium configuration from Pulumi stack config
-    # Set Cilium version override with the following command:
-    #   ~$ pulumi config set cilium.version v1.14.7
-    # TODO: fix hardcode limit Cilium version to 1.14.7 until upgrade to 15.x is resolved
-    version = config.get('cilium.version') or "1.14.7"
+# Fetch the Cilium Version
+# Deploy Cilium
+def run_cilium():
+    if cilium_enabled:
+        namespace = "kube-system"
+        l2announcements = "192.168.1.70/28"
+        l2_bridge_name = "br0"
+        cilium_version = config.get('cilium.version') or "1.14.7"
+        depends = []
 
-    namespace = "kube-system"
-    l2announcements = "192.168.1.70/28"
-    l2_bridge_name = "br0"
+        cilium = deploy_cilium(
+            "cilium-cni",
+            k8s_provider,
+            kubernetes_distribution,
+            project_name,
+            kubernetes_endpoint_service_address,
+            namespace,
+            cilium_version,
+            l2_bridge_name,
+            l2announcements,
+        )
 
-    # Deploy Cilium
-    cilium = deploy_cilium(
-        "cilium-cni",
-        k8s_provider,
-        kubernetes_distribution,
-        project_name,
-        kubernetes_endpoint_service_address,
-        namespace,
-        version,
-        l2_bridge_name,
-        l2announcements
-    )
+        versions["cilium"] = {"enabled": cilium_enabled, "version": cilium[0]}
+        cilium_release = cilium[1]
 
-    # Append cilium version to versions dictionary
-    versions["cilium"] = {"enabled": cilium_enabled, "version": cilium[0]}
+        return cilium, cilium_release
+    return None, None
 
-    # Cilium Release Resource
-    cilium_release = cilium[1]
-
-else:
-    # Set version and release resource objects to None if Cilium is disabled
-    cilium = None, None
+cilium, cilium_release = run_cilium()
 
 ##################################################################################
+# Fetch the Cert Manager Version
 # Deploy Cert Manager
-if cert_manager_enabled:
+def run_cert_manager():
+    if cert_manager_enabled:
+        ns_name = "cert-manager"
+        cert_manager_version = config.get('cert_manager.version') or None
+        depends = []
 
-    # Cert Manager namespace
-    ns_name = "cert-manager"
+        if cilium_enabled:
+            depends.append(cilium_release)
 
-    # Set cert-manager version override with the following command:
-    #   ~$ pulumi config set cert_manager.version v1.5.3
-    version = config.get('cert_manager.version') or None
+        cert_manager = deploy_cert_manager(
+            ns_name,
+            cert_manager_version,
+            kubernetes_distribution,
+            depends,
+            k8s_provider
+        )
 
-    # Set depends to an empty list by default
-    depends = []
+        versions["cert_manager"] = {"enabled": cert_manager_enabled, "version": cert_manager[0]}
+        cert_manager_release = cert_manager[1]
+        cert_manager_selfsigned_cert = cert_manager[2]
 
-    # Set cilium as a dependency for cert-manager
-    if cilium_enabled:
-        depends.append(cilium_release)
+        pulumi.export("cert_manager_selfsigned_cert", cert_manager_selfsigned_cert)
 
-    # Deploy Cert Manager
-    cert_manager = deploy_cert_manager(
-        ns_name,
-        version,
-        kubernetes_distribution,
-        depends,
-        k8s_provider
-    )
+        return cert_manager, cert_manager_release, cert_manager_selfsigned_cert
+    return None, None, None
 
-    # Append cert-manager version to versions dictionary
-    versions["cert_manager"] = {"enabled": cert_manager_enabled, "version": cert_manager[0]}
+cert_manager, cert_manager_release, cert_manager_selfsigned_cert = run_cert_manager()
 
-    # Cert Manager Release Resource
-    cert_manager_release = cert_manager[1]
+##################################################################################
+# Fetch the Hostpath Provisioner Version
+# Deploy Hostpath Provisioner
+def run_hostpath_provisioner():
+    if hostpath_provisioner_enabled:
+        if not cert_manager_enabled:
+            pulumi.log.error("Hostpath Provisioner requires Cert Manager to be enabled. Please enable Cert Manager and try again.")
+            return None, None
 
-    cert_manager_selfsigned_cert = cert_manager[2]
+        hostpath_default_path = config.get('hostpath_provisioner.default_path') or "/var/mnt"
+        hostpath_default_storage_class = config.get('hostpath_provisioner.default_storage_class') or False
+        ns_name = "hostpath-provisioner"
+        hostpath_provisioner_version = config.get('hostpath_provisioner.version') or None
+        depends = []
 
-    pulumi.export("cert_manager_selfsigned_cert", cert_manager_selfsigned_cert)
+        if cilium_enabled:
+            depends.append(cilium_release)
 
-else:
-    cert_manager = None, None
+        if cert_manager_enabled:
+            depends.append(cert_manager_release)
+
+        hostpath_provisioner = deploy_hostpath_provisioner(
+            depends,
+            hostpath_provisioner_version,
+            ns_name,
+            hostpath_default_path,
+            hostpath_default_storage_class,
+            k8s_provider,
+        )
+
+        versions["hostpath_provisioner"] = {"enabled": hostpath_provisioner_enabled, "version": hostpath_provisioner[0]}
+        hostpath_provisioner_release = hostpath_provisioner[1]
+
+        return hostpath_provisioner, hostpath_provisioner_release
+    return None, None
+
+hostpath_provisioner, hostpath_provisioner_release = run_hostpath_provisioner()
 
 ##################################################################################
 # Deploy KubeVirt
-if kubevirt_enabled:
-
-    # Check for Kubevirt version override
-    # Set kubevirt version override with the following command:
-    #   ~$ pulumi config set kubevirt.version v0.45.0
-    version = config.get('kubevirt.version') or None
-
-    # Set depends to an empty list by default
-    depends = []
-
-    # Set cert-manager as a dependency of KubeVirt
-    if cert_manager_enabled:
-        depends.append(cert_manager_release)
-
-    # KubeVirt namespace
-    ns_name = "kubevirt"
-
-    # Deploy KubeVirt
-    kubevirt = deploy_kubevirt(
-        depends,
-        ns_name,
-        version,
-        k8s_provider,
-        kubernetes_distribution,
-    )
-
-    # Append kubevirt version to versions dictionary
-    versions["kubevirt"] = {"enabled": kubevirt_enabled, "version": kubevirt[0]}
-
-    # KubeVirt Release Resource
-    kubevirt_operator = kubevirt[1]
-
-else:
-    kubevirt = None, None
-
-##################################################################################
-# Deploy Containerized Data Importer (CDI)
-if cdi_enabled:
-
-    # Set CDI version override from Pulumi config
-    # Set version override with the following command:
-    #   ~$ pulumi config set cdi.version v1.14.7
-    version = config.get('cdi.version') or None
-
-    # Set depends to an empty list by default
-    depends = []
-
-    # Set Kubevirt as a dependency for CDI
+def run_kubevirt():
     if kubevirt_enabled:
-        depends.append(kubevirt_operator)
+        ns_name = "kubevirt"
+        kubevirt_version = config.get('kubevirt.version') or None
+        depends = []
 
-    containerized_data_importer = deploy_cdi(
-        depends,
-        version,
-        k8s_provider
-    )
+        if cert_manager_enabled:
+            depends.append(cert_manager_release)
 
-    # Append CDI version to versions dictionary
-    versions["cdi"] = {"enabled": cdi_enabled, "version": containerized_data_importer[0]}
+        kubevirt = deploy_kubevirt(
+            depends,
+            ns_name,
+            kubevirt_version,
+            k8s_provider,
+            kubernetes_distribution,
+        )
 
-    # CDI Release Resource
-    cdi_release = containerized_data_importer[1]
+        versions["kubevirt"] = {"enabled": kubevirt_enabled, "version": kubevirt[0]}
+        kubevirt_operator = kubevirt[1]
 
-else:
-    containerized_data_importer = None, None
+        return kubevirt, kubevirt_operator
+    return None, None
+
+kubevirt, kubevirt_operator = run_kubevirt()
 
 ##################################################################################
 # Deploy Cluster Network Addons Operator (CNAO)
-if cnao_enabled:
+def run_cnao():
+    if cnao_enabled:
+        ns_name = "cluster-network-addons"
+        cnao_version = config.get('cnao.version') or None
+        depends = []
 
-    # Set CNAO version override from Pulumi config
-    #   ~$ pulumi config set cnao.version 1.14.7
-    version_cnao = config.get('cnao.version') or None
+        if cilium_enabled:
+            depends.append(cilium_release)
 
-    # Set depends to an empty list by default
-    depends = []
+        cnao = deploy_cnao(
+            depends,
+            cnao_version,
+            k8s_provider
+        )
 
-    # Set Cilium as a dependency for CNAO
-    if cilium_enabled:
-        depends.append(cilium_release)
+        versions["cnao"] = {"enabled": cnao_enabled, "version": cnao[0]}
+        cnao_release = cnao[1]
 
-    # Deploy Cluster Network Addons Operator
-    cnao = deploy_cnao(
-        depends,
-        version_cnao,
-        k8s_provider
-    )
+        return cnao, cnao_release
+    return None, None
 
-    # Append CNAO version to versions dictionary
-    versions["cnao"] = {"enabled": cnao_enabled, "version": cnao[0]}
-
-    # CNAO Release Resource
-    cnao_release = cnao[1]
-
-else:
-    cnao = None, None
+cnao, cnao_release = run_cnao()
 
 ##################################################################################
 # Deploy Multus
-if multus_enabled:
+def run_multus():
+    if multus_enabled:
+        ns_name = "multus"
+        multus_version = config.get('multus.version') or "master"
+        bridge_name = config.get('multus.default_bridge') or "br0"
+        depends = []
 
-    # Set Multus version override from Pulumi config
-    version = config.get('multus.version') or "master"
+        if cilium_enabled:
+            depends.append(cilium_release)
 
-    # Set depends to an empty list by default
-    depends = []
+        multus = deploy_multus(
+            depends,
+            multus_version,
+            bridge_name,
+            k8s_provider
+        )
 
-    # Set Cilium as a dependency for Multus
-    if cilium_enabled:
-        depends.append(cilium_release)
+        versions["multus"] = {"enabled": multus_enabled, "version": multus[0]}
+        multus_release = multus[1]
 
-    # Set Multus default bridge name with the following command:
-    #   ~$ pulumi config set multus.default_bridge br0
-    bridge_name = config.get('multus.default_bridge') or "br0"
+        return multus, multus_release
+    return None, None
 
-    # Deploy Multus
-    multus = deploy_multus(
-        depends,
-        version,
-        bridge_name,
-        k8s_provider
-    )
-
-    # Append Multus version to versions dictionary
-    versions["multus"] = {"enabled": multus_enabled, "version": multus[0]}
-
-    # Multus Release Resource
-    multus_release = multus[1]
-
-else:
-    multus = None, None
+multus, multus_release = run_multus()
 
 ##################################################################################
-# Deploy Hostpath Provisioner
-if hostpath_provisioner_enabled:
+# Deploy Containerized Data Importer (CDI)
+def run_cdi():
+    if cdi_enabled:
+        ns_name = "cdi"
+        cdi_version = config.get('cdi.version') or None
+        depends = []
 
-    # Set Version of hostpath-provisioner
-    version = config.get('hostpath_provisioner.version') or None
+        if kubevirt_enabled:
+            depends.append(kubevirt_operator)
 
-    # configure hostpath-provisioner default storage path with the following command:
-    #   ~$ pulumi config set hostpath_provisioner.default_path /var/mnt/block/dev/sda
-    # Set hostpath-provisioner version override with the following command:
-    #   ~$ pulumi config set hostpath_provisioner.version v0.17.0
-    hostpath_default_path = config.get('hostpath_provisioner.default_path') or "/var/mnt"
-    hostpath_default_storage_class = config.get('hostpath_provisioner.default_storage_class') or False
+        cdi = deploy_cdi(
+            depends,
+            cdi_version,
+            k8s_provider
+        )
 
-    # Set hostpath-provisioner namespace
-    ns_name = "hostpath-provisioner"
+        versions["cdi"] = {"enabled": cdi_enabled, "version": cdi[0]}
+        cdi_release = cdi[1]
 
-    # set depends to an empty list by default
-    depends = []
+        return cdi, cdi_release
+    return None, None
 
-    # Add dependencies to the depends list
-    if cilium_enabled:
-        depends.append(cilium_release)
-
-    if cert_manager:
-        depends.append(cert_manager_release)
-
-    # Deploy hostpath-provisioner
-    hostpath_provisioner = deploy_hostpath_provisioner(
-        depends,
-        version,
-        ns_name,
-        hostpath_default_path,
-        hostpath_default_storage_class,
-        k8s_provider,
-    )
-
-    # Append hostpath-provisioner version to versions dictionary
-    versions["hostpath_provisioner"] = {"enabled": hostpath_provisioner_enabled, "version": hostpath_provisioner[0]}
-
-    # Hostpath Provisioner Release Resource
-    hostpath_provisioner_release = hostpath_provisioner[1]
-
-else:
-    hostpath_provisioner = None, None
+cdi, cdi_release = run_cdi()
 
 ##################################################################################
 # Deploy Prometheus
-if prometheus_enabled:
+def run_prometheus():
+    if prometheus_enabled:
+        ns_name = "monitoring"
+        prometheus_version = config.get('prometheus.version') or None
+        depends = []
 
-    # Set prometheus version override with the following command:
-    #   ~$ pulumi config set prometheus.version v0.45.0
-    version = config.get('prometheus.version') or None
+        if cilium_enabled:
+            depends.append(cilium_release)
 
-    # Set prometheus namespace
-    ns_name = "monitoring"
+        prometheus = deploy_prometheus(
+            depends,
+            ns_name,
+            prometheus_version,
+            k8s_provider,
+            openunison_enabled
+        )
 
-    # Set depends to an empty list by default
-    depends = []
+        versions["prometheus"] = {"enabled": prometheus_enabled, "version": prometheus[0]}
+        prometheus_release = prometheus[1]
 
-    # Append cilium_release to depends if cilium_enabled is true
-    if cilium_enabled:
-        depends.append(cilium_release)
+        return prometheus, prometheus_release
+    return None, None
 
-    # Deploy prometheus
-    prometheus = deploy_prometheus(
-        depends,
-        ns_name,
-        version,
-        k8s_provider,
-        openunison_enabled
-    )
-
-    # Append prometheus version to versions dictionary
-    versions["prometheus"] = {"enabled": prometheus_enabled, "version": prometheus[0]}
-
-    # Prometheus Release Resource
-    prometheus_release = prometheus[1]
-
-else:
-    prometheus = None, None
+prometheus, prometheus_release = run_prometheus()
 
 ##################################################################################
 # Deploy Kubernetes Dashboard
-if kubernetes_dashboard_enabled:
+def run_kubernetes_dashboard():
+    if kubernetes_dashboard_enabled:
+        ns_name = "kubernetes-dashboard"
+        kubernetes_dashboard_version = config.get('kubernetes_dashboard.version') or None
+        depends = []
 
-    # Set version override with the following command:
-    #   ~$ pulumi config set kubernetes_dashboard.version 1.0.0
-    version = config.get('kubernetes_dashboard.version') or None
+        if cilium_enabled:
+            depends.append(cilium_release)
 
-    # Set depends to an empty list by default
-    depends = []
+        kubernetes_dashboard = deploy_kubernetes_dashboard(
+            depends,
+            ns_name,
+            kubernetes_dashboard_version,
+            k8s_provider
+        )
 
-    # Append cilium_release to depends if cilium_enabled is true
-    if cilium_enabled:
-        depends.append(cilium_release)
+        versions["kubernetes_dashboard"] = {"enabled": kubernetes_dashboard_enabled, "version": kubernetes_dashboard[0]}
+        kubernetes_dashboard_release = kubernetes_dashboard[1]
 
-    # Set openunison namespace
-    ns_name = "kubernetes-dashboard"
+        return kubernetes_dashboard, kubernetes_dashboard_release
+    return None, None
 
-    # Deploy OpenUnison
-    kubernetes_dashboard = deploy_kubernetes_dashboard(
-        depends,
-        ns_name,
-        version,
-        k8s_provider
-    )
-
-    # Append kubernetes_dashboard version to versions dictionary
-    versions["kubernetes_dashboard"] = {"enabled": kubernetes_dashboard_enabled, "version": kubernetes_dashboard[0]}
-
-    # Kubernetes Dashboard Release
-    kubernetes_dashboard_release = kubernetes_dashboard[1]
-
-else:
-    kubernetes_dashboard = None, None
+kubernetes_dashboard, kubernetes_dashboard_release = run_kubernetes_dashboard()
 
 ##################################################################################
-# Deploy OpenUnison
-if openunison_enabled:
+def run_openunison():
+    if openunison_enabled:
+        ns_name = "openunison"
+        openunison_version = config.get('openunison.version') or None
+        domain_suffix = config.get('openunison.dns_suffix') or "kargo.arpa"
+        cluster_issuer = config.get('openunison.cluster_issuer') or "cluster-selfsigned-issuer-ca"
 
-    # Set openunison version override with the following command:
-    #   ~$ pulumi config set openunison.version v1.0.0
-    version = config.get('openunison.version') or None
+        openunison_github_teams = config.require('openunison.github.teams')
+        openunison_github_client_id = config.require('openunison.github.client_id')
+        openunison_github_client_secret = config.require('openunison.github.client_secret')
 
-    # get the domain suffix and cluster_issuer
-    domain_suffix = config.get('openunison.dns_suffix') or "kargo.arpa"
+        depends = []
 
-    # get the cluster issuer
-    cluster_issuer = config.get('openunison.cluster_issuer') or "cluster-selfsigned-issuer-ca"
+        if cilium_enabled:
+            depends.append(cilium_release)
 
-    # Set openunison github integration config values
-    openunison_github_teams = config.require('openunison.github.teams')
-    openunison_github_client_id = config.require('openunison.github.client_id')
-    openunison_github_client_secret = config.require('openunison.github.client_secret')
+        if cert_manager_enabled:
+            depends.append(cert_manager_release)
 
-    # Set depends to an empty list by default
-    depends = []
+        if prometheus_enabled:
+            depends.append(prometheus_release)
 
-    # Append cilium_release to depends if cilium_enabled is true
-    if cilium_enabled:
-        depends.append(cilium_release)
+        enabled = {}
 
-    # Append cert_manager_release to depends if cert_manager is enabled
-    if cert_manager_enabled:
-        depends.append(cert_manager_release)
+        if kubevirt_enabled:
+            enabled["kubevirt"] = {"enabled": kubevirt_enabled}
 
-    # Append prometheus_release to depends if prometheus_enabled is true
-    if prometheus_enabled:
-        depends.append(prometheus_release)
+        if prometheus_enabled:
+            enabled["prometheus"] = {"enabled": prometheus_enabled}
 
-    enabled = {}
+        pulumi.export("enabled", enabled)
 
-    if kubevirt_enabled:
-        enabled["kubevirt"] = {"enabled": kubevirt_enabled}
+        openunison = deploy_openunison(
+            depends,
+            ns_name,
+            openunison_version,
+            k8s_provider,
+            domain_suffix,
+            cluster_issuer,
+            cert_manager_selfsigned_cert,
+            kubernetes_dashboard_release,
+            openunison_github_client_id,
+            openunison_github_client_secret,
+            openunison_github_teams,
+            enabled,
+        )
 
-    if prometheus_enabled:
-        enabled["prometheus"] = {"enabled": prometheus_enabled}
+        # Append openunison version to versions dictionary
+        versions["openunison"] = {"enabled": openunison_enabled, "version": openunison[0]}
+        openunison_release = openunison[1]
 
-    pulumi.export("enabled", enabled)
+        return openunison, openunison_release
+    return None, None
 
-    # Set openunison namespace
-    ns_name = "openunison"
+openunison, openunison_release = run_openunison()
 
-    # Deploy OpenUnison
-    openunison = deploy_openunison(
-        depends,
-        ns_name,
-        version,
-        k8s_provider,
-        domain_suffix,
-        cluster_issuer,
-        cert_manager_selfsigned_cert,
-        kubernetes_dashboard_release,
-        openunison_github_client_id,
-        openunison_github_client_secret,
-        openunison_github_teams,
-        enabled,
-    )
+##################################################################################
+# Deploy Rook Ceph
+def run_rook_ceph():
+    deploy_ceph = config.get_bool('ceph.enabled') or False
+    if deploy_ceph:
+        rook_operator = deploy_rook_operator(
+            "kargo",
+            k8s_provider,
+            kubernetes_distribution,
+            "kargo",
+            "rook-ceph"
+        )
+        return rook_operator
+    return None
 
-    # Append openunison version to versions dictionary
-    #versions["openunison"] = {"enabled": openunison_enabled, "version": openunison[0]}
+rook_operator = run_rook_ceph()
 
-    # OpenUnison Release Resource
-    #openunison_release = openunison[1]
+##################################################################################
+# Deploy Kubevirt Manager
+def run_kubevirt_manager():
+    kubevirt_manager_enabled = config.get_bool('kubevirt_manager.enabled') or False
+    if kubevirt_manager_enabled:
+        kubevirt_manager = deploy_ui_for_kubevirt(
+            "kargo",
+            k8s_provider,
+            kubernetes_distribution,
+            "kargo",
+            "kubevirt_manager"
+        )
+        pulumi.export('kubevirt_manager', kubevirt_manager)
+        return kubevirt_manager
+    return None
 
-else:
-    openunison = None, None
+kubevirt_manager = run_kubevirt_manager()
 
 # Export the component versions
 pulumi.export("versions", versions)
-
-## check if pulumi config ceph.enabled is set to true and deploy rook-ceph if it is
-## Enable ceph operator with the following command:
-##   ~$ pulumi config set ceph.enabled true
-#deploy_ceph = config.get_bool('ceph.enabled') or False
-#if deploy_ceph:
-#    # Deploy Rook Ceph
-#    rook_operator = deploy_rook_operator(
-#        "kargo",
-#        k8s_provider,
-#        kubernetes_distribution,
-#        "kargo",
-#        "rook-ceph"
-#    )
-
-## check if pulumi config kubevirt_manager.enabled is set to true and deploy kubervirt-manager if it is
-#kubevirt_manager_enabled = config.get_bool('kubevirt_manager.enabled') or False
-#if kubevirt_manager_enabled:
-#    # Deploy kubevirt-manager
-#    kubevirt_manager = deploy_ui_for_kubevirt(
-#        "kargo",
-#        k8s_provider,
-#        kubernetes_distribution,
-#        "kargo",
-#        "kubevirt_manager"
-#    )
-#    pulumi.export('kubervirt_manager', kubevirt_manager)
