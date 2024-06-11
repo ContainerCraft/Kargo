@@ -28,8 +28,12 @@ stack_name = pulumi.get_stack()
 project_name = pulumi.get_project()
 
 # Get the kubeconfig file path from priority order:
-#   1. Pulumi configuration value: `pulumi config set kubeconfig <path>`
-kubernetes_config_filepath =  os.environ.get("KUBECONFIG") or config.require("kubernetes.kubeconfig")
+# Acquire kubeconfig file path from the following sources in order of priority:
+#   1. Environment variable: `KUBECONFIG`
+#   2. Pulumi configuration value: `pulumi config set kubeconfig <path>`
+
+# Assemble the kubeconfig file path from cwd + KUBECONFIG
+kubernetes_config_filepath = config.require("kubernetes.kubeconfig")
 
 # Get kubeconfig context from Pulumi config or default to "kind-pulumi"
 kubernetes_context = config.get("kubernetes.context") or "kind-kargo"

@@ -10,12 +10,12 @@
 #--persist \
 #--force
 
-kubectl delete -f kubevirt.vm.yaml --wait=true ; sleep 1 ; kubectl delete -f kubevirt.vm.yaml --wait=true ; sleep 3
-kubectl delete secret talos-userdata-cp1 ; sleep 1
+kubectl --kubeconfig /workspaces/kargo/.kube/config delete -f kubevirt.vm.yaml --wait=true ; sleep 1 ; kubectl --kubeconfig /workspaces/kargo/.kube/config delete -f kubevirt.vm.yaml --wait=true ; sleep 3
+kubectl --kubeconfig /workspaces/kargo/.kube/config delete secret talos-userdata-cp1 ; sleep 1
 
-kubectl create secret generic talos-userdata-cp1 --dry-run=client --output=yaml \
+kubectl --kubeconfig /workspaces/kargo/.kube/config create secret generic talos-userdata-cp1 --dry-run=client --output=yaml \
 --from-file=userdata=controlplane.yaml \
-| kubectl apply -f -
+| kubectl --kubeconfig /workspaces/kargo/.kube/config apply -f -
 
 
-kubectl apply -f kubevirt.vm.yaml || kubectl apply -f kubevirt.vm.yaml
+kubectl --kubeconfig /workspaces/kargo/.kube/config apply -f kubevirt.vm.yaml || kubectl --kubeconfig /workspaces/kargo/.kube/config apply -f kubevirt.vm.yaml

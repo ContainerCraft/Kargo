@@ -66,6 +66,7 @@ def deploy_kubevirt(
     with tempfile.NamedTemporaryFile(delete=False, mode='w') as temp_file:
         yaml.dump_all(transformed_yaml, temp_file)
         temp_file_path = temp_file.name
+        pulumi.log.info(f"Deploying KubeVirt from local file path: {temp_file_path}")
 
     # Ensure the tempfile is closed before passing it to ConfigFile
     temp_file.close()
@@ -82,7 +83,7 @@ def deploy_kubevirt(
     )
 
     # Ensure the temporary file is deleted after Pulumi uses it
-    pulumi.Output.all().apply(lambda _: os.unlink(temp_file_path))
+    #pulumi.Output.all().apply(lambda _: os.unlink(temp_file_path))
 
     # Determine useEmulation based on the kubernetes_distribution
     use_emulation = True if kubernetes_distribution == "kind" else False
@@ -131,9 +132,7 @@ def deploy_kubevirt(
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
             parent=operator,
-            depends_on=[
-                namespace
-            ]
+            depends_on=depends
         )
     )
 
