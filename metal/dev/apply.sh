@@ -16,6 +16,8 @@ kubectl --kubeconfig /workspaces/kargo/.kube/config delete secret talos-userdata
 kubectl --kubeconfig /workspaces/kargo/.kube/config create secret generic talos-userdata-cp1 --dry-run=client --output=yaml \
 --from-file=userdata=controlplane.yaml \
 | kubectl --kubeconfig /workspaces/kargo/.kube/config apply -f -
+#--from-file=networkdata=controlplane.networkdata.yaml \
 
+pulumi down; sleep 1 ; pulumi down
 
 kubectl --kubeconfig /workspaces/kargo/.kube/config apply -f kubevirt.vm.yaml || kubectl --kubeconfig /workspaces/kargo/.kube/config apply -f kubevirt.vm.yaml

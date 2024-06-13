@@ -171,7 +171,7 @@ def deploy_cert_manager(
     # Extract the tls.crt value from the secret
     ca_data_tls_crt_b64 = ca_secret.data.apply(lambda data: data["tls.crt"])
 
-    return version, release, ca_data_tls_crt_b64
+    return version, release, ca_data_tls_crt_b64, ca_secret
 
 def gen_helm_values(kubernetes_distribution: str):
 
