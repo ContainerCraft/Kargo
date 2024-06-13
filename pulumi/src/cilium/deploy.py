@@ -38,7 +38,14 @@ def deploy_cilium(
         values=helm_values,
         namespace=namespace,
         repository_opts={"repo": "https://helm.cilium.io/"},
-                    opts=pulumi.ResourceOptions(provider=k8s_provider)
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="15m",
+                update="15m",
+                delete="5m"
+            )
+        )
     )
 
     cilium_l2_announcement_policy = CustomResource(
@@ -54,7 +61,12 @@ def deploy_cilium(
         },
         opts=pulumi.ResourceOptions(
             parent=release,
-            provider=k8s_provider
+            provider=k8s_provider,
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m",
+                update="8m",
+                delete="2m"
+            )
         )
     )
 
@@ -69,7 +81,12 @@ def deploy_cilium(
         },
         opts=pulumi.ResourceOptions(
             parent=release,
-            provider=k8s_provider
+            provider=k8s_provider,
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m",
+                update="8m",
+                delete="2m"
+            )
         )
     )
 

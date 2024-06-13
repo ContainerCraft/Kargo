@@ -48,6 +48,11 @@ def deploy_cnao(
             parent=namespace,
             depends_on=depends,
             provider=k8s_provider,
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m",
+                update="8m",
+                delete="2m"
+            )
         )
     )
 
@@ -59,6 +64,11 @@ def deploy_cnao(
             parent=nado_crd_resource,
             depends_on=depends,
             provider=k8s_provider,
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m",
+                update="8m",
+                delete="2m"
+            )
         )
     )
 
@@ -70,12 +80,16 @@ def deploy_cnao(
             "name": "cluster",
         },
         opts=pulumi.ResourceOptions(
-            parent=nado_operator_resource,
+            parent=namespace,
             depends_on=depends,
             provider=k8s_provider,
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m",
+                update="8m",
+                delete="2m"
+            )
         ),
         spec={
-            "macvtap": {},
             "linuxBridge": {},
             "imagePullPolicy": "IfNotPresent",
             "selfSignConfiguration": {
@@ -87,6 +101,7 @@ def deploy_cnao(
         }
     )
             #"multus": {},
+            #"macvtap": {},
             #"multusDynamicNetworks": {},
             #"kubeSecondaryDNS": {},
             #"kubeMacPool": {},

@@ -73,93 +73,108 @@ def deploy(
             depends_on=depends,
             provider=k8s_provider,
             transformations=[add_namespace],
-        )
-    )
-
-    # Deploy the operator with a transformation that adds the namespace
-    url_operator = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/v{version}/operator.yaml'
-    operator = k8s.yaml.ConfigFile(
-        "hostpath-provisioner-operator",
-        file=url_operator,
-        opts=ResourceOptions(
-            parent=webhook,
-            depends_on=depends,
-            provider=k8s_provider,
-            transformations=[add_namespace]
-        )
-    )
-
-    # Ensure the CRDs are created before the HostPathProvisioner resource
-    # TODO: solve for the case where child resources are created before parent exists
-    crd = k8s.apiextensions.v1.CustomResourceDefinition.get(
-        "hostpathprovisioners",
-        id="hostpathprovisioners.hostpathprovisioner.kubevirt.io",
-        opts=ResourceOptions(
-            parent=webhook,
-            depends_on=operator,
-            provider=k8s_provider,
             custom_timeouts=pulumi.CustomTimeouts(
-                create="5m",
-                update="5m",
-                delete="5m"
+                create="1m",
+                update="1m",
+                delete="1m"
             )
         )
     )
 
-    # Create a HostPathProvisioner resource
-    hostpath_provisioner = CustomResource(
-        "hostpath-provisioner-hpp",
-        api_version="hostpathprovisioner.kubevirt.io/v1beta1",
-        kind="HostPathProvisioner",
-        metadata={
-            "name": "hostpath-provisioner-class-ssd",
-            "namespace": ns_name
-        },
-        spec={
-            "imagePullPolicy": "IfNotPresent",
-            "storagePools": [{
-                "name": "ssd",
-                "path": hostpath
-            }],
-            "workload": {
-                "nodeSelector": {
-                    "kubernetes.io/os": "linux"
-                }
-            }
-        },
-        opts=pulumi.ResourceOptions(
-            parent=crd,
-            depends_on=operator,
-            provider=k8s_provider,
-            ignore_changes=["status"],
-            custom_timeouts=pulumi.CustomTimeouts(
-                create="5m",
-                update="5m",
-                delete="5m"
-            )
-        )
-    )
+#   # Deploy the operator with a transformation that adds the namespace
+#   url_operator = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/v{version}/operator.yaml'
+#   operator = k8s.yaml.ConfigFile(
+#       "hostpath-provisioner-operator",
+#       file=url_operator,
+#       opts=ResourceOptions(
+#           parent=webhook,
+#           depends_on=depends,
+#           provider=k8s_provider,
+#           transformations=[add_namespace],
+#           custom_timeouts=pulumi.CustomTimeouts(
+#               create="8m",
+#               update="8m",
+#               delete="2m"
+#           )
+#       )
+#   )
 
-    # Define the StorageClass
-    storage_class = StorageClass(
-        "hostpath-storage-class-ssd",
-        metadata=ObjectMetaArgs(
-            name="ssd",
-            annotations={
-                "storageclass.kubernetes.io/is-default-class": "true" if default else "false"
-            }
-        ),
-        reclaim_policy="Delete",
-        provisioner="kubevirt.io.hostpath-provisioner",
-        volume_binding_mode="WaitForFirstConsumer",
-        parameters={
-            "storagePool": "ssd",
-        },
-        opts=ResourceOptions(
-            parent=hostpath_provisioner,
-            depends_on=operator,
-            provider=k8s_provider
-        )
-    )
+#   # Ensure the CRDs are created before the HostPathProvisioner resource
+#   # TODO: solve for the case where child resources are created before parent exists
+#   crd = k8s.apiextensions.v1.CustomResourceDefinition.get(
+#       "hostpathprovisioners",
+#       id="hostpathprovisioners.hostpathprovisioner.kubevirt.io",
+#       opts=ResourceOptions(
+#           parent=operator,
+#           depends_on=depends,
+#           provider=k8s_provider,
+#           custom_timeouts=pulumi.CustomTimeouts(
+#               create="9m",
+#               update="9m",
+#               delete="2m"
+#           )
+#       )
+#   )
 
-    return version, operator
+#   # Create a HostPathProvisioner resource
+#   hostpath_provisioner = CustomResource(
+#       "hostpath-provisioner-hpp",
+#       api_version="hostpathprovisioner.kubevirt.io/v1beta1",
+#       kind="HostPathProvisioner",
+#       metadata={
+#           "name": "hostpath-provisioner-class-ssd",
+#           "namespace": ns_name
+#       },
+#       spec={
+#           "imagePullPolicy": "IfNotPresent",
+#           "storagePools": [{
+#               "name": "ssd",
+#               "path": hostpath
+#           }],
+#           "workload": {
+#               "nodeSelector": {
+#                   "kubernetes.io/os": "linux"
+#               }
+#           }
+#       },
+#       opts=pulumi.ResourceOptions(
+#           parent=operator,
+#           depends_on=crd,
+#           provider=k8s_provider,
+#           ignore_changes=["status"],
+#           custom_timeouts=pulumi.CustomTimeouts(
+#               create="8m",
+#               update="8m",
+#               delete="2m"
+#           )
+#       )
+#   )
+
+#   # Define the StorageClass
+#   storage_class = StorageClass(
+#       "hostpath-storage-class-ssd",
+#       metadata=ObjectMetaArgs(
+#           name="ssd",
+#           annotations={
+#               "storageclass.kubernetes.io/is-default-class": "true" if default else "false"
+#           }
+#       ),
+#       reclaim_policy="Delete",
+#       provisioner="kubevirt.io.hostpath-provisioner",
+#       volume_binding_mode="WaitForFirstConsumer",
+#       parameters={
+#           "storagePool": "ssd",
+#       },
+#       opts=ResourceOptions(
+#           parent=hostpath_provisioner,
+#           #depends_on=hostpath_provisioner,
+#           provider=k8s_provider,
+#           custom_timeouts=pulumi.CustomTimeouts(
+#               create="8m",
+#               update="8m",
+#               delete="2m"
+#           )
+#       )
+#   )
+
+    return version, webhook # operator

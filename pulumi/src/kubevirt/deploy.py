@@ -76,9 +76,9 @@ def deploy_kubevirt(
         'kubevirt-operator',
         file=temp_file_path,
         opts=pulumi.ResourceOptions(
-            provider=k8s_provider,
             parent=namespace,
-            depends_on=depends
+            depends_on=depends,
+            provider=k8s_provider,
         )
     )
 
