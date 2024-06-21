@@ -1,8 +1,8 @@
 config:
   kargo:cdi.enabled: "true"
   kargo:cdi.version: 1.59.0
+  kargo:cert_manager.enabled: "true"
   kargo:cert_manager.version: 1.14.5
-  kargo:cilium.enable: "true"
   kargo:cilium.enabled: "False"
   kargo:cnao.enabled: "true"
   kargo:cnao.version: 0.79.5
@@ -10,12 +10,12 @@ config:
   kargo:hostpath_provisioner.default_storage_class: "true"
   kargo:hostpath_provisioner.enabled: "true"
   kargo:hostpath_provisioner.version: 0.19.0
-  kargo:kubeconfig.context: admin@mordor
   kargo:kubernetes: talos
   kargo:kubernetes.context: admin@mordor
   kargo:kubernetes.distribution: talos
   kargo:kubernetes_dashboard.enabled: "true"
   kargo:kubernetes_dashboard.version: 7.4.0
+  kargo:kubevirt.enabled: "true"
   kargo:kubevirt.version: 1.2.0
   kargo:multus.enabled: "true"
   kargo:openunison.dns_suffix: kargo.arpa
