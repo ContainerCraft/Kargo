@@ -59,17 +59,17 @@ git clone https://github.com/ContainerCraft/Kargo && cd Kargo && code .
 
 When prompted, click "Reopen in Container" to open the Kargo repository in the Konductor devcontainer.
 
-#### Server Side Dependencies
+### Server Side Dependencies
 
 There are two ways to run the server side infrastructure for Kargo. Choose between running, testing, and developing Kargo using [Kind](https://kind.sigs.k8s.io/) from within the Konductor container, or running Kargo on a local or remote [Sidero Talos Kubernetes](https://talos.dev/) cluster.
 
-### Virtual Kind Kubernetes
+#### Virtual Kind Kubernetes
 
 Using Kind is the easiest way to get started with Kargo. Kind is a Kubernetes-in-Docker platform that allows you to run a Kubernetes cluster on your local machine. Kind allows for easy testing and development of Kubernetes and Kargo and is the recommended first step for new Kargonauts to familiarize yourself with the project before investing in and provisioning physical hardware.
 
 Kind is also used by the Kargo maintainers and contributors to develop and test Kargo.
 
-#### How to Run Kargo on Kind
+##### How to Run Kargo on Kind
 
 > NOTE: the following assumes you have already installed VSCode, the Remote Containers extension, and Docker Desktop.
 
