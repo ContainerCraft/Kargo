@@ -63,19 +63,13 @@ When prompted, click "Reopen in Container" to open the Kargo repository in the K
 
 There are two ways to run the server side infrastructure for Kargo. Choose between running, testing, and developing Kargo using [Kind](https://kind.sigs.k8s.io/) from within the Konductor container, or running Kargo on a local or remote [Sidero Talos Kubernetes](https://talos.dev/) cluster.
 
-##### Virtual Kind Kubernetes
+### Virtual Kind Kubernetes
 
 Using Kind is the easiest way to get started with Kargo. Kind is a Kubernetes-in-Docker platform that allows you to run a Kubernetes cluster on your local machine. Kind allows for easy testing and development of Kubernetes and Kargo and is the recommended first step for new Kargonauts to familiarize yourself with the project before investing in and provisioning physical hardware.
 
 Kind is also used by the Kargo maintainers and contributors to develop and test Kargo.
 
-##### Physical Talos Kubernetes
-
-[Talos](https://talos.dev/) is a modern OS for Kubernetes. Talos is designed to be secure, immutable, and minimal. Talos is the recommended platform for running Kargo in a production-like homelab environment. Find out more about why in our [FAQ](FAQ.md).
-
-The Talos documentation and deployment automation is still a work in progress under discovery in the [./metal directory](./metal/3node-optiplex-cluster) of this repository. Find the README with current build notes and example configs there.
-
-### How to Run Kargo on Kind
+#### How to Run Kargo on Kind
 
 > NOTE: the following assumes you have already installed VSCode, the Remote Containers extension, and Docker Desktop.
 
@@ -132,6 +126,13 @@ virtctl console ubuntu
 # user:pass == [kc2:kc2]
 virtctl ssh kc2@ubuntu
 ```
+
+##### Physical Talos Kubernetes
+
+[Talos](https://talos.dev/) is a modern OS for Kubernetes. Talos is designed to be secure, immutable, and minimal. Talos is the recommended platform for running Kargo in a production-like homelab environment. Find out more about why in our [FAQ](FAQ.md).
+
+The Talos documentation and deployment automation is still a work in progress under discovery in the [./metal directory](./metal/3node-optiplex-cluster) of this repository. Find the README with current build notes and example configs there.
+
 
 ## Contributing
 
