@@ -1,4 +1,4 @@
-# Kargo Community Homelab Platform Engineering
+# Kargo - The Cloud-Native ESXi Replacement
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/ContainerCraft/Kargo)
 
@@ -12,7 +12,7 @@ Join the conversation on the [ContainerCraft Community Discord Kargo Channel](ht
 
 ## About
 
-Kargo is a community project to build the first Platform Engineered Homelab for the ContainerCraft community. The project is a collaboration between the ContainerCraft community and the Kubernetes industry leaders and practitioners to build a common sharable platform for learning, experimentation, and collaboration.
+Kargo is a community project to build the first Platform Engineered virtualization environment to replace the need for hypervisors that may no longer be suitable for cloud-native environments. The project is a collaboration between the ContainerCraft community, Kubernetes industry leaders, virtualization experts, and practitioners to build a common sharable platform for virtualized environments in both on-prem, cloud, and local environments.
 
 For more information, see the [Kargo Project FAQ](FAQ.md).
 
