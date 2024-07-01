@@ -28,19 +28,12 @@ stack_name = pulumi.get_stack()
 # Get the pulumi project name
 project_name = pulumi.get_project()
 
-# Get the kubeconfig file path from priority order:
-# Acquire kubeconfig file path from the following sources in order of priority:
-#   1. Environment variable: `KUBECONFIG`
-#   2. Pulumi configuration value: `pulumi config set kubeconfig <path>`
-
-# Assemble the kubeconfig file path from cwd + KUBECONFIG
-kubernetes_config_filepath = config.require("kubernetes.kubeconfig")
-
-# Get kubeconfig context from Pulumi config or default to "kind-pulumi"
-kubernetes_context = config.get("kubernetes.context") or "kind-kargo"
-
-# Get the Kubernetes distribution from the Pulumi configuration or default to "kind"
-kubernetes_distribution = config.get("kubernetes.distribution") or "kind"
+##################################################################################
+# Get the Kubernetes configuration
+kubernetes_config = config.get_object("kubernetes") or {}
+kubernetes_config_filepath = kubernetes_config.get("kubeconfig")
+kubernetes_context = kubernetes_config.get("context") or "kind-kargo"
+kubernetes_distribution = kubernetes_config.get("distribution") or "kind"
 
 # Create a Kubernetes provider instance
 k8s_provider = Provider(
@@ -55,49 +48,24 @@ versions = {}
 ## Enable/Disable Kargo Kubevirt PaaS Infrastructure Modules
 ##################################################################################
 
-# Disable Cilium with the following command:
-#   ~$ pulumi config set cilium.enable false
-cilium_enabled = config.get_bool('cilium.enabled') or False
+# Utility function to handle config with default "enabled" flag
+def get_module_config(module_name):
+    module_config = config.get_object(module_name) or {"enabled": "false"}
+    module_enabled = str(module_config.get('enabled')).lower() == "true"
+    return module_config, module_enabled
 
-# Enable cert-manager with the following command:
-#   ~$ pulumi config set cert_manager.enable true
-cert_manager_enabled = config.get_bool('cert_manager.enabled') or False
-
-# Enable KubeVirt with the following command:
-#   ~$ pulumi config set kubevirt.enable true
-kubevirt_enabled = config.get_bool('kubevirt.enabled') or False
-
-# Enable containerized data importer with the following command:
-#   ~$ pulumi config set cdi.enabled true
-cdi_enabled = config.get_bool('cdi.enabled') or False
-
-# Set Multus version override with the following command:
-#   ~$ pulumi config set multus.version 3.7.0
-multus_enabled = config.get_bool('multus.enabled') or False
-
-# Set prometheus enabled with the following command:
-#   ~$ pulumi config set prometheus.enabled true
-prometheus_enabled = config.get_bool('prometheus.enabled') or False
-
-# Set openunison enabled with the following command:
-#   ~$ pulumi config set openunison.enabled true
-openunison_enabled = config.get_bool('openunison.enabled') or False
-
-# Configure hostpath-provisioner to be the default storage class with the following command:
-#   ~$ pulumi config set hostpath_provisioner.default_storage_class true
-hostpath_provisioner_enabled = config.get_bool('hostpath_provisioner.enabled') or False
-
-# Configure CNAO to be enabled with the following command:
-#  ~$ pulumi config set cnao.enabled true
-cnao_enabled = config.get_bool('cnao.enabled') or False
-
-# Configure Kubernetes Dashboard enabled with the following command:
-#   ~$ pulumi config set kubernetes_dashboard.enabled true
-kubernetes_dashboard_enabled = config.get_bool("kubernetes_dashboard.enabled") or False
-
-# Configure Kubevirt Manager GUI enabled with the following command:
-#   ~$ pulumi config set kubevirt_manager.enabled true
-kubevirt_manager_enabled = config.get_bool("kubevirt_manager.enabled") or False
+# Get configurations and enabled flags
+config_cilium, cilium_enabled = get_module_config('cilium')
+config_cert_manager, cert_manager_enabled = get_module_config('cert_manager')
+config_kubevirt, kubevirt_enabled = get_module_config('kubevirt')
+config_cdi, cdi_enabled = get_module_config('cdi')
+config_multus, multus_enabled = get_module_config('multus')
+config_prometheus, prometheus_enabled = get_module_config('prometheus')
+config_openunison, openunison_enabled = get_module_config('openunison')
+config_hostpath_provisioner, hostpath_provisioner_enabled = get_module_config('hostpath_provisioner')
+config_cnao, cnao_enabled = get_module_config('cnao')
+config_kubernetes_dashboard, kubernetes_dashboard_enabled = get_module_config('kubernetes_dashboard')
+config_kubevirt_manager, kubevirt_manager_enabled = get_module_config('kubevirt_manager')
 
 ##################################################################################
 ## Get the Kubernetes API endpoint IP
@@ -134,9 +102,9 @@ depends = []
 def run_cilium():
     if cilium_enabled:
         namespace = "kube-system"
-        l2announcements = "192.168.1.70/28"
-        l2_bridge_name = "br0"
-        cilium_version = config.get('cilium.version') # or "1.14.7"
+        l2announcements = config_cilium.get('l2announcements') or "192.168.1.70/28"
+        l2_bridge_name = config_cilium.get('l2_bridge_name') or "br0"
+        cilium_version = config_cilium.get('version') # or "1.14.7"
 
         cilium = deploy_cilium(
             "cilium-cni",
@@ -168,7 +136,7 @@ versions["cilium"] = {"enabled": cilium_enabled, "version": cilium_version}
 def run_cert_manager():
     if cert_manager_enabled:
         ns_name = "cert-manager"
-        cert_manager_version = config.get('cert_manager.version') or None
+        cert_manager_version = config_cert_manager.get('version') or None
 
         cert_manager = deploy_cert_manager(
             ns_name,
@@ -197,7 +165,7 @@ cert_manager, cert_manager_release, cert_manager_selfsigned_cert = run_cert_mana
 def run_kubevirt():
     if kubevirt_enabled:
         ns_name = "kubevirt"
-        kubevirt_version = config.get('kubevirt.version') or None
+        kubevirt_version = config_kubevirt.get('version') or None
 
         custom_depends = []
         custom_depends.append(cilium_release)
@@ -227,8 +195,8 @@ kubevirt, kubevirt_operator = run_kubevirt()
 def run_multus():
     if multus_enabled:
         ns_name = "multus"
-        multus_version = config.get('multus.version') or "master"
-        bridge_name = config.get('multus.default_bridge') or "br0"
+        multus_version = config_multus.get('version') or "master"
+        bridge_name = config_multus.get('bridge_name') or "br0"
 
         custom_depends = []
 
@@ -260,7 +228,7 @@ multus, multus_release = run_multus()
 def run_cnao():
     if cnao_enabled:
         ns_name = "cluster-network-addons"
-        cnao_version = config.get('cnao.version') or None
+        cnao_version = config_cnao.get('version') or None
 
         custom_depends = []
 
@@ -296,10 +264,10 @@ def run_hostpath_provisioner():
             pulumi.log.error("Hostpath Provisioner requires Cert Manager to be enabled. Please enable Cert Manager and try again.")
             return None, None
 
-        hostpath_default_path = config.get('hostpath_provisioner.default_path') or "/var/mnt"
-        hostpath_default_storage_class = config.get('hostpath_provisioner.default_storage_class') or False
+        hostpath_default_path = config_hostpath_provisioner.get('default_path') or "/var/mnt"
+        hostpath_default_storage_class = config_hostpath_provisioner.get('default_storage_class') or False
         ns_name = "hostpath-provisioner"
-        hostpath_provisioner_version = config.get('hostpath_provisioner.version') or None
+        hostpath_provisioner_version = config_hostpath_provisioner.get('version') or None
 
         custom_depends = []
 
@@ -335,7 +303,7 @@ hostpath_provisioner, hostpath_provisioner_release = run_hostpath_provisioner()
 def run_prometheus():
     if prometheus_enabled:
         ns_name = "monitoring"
-        prometheus_version = config.get('prometheus.version') or None
+        prometheus_version = config_prometheus.get('version') or None
 
         prometheus = deploy_prometheus(
             depends,
@@ -361,7 +329,7 @@ prometheus, prometheus_release = run_prometheus()
 def run_cdi():
     if cdi_enabled:
         ns_name = "cdi"
-        cdi_version = config.get('cdi.version') or None
+        cdi_version = config_cdi.get('version') or None
 
         cdi = deploy_cdi(
             depends,
@@ -385,7 +353,7 @@ cdi, cdi_release = run_cdi()
 def run_kubernetes_dashboard():
     if kubernetes_dashboard_enabled:
         ns_name = "kubernetes-dashboard"
-        kubernetes_dashboard_version = config.get('kubernetes_dashboard.version') or None
+        kubernetes_dashboard_version = config_kubernetes_dashboard.get('version') or None
 
         if cilium_enabled:
             depends.append(cilium_release)
@@ -411,13 +379,14 @@ kubernetes_dashboard, kubernetes_dashboard_release = run_kubernetes_dashboard()
 def run_openunison():
     if openunison_enabled:
         ns_name = "openunison"
-        openunison_version = config.get('openunison.version') or None
-        domain_suffix = config.get('openunison.dns_suffix') or "kargo.arpa"
-        cluster_issuer = config.get('openunison.cluster_issuer') or "cluster-selfsigned-issuer-ca"
+        openunison_version = config_openunison.get('version') or None
+        domain_suffix = config_openunison.get('dns_suffix') or "kargo.arpa"
+        cluster_issuer = config_openunison.get('cluster_issuer') or "cluster-selfsigned-issuer-ca"
 
-        openunison_github_teams = config.require('openunison.github.teams')
-        openunison_github_client_id = config.require('openunison.github.client_id')
-        openunison_github_client_secret = config.require('openunison.github.client_secret')
+        config_openunison_github = config_openunison.get_object('github') or {}
+        openunison_github_teams = config_openunison_github.get('teams')
+        openunison_github_client_id = config_openunison_github.get('client_id')
+        openunison_github_client_secret = config_openunison_github.get('client_secret')
 
         enabled = {}
 
