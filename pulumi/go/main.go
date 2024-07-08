@@ -1,5 +1,9 @@
 package main
 
 import (
-	_ "src/cilium"
+	"kargo/src/cilium"
 )
+
+func main() {
+	cilium.Placeholder("hello")
+}
