@@ -51,33 +51,22 @@ func DeployHelm(
 
 	client.Version = version
 
-	ch, err := client.LocateChart(chartName, settings)
-	if err != nil {
-		log.Println(err)
-	}
+	ch, _ := client.LocateChart(chartName, settings)
 
-	chart, err := loader.Load(ch)
-	if err != nil {
-		log.Println(err)
-	}
+	chart, _ := loader.Load(ch)
 
-	release, err := client.Run(chart, helmValues)
-	if err != nil {
-		log.Println(err)
-	}
+	release, _ := client.Run(chart, helmValues)
 
 	fmt.Println(release)
 
 }
 
 func getHelmValues(kubernetesDistrubition, projectName, kubernetesEndpointServiceAddress string) (map[string]interface{}, map[string]interface{}) {
-	kubernetesDistrubition = ""
-	projectName = ""
-	kubernetesDistrubition = ""
 
 	commonValues := map[string]interface{}{
-		"set": "kubeProxyReplacement=strict,encryption.enabled=true,encryption.type=wireguard,l7Proxy=false,routingMode=tunnel,tunnelProtocol=vxlan,image.pullPolicy=ifNotPresent,l2announcements.enabled=true,hostServices.enabled=true,externalIPs.enabled=true,gatewayAPI.enabled=true,hubble.enabled=true,hubble.relay.enabled=true,hubble.ui.enabled=true,ipam.mode=kubernetes,nodePort.enabled=true,hostPort.enabled=true,operator.replicas=1,serviceAccounts.cilium.name=cilium,serviceAccounts.operator.name=cilium-operator",
+		"set": "cluster.id=1,cluster.name=nil,kubeProxyReplacement=strict,encryption.enabled=true,encryption.type=wireguard,l7Proxy=false,routingMode=tunnel,tunnelProtocol=vxlan,image.pullPolicy=ifNotPresent,l2announcements.enabled=true,hostServices.enabled=true,externalIPs.enabled=true,gatewayAPI.enabled=true,hubble.enabled=true,hubble.relay.enabled=true,hubble.ui.enabled=true,ipam.mode=kubernetes,nodePort.enabled=true,hostPort.enabled=true,operator.replicas=1,serviceAccounts.cilium.name=cilium,serviceAccounts.operator.name=cilium-operator",
 	}
+	commonValues["cluster.name"] = projectName
 
 	if kubernetesDistrubition == "kind" {
 		m := map[string]interface{}{"set": "k8sServiceHost=changedvalue,k8sServicePort=6443"}
