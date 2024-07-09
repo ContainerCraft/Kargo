@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	cilium.Placeholder("hello")
+	cilium.DeployHelm("", "", "", "", "", "", "", "")
 }

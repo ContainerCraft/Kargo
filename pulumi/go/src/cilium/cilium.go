@@ -10,7 +10,7 @@ import (
 	"helm.sh/helm/v3/pkg/cli"
 )
 
-func deployHelm(
+func DeployHelm(
 	releaseName,
 	kubernetesDistrubition,
 	projectName,
