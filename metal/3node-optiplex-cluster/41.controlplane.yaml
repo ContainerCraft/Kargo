@@ -74,7 +74,6 @@ machine:
           ip: 192.168.1.40
   install:
     disk: /dev/nvme0n1
-    image: ghcr.io/siderolabs/installer:v1.7.4
     wipe: true
     extraKernelArgs:
       - talos.platform=metal

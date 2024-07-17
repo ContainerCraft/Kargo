@@ -22,16 +22,16 @@ machine:
               type: bind
               source: /etc/cni/net.d
               options:
-                - bind
-                - rshared
-                - rw
+                  - bind
+                  - rshared
+                  - rw
             - destination: /opt/cni/bin
               type: bind
               source: /opt/cni/bin
               options:
-                - bind
-                - rshared
-                - rw
+                  - bind
+                  - rshared
+                  - rw
     time:
         disabled: false
         bootTimeout: 1m0s
@@ -44,8 +44,8 @@ machine:
         extraHostEntries:
             - ip: 192.168.1.30
               aliases:
-              - mordor
-              - api.k8s.mordor.home.arpa
+                  - mordor
+                  - api.k8s.mordor.home.arpa
         interfaces:
             - interface: br0
               mtu: 1500
@@ -64,10 +64,10 @@ machine:
     install:
         wipe: true
         diskSelector:
-          model: IDSDM
+            model: IDSDM
         extraKernelArgs:
-        - talos.platform=metal
-        - reboot=k
+            - talos.platform=metal
+            - reboot=k
     disks:
         - device: /dev/nvme2n1
           partitions:
@@ -90,11 +90,11 @@ machine:
         kubernetesTalosAPIAccess:
             enabled: true
             allowedRoles:
-            - os:reader
+                - os:reader
             allowedKubernetesNamespaces:
-            - kube-system
-            - konductor
-            - default
+                - kube-system
+                - konductor
+                - default
     token: 9hmy7w.ezcbdk1cicgarzhb
     ca:
         crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBdkhWbnhUQkxQeDREL1JOL2VYV1FvREFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qTXhNakl5TWpJeU1UTXdXaGNOTXpNeE1qRTVNakl5TVRNd1dqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUtRK2tHazVNWHh6NHdmeFVCNDVzR1NqdnBwejY1NWJCcHpGClFIRmI4SnE3bzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkdXSUh1d25NdjFxUUt4Wgp4S1oyUG44cG9YYzhNQVVHQXl0bGNBTkJBQlMxdmlFTGNGUisyczc1YUdXKzR6Wkgrb01VNUNPTjRDYVI3RmNWCmJ0TEprKzh2cHBGNXlkWVZEeXlqbnFxYUVLSUx6Zm5QeVNwTnpEYTVLV3VHOWd3PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
@@ -123,10 +123,10 @@ cluster:
         admissionControl:
             - name: PodSecurity
               configuration:
-                kind: PodSecurityConfiguration
-                apiVersion: pod-security.admission.config.k8s.io/v1alpha1
-                defaults: {}
-                exemptions: {}
+                  kind: PodSecurityConfiguration
+                  apiVersion: pod-security.admission.config.k8s.io/v1alpha1
+                  defaults: {}
+                  exemptions: {}
         auditPolicy:
             apiVersion: audit.k8s.io/v1
             kind: Policy
