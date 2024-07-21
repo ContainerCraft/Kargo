@@ -1,0 +1,63 @@
+history
+git stage -A; git commit -m 'working deploy from codespaces to omni'; git push
+git status
+clear
+cleafr
+omnictl cluster delete optiplexprime
+omnictl cluster delete --help
+omnictl get clusters
+omnictl c
+omnictl cluster s
+omnictl cluster ls
+clear; ll
+cat metal/dev/apply.sh
+ls metal/dev
+ls metal
+ls
+clear; pulumi up --skip-preview --refresh=true
+k get sc
+pulumi up --skip-preview --refresh=true
+pulumi up --skip-preview --refresh=false
+pulumi preview
+omnictl cluster template status -f metal/optiplexprime/omni-cluster.yaml
+omnictl cluster template sync -f metal/optiplexprime/omni-cluster.yaml
+pulumi down --skip-preview --refresh=true
+vim pulumi/stacks/Pulumi.mordor.yaml
+pulumi config set --path hostpath_provisioner.default_storage_class true
+pulumi config set --path cdi.enabled true
+pulumi config set --path prometheus.enabled true
+pulumi up --skip-preview --refresh
+pulumi config set --path hostpath_provisioner.enabled true
+pulumi config set --path hostpath_provisioner.default_path /var/mnt/hostpath-provisioner
+pulumi config
+pulumi config set --path cnao.enabled true
+pulumi config set --path multus.enabled true
+ls pulumi/
+vim metal/optiplexprime/omni-cluster.yaml
+pulumi up --skip-preview
+pulumi config set --path kubevirt.enabled true
+pulumi config set --path cert_manager.enabled true
+pulumi up
+pulumi config set --path kubernetes.context usrbinkat-optiplexprime
+k config get-contexts
+pulumi config set --path kubernetes.kubeconfig $KUBECONFIG
+omnictl get machines
+k9s -A
+eval (pulumi env open mordor --format=shell)
+pulumi stack select --create mordor
+git pull
+direnv allow
+vim .envrc
+git checkout mvp/usrbinkat/refactor
+git stage -A; git commit -m 'wip'; git push
+git pull origin mvp/usrbinkat/refactor
+git branch -a
+k get po -A
+pulumi env edit mordor
+echo $KUBECONFIG
+kubectl get po -A
+export BROWSER=echo
+eval (pulumi env open mordor --output=shell)
+pulumi login
+kubectl oidc-login
+/bin/python3 /home/vscode/.vscode-remote/extensions/ms-python.python-2024.10.0-linux-x64/python_files/printEnvVariablesToFile.py /home/vscode/.vscode-remote/extensions/ms-python.python-2024.10.0-linux-x64/python_files/deactivate/fish/envVars.txt
