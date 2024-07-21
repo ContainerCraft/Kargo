@@ -31,8 +31,8 @@ project_name = pulumi.get_project()
 ##################################################################################
 # Get the Kubernetes configuration
 kubernetes_config = config.get_object("kubernetes") or {}
-kubernetes_config_filepath = kubernetes_config.get("kubeconfig")
-kubernetes_context = kubernetes_config.get("context") or "kind-kargo"
+kubernetes_config_filepath = config.get("kubernetes.kubeconfig") or kubernetes_config.get("kubeconfig")
+kubernetes_context = kubernetes_config.get("context") or "talos"
 kubernetes_distribution = kubernetes_config.get("distribution") or "kind"
 
 # Create a Kubernetes provider instance
@@ -96,6 +96,12 @@ else:
 
 depends = []
 
+def safe_append(depends, resource):
+    if resource:
+        depends.append(resource)
+    else:
+        pulumi.log.warn("Attempted to append a None resource to depends list.")
+
 ##################################################################################
 # Fetch the Cilium Version
 # Deploy Cilium
@@ -120,8 +126,7 @@ def run_cilium():
         cilium_version = cilium[0]
         cilium_release = cilium[1]
 
-        # Append cilium release to depends list
-        depends.append(cilium_release)
+        safe_append(depends, cilium_release)
 
         return cilium_version, cilium_release
     return None, None
@@ -152,8 +157,7 @@ def run_cert_manager():
 
         pulumi.export("cert_manager_selfsigned_cert", cert_manager_selfsigned_cert)
 
-        # Append cert manager release to depends list
-        depends.append(cert_manager[1])
+        safe_append(depends, cert_manager_release)
 
         return cert_manager, cert_manager_release, cert_manager_selfsigned_cert
     return None, None, None
@@ -168,8 +172,8 @@ def run_kubevirt():
         kubevirt_version = config_kubevirt.get('version') or None
 
         custom_depends = []
-        custom_depends.append(cilium_release)
-        custom_depends.append(cert_manager_release)
+        safe_append(custom_depends, cilium_release)
+        safe_append(custom_depends, cert_manager_release)
 
         kubevirt = deploy_kubevirt(
             custom_depends,
@@ -182,8 +186,7 @@ def run_kubevirt():
         versions["kubevirt"] = {"enabled": kubevirt_enabled, "version": kubevirt[0]}
         kubevirt_operator = kubevirt[1]
 
-        # Append kubevirt version to versions dictionary
-        depends.append(kubevirt_operator)
+        safe_append(depends, kubevirt_operator)
 
         return kubevirt, kubevirt_operator
     return None, None
@@ -201,9 +204,9 @@ def run_multus():
         custom_depends = []
 
         if cilium_enabled:
-            custom_depends.append(cilium_release)
+            safe_append(custom_depends, cilium_release)
         if cert_manager_enabled:
-            custom_depends.append(cert_manager_release)
+            safe_append(custom_depends, cert_manager_release)
 
         multus = deploy_multus(
             custom_depends,
@@ -215,8 +218,7 @@ def run_multus():
         versions["multus"] = {"enabled": multus_enabled, "version": multus[0]}
         multus_release = multus[1]
 
-        # Append multus version to versions dictionary
-        depends.append(multus_release)
+        safe_append(depends, multus_release)
 
         return multus, multus_release
     return None, None
@@ -233,10 +235,10 @@ def run_cnao():
         custom_depends = []
 
         if cilium_enabled:
-            custom_depends.append(cilium_release)
+            safe_append(custom_depends, cilium_release)
 
         if cert_manager_enabled:
-            custom_depends.append(cert_manager_release)
+            safe_append(custom_depends, cert_manager_release)
 
         cnao = deploy_cnao(
             custom_depends,
@@ -247,8 +249,7 @@ def run_cnao():
         versions["cnao"] = {"enabled": cnao_enabled, "version": cnao[0]}
         cnao_release = cnao[1]
 
-        # Append cnao version to versions dictionary
-        depends.append(cnao_release)
+        safe_append(depends, cnao_release)
 
         return cnao, cnao_release
     return None, None
@@ -264,7 +265,7 @@ def run_hostpath_provisioner():
             pulumi.log.error("Hostpath Provisioner requires Cert Manager to be enabled. Please enable Cert Manager and try again.")
             return None, None
 
-        hostpath_default_path = config_hostpath_provisioner.get('default_path') or "/var/mnt"
+        hostpath_default_path = config_hostpath_provisioner.get('default_path') or "/var/mnt/hostpath-provisioner"
         hostpath_default_storage_class = config_hostpath_provisioner.get('default_storage_class') or False
         ns_name = "hostpath-provisioner"
         hostpath_provisioner_version = config_hostpath_provisioner.get('version') or None
@@ -272,11 +273,11 @@ def run_hostpath_provisioner():
         custom_depends = []
 
         if cilium_enabled:
-            custom_depends.append(cilium_release)
+            safe_append(custom_depends, cilium_release)
         if cert_manager_enabled:
-            custom_depends.append(cert_manager_release)
+            safe_append(custom_depends, cert_manager_release)
         if kubevirt_enabled:
-            custom_depends.append(kubevirt_operator)
+            safe_append(custom_depends, kubevirt_operator)
 
         hostpath_provisioner = deploy_hostpath_provisioner(
             custom_depends,
@@ -290,8 +291,7 @@ def run_hostpath_provisioner():
         versions["hostpath_provisioner"] = {"enabled": hostpath_provisioner_enabled, "version": hostpath_provisioner[0]}
         hostpath_provisioner_release = hostpath_provisioner[1]
 
-        # Append hostpath provisioner version to versions dictionary
-        depends.append(hostpath_provisioner_release)
+        safe_append(depends, hostpath_provisioner_release)
 
         return hostpath_provisioner, hostpath_provisioner_release
     return None, None
@@ -316,8 +316,7 @@ def run_prometheus():
         versions["prometheus"] = {"enabled": prometheus_enabled, "version": prometheus[0]}
         prometheus_release = prometheus[1]
 
-        # Append prometheus version to versions dictionary
-        depends.append(prometheus_release)
+        safe_append(depends, prometheus_release)
 
         return prometheus, prometheus_release
     return None, None
@@ -340,8 +339,7 @@ def run_cdi():
         versions["cdi"] = {"enabled": cdi_enabled, "version": cdi[0]}
         cdi_release = cdi[1]
 
-        # Append cdi version to versions dictionary
-        depends.append(cdi_release)
+        safe_append(depends, cdi_release)
 
         return cdi, cdi_release
     return None, None
@@ -356,7 +354,7 @@ def run_kubernetes_dashboard():
         kubernetes_dashboard_version = config_kubernetes_dashboard.get('version') or None
 
         if cilium_enabled:
-            depends.append(cilium_release)
+            safe_append(depends, cilium_release)
 
         kubernetes_dashboard = deploy_kubernetes_dashboard(
             depends,
@@ -368,7 +366,7 @@ def run_kubernetes_dashboard():
         versions["kubernetes_dashboard"] = {"enabled": kubernetes_dashboard_enabled, "version": kubernetes_dashboard[0]}
         kubernetes_dashboard_release = kubernetes_dashboard[1]
 
-        depends.append(kubernetes_dashboard_release)
+        safe_append(depends, kubernetes_dashboard_release)
 
         return kubernetes_dashboard, kubernetes_dashboard_release
     return None, None
@@ -413,11 +411,10 @@ def run_openunison():
             enabled,
         )
 
-        # Append openunison version to versions dictionary
         versions["openunison"] = {"enabled": openunison_enabled, "version": openunison[0]}
         openunison_release = openunison[1]
 
-        depends.append(openunison_release)
+        safe_append(depends, openunison_release)
 
         return openunison, openunison_release
     return None, None

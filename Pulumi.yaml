@@ -1,7 +1,7 @@
 name: kargo
-description: ContainerCraft Kargo is an easy to use Kubernetes Kubevirt Homelab Platform-as-a-Service IaC
-main: pulumi
-stackConfigDir: pulumi/stacks
+description: The easy to use Kubevirt Homelab Platform
+main: ./pulumi
+stackConfigDir: ./pulumi/stacks
 options:
   refresh: always
 runtime:
@@ -12,3 +12,61 @@ config:
   pulumi:tags:
     value:
       pulumi:template: ccio-kargo-python
+  kubernetes:
+    value:
+      context:
+        value: kargo
+      kubeconfig:
+        value: .kube/config
+  cilium:
+    value:
+      enabled:
+        value: false
+  cert_manager:
+    value:
+      enabled:
+        value: true
+      version:
+        value: 1.15.1
+  kubevirt:
+    value:
+      enabled:
+        value: true
+      version:
+        value: 1.3.0
+  hostpath_provisioner:
+    value:
+      enabled:
+        value: false
+      version:
+        value: 0.19.0
+      default_storage_class:
+        value: true
+  prometheus:
+    value:
+      enabled:
+        value: false
+      version:
+        value: 61.3.2
+  cdi:
+    value:
+      enabled:
+        value: false
+      version:
+        value: 1.59.0
+  multus:
+    value:
+      enabled:
+        value: false
+  cnao:
+    value:
+      enabled:
+        value: false
+      version:
+        value: 0.94.2
+  kubernetes_dashboard:
+    value:
+      enabled:
+        value: false
+      version:
+        value: 7.4.0

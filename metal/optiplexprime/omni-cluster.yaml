@@ -1,0 +1,27 @@
+kind: Cluster
+name: optiplexprime
+talos:
+  version: v1.7.5
+kubernetes:
+  version: v1.30.3
+---
+kind: ControlPlane
+machines:
+  - 4c4c4544-0056-3210-804c-b5c04f525032
+  - 4c4c4544-0036-3110-8047-c2c04f394e32
+  - 4c4c4544-0035-5210-804b-c2c04f394e32
+---
+kind: Machine
+name: 4c4c4544-0056-3210-804c-b5c04f525032
+install:
+  disk: /dev/nvme0n1
+---
+kind: Machine
+name: 4c4c4544-0036-3110-8047-c2c04f394e32
+install:
+  disk: /dev/nvme0n1
+---
+kind: Machine
+name: 4c4c4544-0035-5210-804b-c2c04f394e32
+install:
+  disk: /dev/nvme0n1
