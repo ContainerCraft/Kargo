@@ -33,13 +33,13 @@ config:
     value:
       enabled: true
       version: 1.59.0
-  cnao:
-    value:
-      enabled: true
-      version: 0.94.2
   multus:
     value:
       enabled: true
+  cnao:
+    value:
+      enabled: false
+      version: 0.94.2
   prometheus:
     value:
       enabled: false
