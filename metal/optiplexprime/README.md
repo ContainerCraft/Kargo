@@ -79,6 +79,22 @@ pulumi config set --path kubernetes.context usrbinkat-optiplexprime
 pulumi up --skip-preview --refresh=true; pulumi up --skip-preview --refresh=true; pulumi up --skip-preview --refresh=true
 ```
 
+### 7. Deploy an Ubuntu VM
+
+```bash
+kubectl apply -f hack/ubuntu-br0.yaml
+```
+
+### 8. Deploy a tenant talos cluster
+
+```bash
+# change to the tenant talos dev directory
+cd metal/dev
+
+# Apply the tenant talos
+./apply.sh
+```
+
 ## OptiplexPrime Cluster
 
 3 node optiplex based cluster.

@@ -65,7 +65,7 @@ spec:
         cpu:
           cores: 1
           sockets: 1
-          threads: 8
+          threads: 6
           model: host-passthrough
           dedicatedCpuPlacement: false
         memory:
@@ -101,7 +101,7 @@ spec:
         resources:
           requests:
             memory: 8192M
-      hostname: containercraft
+      hostname: ccio
       networks:
         - name: enp1s0
           multus:
