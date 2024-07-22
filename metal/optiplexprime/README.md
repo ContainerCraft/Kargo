@@ -44,7 +44,7 @@ omnictl get machines
 
 ### 5. Create Cluster Omni Talos Cluster
 
-1. Apply cluster template with omnictl
+a. Apply cluster template with omnictl
 
 ```bash
 # Validate Cluster Template
@@ -59,7 +59,7 @@ omnictl cluster template status -f metal/optiplexprime/omni-cluster.yaml
 
 ![](.assets/image-4.png)
 
-4. Test Kubectl Access
+2. Test Kubectl Access
 
 ```bash
 # Get Pods
@@ -67,8 +67,6 @@ kubectl get pods -A
 ```
 
 ### 6. Deploy Kargo Platform
-
-1. Re-run command until all pods are running
 
 ```bash
 # Create a new Pulumi stack & set kube context
@@ -78,7 +76,7 @@ pulumi stack select --create kargo
 pulumi config set --path kubernetes.context usrbinkat-optiplexprime
 
 # Deploy Kargo Platform (note: repeat command until all resources are healthy)
-pulumi up --skip-preview --refresh=true
+pulumi up --skip-preview --refresh=true; pulumi up --skip-preview --refresh=true; pulumi up --skip-preview --refresh=true
 ```
 
 ## OptiplexPrime Cluster
