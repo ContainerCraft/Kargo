@@ -31,14 +31,20 @@ project_name = pulumi.get_project()
 ##################################################################################
 # Get the Kubernetes configuration
 kubernetes_config = config.get_object("kubernetes") or {}
-kubernetes_config_filepath = config.get("kubernetes.kubeconfig") or kubernetes_config.get("kubeconfig")
-kubernetes_context = kubernetes_config.get("context") or "talos"
-kubernetes_distribution = kubernetes_config.get("distribution") or "kind"
+
+# Get Kubeconfig from Pulumi ESC Config
+kubeconfig = config.get("kubeconfig")
+
+# Require Kubernetes context set explicitly
+kubernetes_context = kubernetes_config.get("context")
+
+# Get the Kubernetes distribution (supports: kind, talos)
+kubernetes_distribution = kubernetes_config.get("distribution") or "talos"
 
 # Create a Kubernetes provider instance
 k8s_provider = Provider(
     "k8sProvider",
-    kubeconfig=kubernetes_config_filepath,
+    kubeconfig=kubeconfig,
     context=kubernetes_context
 )
 
@@ -99,8 +105,8 @@ depends = []
 def safe_append(depends, resource):
     if resource:
         depends.append(resource)
-    else:
-        pulumi.log.warn("Attempted to append a None resource to depends list.")
+    #else:
+    #    pulumi.log.warn("Attempted to append a None resource to depends list.")
 
 ##################################################################################
 # Fetch the Cilium Version
@@ -257,12 +263,12 @@ def run_cnao():
 cnao, cnao_release = run_cnao()
 
 ##################################################################################
-# Fetch the Hostpath Provisioner Version
 # Deploy Hostpath Provisioner
 def run_hostpath_provisioner():
     if hostpath_provisioner_enabled:
         if not cert_manager_enabled:
-            pulumi.log.error("Hostpath Provisioner requires Cert Manager to be enabled. Please enable Cert Manager and try again.")
+            msg = "HPP requires Cert Manager. Please enable Cert Manager and try again."
+            pulumi.log.error(msg)
             return None, None
 
         hostpath_default_path = config_hostpath_provisioner.get('default_path') or "/var/mnt/hostpath-provisioner"
@@ -299,6 +305,29 @@ def run_hostpath_provisioner():
 hostpath_provisioner, hostpath_provisioner_release = run_hostpath_provisioner()
 
 ##################################################################################
+# Deploy Containerized Data Importer (CDI)
+def run_cdi():
+    if cdi_enabled:
+        ns_name = "cdi"
+        cdi_version = config_cdi.get('version') or None
+
+        cdi = deploy_cdi(
+            depends,
+            cdi_version,
+            k8s_provider
+        )
+
+        versions["cdi"] = {"enabled": cdi_enabled, "version": cdi[0]}
+        cdi_release = cdi[1]
+
+        safe_append(depends, cdi_release)
+
+        return cdi, cdi_release
+    return None, None
+
+cdi, cdi_release = run_cdi()
+
+##################################################################################
 # Deploy Prometheus
 def run_prometheus():
     if prometheus_enabled:
@@ -322,29 +351,6 @@ def run_prometheus():
     return None, None
 
 prometheus, prometheus_release = run_prometheus()
-
-##################################################################################
-# Deploy Containerized Data Importer (CDI)
-def run_cdi():
-    if cdi_enabled:
-        ns_name = "cdi"
-        cdi_version = config_cdi.get('version') or None
-
-        cdi = deploy_cdi(
-            depends,
-            cdi_version,
-            k8s_provider
-        )
-
-        versions["cdi"] = {"enabled": cdi_enabled, "version": cdi[0]}
-        cdi_release = cdi[1]
-
-        safe_append(depends, cdi_release)
-
-        return cdi, cdi_release
-    return None, None
-
-cdi, cdi_release = run_cdi()
 
 ##################################################################################
 # Deploy Kubernetes Dashboard

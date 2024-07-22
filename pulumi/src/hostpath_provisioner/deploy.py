@@ -81,7 +81,7 @@ def deploy(
         )
     )
 
-    # Deploy the operator with a transformation that adds the namespace
+    # Deploy the operator with a namespace transformation
     url_operator = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/v{version}/operator.yaml'
     operator = k8s.yaml.ConfigFile(
         "hostpath-provisioner-operator",

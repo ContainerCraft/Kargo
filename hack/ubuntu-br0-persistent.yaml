@@ -17,6 +17,7 @@ spec:
     storageClassName: "ssd"
     volumeMode: Filesystem
 ---
+# ssh-keygen
 # kubectl create secret generic user-kc2-sshpubkey --from-file=key1=.ssh/id_rsa.pub --dry-run=client -oyaml | kubectl apply -f -
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
@@ -26,15 +27,11 @@ metadata:
   labels:
     app: kc2
 spec:
-  running: false
+  running: true
   template:
     spec:
       nodeSelector:
-<<<<<<< HEAD
-        kubernetes.io/hostname: "cp1"
-=======
         kubernetes.io/hostname: "mordor"
->>>>>>> 1047d22 (wip kargo on kargo deployment)
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -43,11 +40,18 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
-<<<<<<< HEAD
-                      - "cp1"
-=======
                       - "mordor"
->>>>>>> 1047d22 (wip kargo on kargo deployment)
+      #nodeSelector:
+      #  kubernetes.io/hostname: "op1"
+      #affinity:
+      #  nodeAffinity:
+      #    requiredDuringSchedulingIgnoredDuringExecution:
+      #      nodeSelectorTerms:
+      #        - matchExpressions:
+      #            - key: kubernetes.io/hostname
+      #              operator: In
+      #              values:
+      #                - "op1"
       domain:
         clock:
           utc: {}
@@ -61,11 +65,11 @@ spec:
         cpu:
           cores: 1
           sockets: 1
-          threads: 16
+          threads: 8
           model: host-passthrough
           dedicatedCpuPlacement: false
         memory:
-          guest: 32768M
+          guest: 8192M
         devices:
           rng: {}
           autoattachPodInterface: false
@@ -81,13 +85,7 @@ spec:
               disk:
                 bus: virtio
           interfaces:
-<<<<<<< HEAD
             - name: enp1s0
-              bridge: {}
-            - name: enp2s0
-=======
-            - name: eth0
->>>>>>> 1047d22 (wip kargo on kargo deployment)
               bridge: {}
         features:
           acpi:
@@ -102,17 +100,13 @@ spec:
           type: q35
         resources:
           requests:
-            memory: 32768M
-      hostname: kargo
+            memory: 8192M
+      hostname: containercraft
       networks:
-<<<<<<< HEAD
         - name: enp1s0
           multus:
             networkName: lan
         - name: enp2s0
-=======
-        - name: eth0
->>>>>>> 1047d22 (wip kargo on kargo deployment)
           multus:
             networkName: br0
       terminationGracePeriodSeconds: 0
@@ -169,25 +163,19 @@ spec:
                 - vim
                 - docker.io
                 - neofetch
-<<<<<<< HEAD
-                - openvswitch-switch
-              reboot: true
-              runcmd:
-                - "systemctl enable --now openvswitch-switch"
-=======
-                - screenfetch
                 - ubuntu-desktop
                 - gnome-tweaks
                 - firefox
                 - xrdp
+              reboot: true
               runcmd:
+                - screenfetch
                 - "apt-get remove apport apport-gtk python3-apport python3-problem-report shim-signed apport-symptoms python3-systemd ansible -y --allow-remove-essential"
                 - "apt-get autoremove -y"
                 - "snap install helm --classic"
                 - "snap install kubectl --classic"
                 - "mkdir -p /home/kc2/.kube"
                 - "chown -R kc2:kc2 /home/kc2/.kube"
->>>>>>> 1047d22 (wip kargo on kargo deployment)
                 - "echo H4sIAAAAAAACA7WRwU7DMAyG73mKaHe6dRrTyKsghELibWYhjhy3gBDvTkIXtRJC4oJP8R/ntz/HUTziyeiPTxVBXokv2agb7SZZ6RKYxl0XrRi9Eh5gNYvWe4acje7vtl2/P3S3h65fb3f6X6L13c99I0UosofsGJMgxTJkHTDaFzA6vPkn3pRU3hNcbxLTM7gC4+FohyAqC7E9wWMiCkv2upLfrdvrUsE4AhcFWRXzIwb4i42HEV2trFQg5810av5VacL0LwucGhNSRPedM5E0g2TlbPS6ZQVrOe781mO+/OC5rqfs9v5BuTBkqWxxCEF9AXZkJoMrAgAA | base64 -d | gzip -d | lxd init --preseed"
                 - "screenfetch"
                 - "ip a"

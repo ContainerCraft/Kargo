@@ -61,3 +61,58 @@ eval (pulumi env open mordor --output=shell)
 pulumi login
 kubectl oidc-login
 /bin/python3 /home/vscode/.vscode-remote/extensions/ms-python.python-2024.10.0-linux-x64/python_files/printEnvVariablesToFile.py /home/vscode/.vscode-remote/extensions/ms-python.python-2024.10.0-linux-x64/python_files/deactivate/fish/envVars.txt
+clear
+pulumi stack rm kargo
+pulumi down --refresh=true --skip-preview
+pulumi up --skip-preview --refresh=true
+pulumi config
+pulumi preview --refresh
+cd /workspaces/Kargo/
+cat controlplane.yaml
+vim controlplane.yaml
+talosctl gen config abcd https://192.168.1.2:6443
+talosctl gen config .
+talosctl gen config
+talosctl gen
+talosctl --help
+cd t
+mkdir t
+cd /tmp/
+k get all -n hostpath-provisioner
+k get pvc
+k get events -Aw
+kubectl apply -f hack/ubuntu-br0-persistent.yaml
+k get vm
+docker pull docker.io/containercraft/ubuntu:22.04
+docker pull docker.io/containercraft/ubuntu:24.04
+pulumi up --skip-preview --refresh=false
+pulumi config set --path cdi.enabled true
+pulumi config set --path hostpath_provisioner.default_storage_class true
+pulumi config set --path hostpath_provisioner.enabled true
+pulumi config set --path cnao.enabled true
+pulumi config set --path multus.enabled true
+pulumi config set --path kubevirt.enabled true
+pulumi config set --path cert_manager.enabled true
+pulumi preview
+pulumi config set --path kubernetes.context usrbinkat-optiplexprime
+kubectl config get-contexts
+pulumi stack select --create kargo
+history
+pulumi config get kubeconfig
+pulumi config get
+pulumi down --refresh=yes --skip-preview
+k config get-contexts
+pulumi config set --path kubernetes.context usrbinkat-optiplex
+vim pulumi/stacks/Pulumi.kargo.yaml
+pulumi stack ls
+kubectl get po -A
+echo $KUBECONFIG
+echo $OMNICONFIG
+omnictl cluster template status -f metal/optiplexprime/omni-cluster.yaml
+omnictl cluster template sync -f metal/optiplexprime/omni-cluster.yaml
+omnictl get machines
+omnictl delete 4c4c4544-004a-4d10-8052-c4c04f4e5932
+omnictl
+env | grep -i pulumi
+eval (pulumi env open --format=shell kargo)
+pulumi login

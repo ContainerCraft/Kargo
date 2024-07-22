@@ -14,59 +14,40 @@ config:
       pulumi:template: ccio-kargo-python
   kubernetes:
     value:
-      context:
-        value: kargo
-      kubeconfig:
-        value: .kube/config
-  cilium:
-    value:
-      enabled:
-        value: false
+      context: kargo
+      kubeconfig: .kube/config
   cert_manager:
     value:
-      enabled:
-        value: true
-      version:
-        value: 1.15.1
+      enabled: true
+      version: 1.15.1
   kubevirt:
     value:
-      enabled:
-        value: true
-      version:
-        value: 1.3.0
+      enabled: true
+      version: 1.3.0
   hostpath_provisioner:
     value:
-      enabled:
-        value: false
-      version:
-        value: 0.19.0
-      default_storage_class:
-        value: true
-  prometheus:
-    value:
-      enabled:
-        value: false
-      version:
-        value: 61.3.2
+      enabled: true
+      version: 0.19.0
+      default_storage_class: true
   cdi:
     value:
-      enabled:
-        value: false
-      version:
-        value: 1.59.0
-  multus:
-    value:
-      enabled:
-        value: false
+      enabled: true
+      version: 1.59.0
   cnao:
     value:
-      enabled:
-        value: false
-      version:
-        value: 0.94.2
+      enabled: true
+      version: 0.94.2
+  multus:
+    value:
+      enabled: true
+  prometheus:
+    value:
+      enabled: false
+      version: 61.3.2
   kubernetes_dashboard:
     value:
-      enabled:
-        value: false
-      version:
-        value: 7.4.0
+      enabled: false
+      version: 7.4.0
+  cilium:
+    value:
+      enabled: false
