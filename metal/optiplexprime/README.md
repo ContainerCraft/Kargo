@@ -1,30 +1,26 @@
 # Kargo Platform Development Pathfinding Journal
-## OptiplexPrime
-
-3 node optiplex based cluster.
 
 ## Pathfinding Build Log
 
-> Note: All commands are run from the git repository opened in VSCode Konductor Devcontainer
-> \*unless otherwise specified
+> Note: All commands run from the included Github Codespaces Devcontainer environment
 
 ### 1. Wipe all block device partitions and partition tables
 ### 2. Boot Omni Talos on the node(s)
-#### a. Download Talos ISO from Omni Dashboard Image Factory
+1. Download Talos ISO from Omni Dashboard Image Factory
 
 > Note: URL format follows: `https://${ACCOUNT}.omni.siderolabs.io/omni/?modal=downloadInstallationMedia`
 
 ![alt text](./assets/image-1.png)
 
-#### b. Write talos iso to USB device & Boot the node(s) from talos USB
+2. Write talos iso to USB device & Boot the node(s) from talos USB
 
 > Note: _I used [balenaEtcher](https://etcher.balena.io) to write the iso to a USB_
 
-#### c. Boot the node(s) from the talos USB
+3. Boot the node(s) from the talos USB
 
 ![alt text](./assets/image-2.png)
 
-#### d. Verify connection to Omni Console > Machines
+4. Verify connection to Omni Console > Machines
 
 ![alt text](./assets/image-3.png)
 
@@ -266,5 +262,7 @@ pulumi up --skip-preview --continue-on-error
 ```
 
 ## OptiplexPrime Cluster
+
+3 node optiplex based cluster.
 
 ![optiplexprime](./assets/image.png)
