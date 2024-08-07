@@ -1,0 +1,6 @@
+{
+  "name": "Kargo",
+  "sdk": "python",
+  "source": "dagger",
+  "engineVersion": "v0.12.4"
+}
