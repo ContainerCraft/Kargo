@@ -11,15 +11,7 @@ machines:
   - 4c4c4544-0036-3110-8047-c2c04f394e32
   - 4c4c4544-0035-5210-804b-c2c04f394e32
 patches:
-  - name: controlplane-scheduling
-    inline:
-      cluster:
-        allowSchedulingOnControlPlanes: true
-  - name: controlplane-psp
-    inline:
-      cluster:
-        apiServer:
-          disablePodSecurityPolicy: true
+  - file: metal/optiplexprime/patch.yaml
 ---
 kind: Machine
 name: 4c4c4544-0056-3210-804c-b5c04f525032

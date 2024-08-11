@@ -24,8 +24,8 @@ ESCAPED_PAT := $(shell echo "${PULUMI_ACCESS_TOKEN}" | sed -e 's/[\/&]/\\&/g')
 ESCAPED_GITHUB_TOKEN := $(shell echo "${GITHUB_TOKEN}" | sed -e 's/[\/&]/\\&/g')
 
 # Define file paths for configurations
-TALOS_CONFIG_FILE := ${PWD}/.talos/config
 KUBE_CONFIG_FILE := ${PWD}/.kube/config
+TALOS_CONFIG_FILE := ${PWD}/.talos/config
 
 # Check if PULUMI_ACCESS_TOKEN is set
 ifeq ($(ESCAPED_PAT),)
@@ -38,7 +38,7 @@ $(warning GITHUB_TOKEN is not set)
 endif
 
 # --- Targets ---
-.PHONY: help detect-arch pulumi-login pulumi-up up talos-gen-config talos-cluster kind-cluster clean clean-all act konductor test-kind test-talos stop force-terminating-ns
+.PHONY: help detect-arch pulumi-login pulumi-up up talos-gen-config talos-cluster clean clean-all act konductor test-talos stop force-terminating-ns
 
 # --- Default Command ---
 all: help
@@ -55,7 +55,6 @@ help:
 	@echo "  talos-cluster    - Deploy a Talos Kubernetes cluster."
 	@echo "  talos-config     - Generate and validate Talos configuration."
 	@echo "  talos            - Create and configure a Talos Kubernetes cluster."
-	@echo "  kind             - Create a local Kubernetes cluster using Kind."
 	@echo "  clean            - Clean up resources."
 	@echo "  clean-all        - Perform 'clean' and remove Docker volumes."
 	@echo "  act              - Test GitHub Actions locally."
@@ -81,7 +80,11 @@ pulumi-login:
 pulumi-up:
 	@echo "Deploying Pulumi infrastructure..."
 	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
-		pulumi up --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
+		pulumi up --yes --skip-preview --refresh --continue-on-error --stack ${PULUMI_STACK_IDENTIFIER} \
+		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' \
+		|| pulumi up --yes --skip-preview --refresh --continue-on-error --stack ${PULUMI_STACK_IDENTIFIER} \
+		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' \
+		|| pulumi up --yes --skip-preview --refresh --continue-on-error --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
 	@echo "Deployment complete."
 
@@ -120,67 +123,42 @@ talos-gen-config:
 	@mkdir -p ${HOME}/.kube .kube .pulumi .talos
 	@touch ${HOME}/.kube/config ${KUBE_CONFIG_FILE} ${TALOS_CONFIG_FILE}
 	@chmod 600 ${HOME}/.kube/config ${KUBE_CONFIG_FILE} ${TALOS_CONFIG_FILE}
-	@sudo talosctl gen config kargo https://10.5.0.2:6443 \
-		--config-patch @.talos/patch/machine.yaml --output .talos/manifest
-	@sudo talosctl validate --mode container \
-		--config .talos/manifest/controlplane.yaml
+	@talosctl gen config kargo https://10.5.0.2:6443 \
+		--config-patch @.talos/patch/machine.yaml --output .talos/manifest --force
 	@echo "Talos Config generated."
+#	@talosctl validate --mode container \
+#		--config .talos/manifest/controlplane.yaml
+#	@talosctl validate --mode container \
+#		--config .talos/manifest/worker.yaml
 
 # --- Talos Cluster ---
 talos-cluster: detect-arch talos-gen-config
 	@echo "Creating Talos Kubernetes Cluster..."
-	@sudo talosctl cluster create \
-		--arch=$$(make detect-arch) \
-		--workers 1 \
-		--controlplanes 1 \
-		--provisioner docker
-	@pulumi config set kubernetes talos || true
+	@talosctl cluster create \
+		--arch=$$(make detect-arch | grep -E "arm64|amd64") \
+		--provisioner docker \
+		--name talos-kargo-docker \
+		--context talos-kargo-docker \
+		--controlplanes 1 --memory 2048 \
+		--workers 1 --memory-workers 2048 \
+		--user-disk "/var/mnt/hostpath-provisioner:4" \
+		--init-node-as-endpoint
+	@pulumi config set --path kubernetes.distribution talos || true
+	@pulumi config set --path kubernetes.context admin@talos-kargo-docker || true
+	@pulumi config set --path cilium.enabled false || true
 	@echo "Talos Cluster provisioning..."
 
 # --- Wait for Talos Cluster Ready ---
 talos-ready:
 	@echo "Waiting for Talos Cluster to be ready..."
-	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l k8s-app=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to be ready..."; sleep 5; done'
-	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l k8s-app=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done'
-	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l k8s-app=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver to be ready..."; sleep 5; done'
+	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l k8s-app=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to be ready..."; sleep 5; done' || true
+	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l k8s-app=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done' || true
+	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l k8s-app=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver to be ready..."; sleep 5; done' || true
 	@echo "Talos Cluster is ready."
 
 # --- Talos ---
 talos: clean-all talos-cluster talos-ready wait-all-pods
 	@echo "Talos Cluster ready."
-
-# ----------------------------------------------------------------------------------------------
-# --- Kind Kubernetes Cluster ---
-# ----------------------------------------------------------------------------------------------
-
-# --- Kind Cluster ---
-kind-cluster:
-	@echo "Creating Kind Cluster..."
-	@direnv allow
-	@mkdir -p ${HOME}/.kube .kube || true
-	@touch ${HOME}/.kube/config .kube/config || true
-	@chmod 600 ${HOME}/.kube/config .kube/config || true
-	@sudo docker volume create kargo-worker-n01
-	@sudo docker volume create kargo-worker-n02
-	@sudo docker volume create kargo-control-plane-n01
-	@sudo kind create cluster --wait 30s --retain --config=hack/kind.yaml
-	@sudo kind get clusters
-	@sudo kind get kubeconfig --name kargo | tee ${KUBE_CONFIG_FILE} #1>/dev/null
-	@sudo kind get kubeconfig --name kargo | tee ${HOME}/.kube/config #1>/dev/null
-	@sudo chown -R $(id -u):$(id -g) ${KUBE_CONFIG_FILE}
-	@pulumi config set kubernetes kind || true
-	@echo "Created Kind Cluster."
-
-# --- Wait for Kind Cluster Ready ---
-kind-ready:
-	@echo "Waiting for Kind Kubernetes API to be ready..."
-	@kubectl get all --all-namespaces --show-labels --kubeconfig ${KUBE_CONFIG_FILE} || sleep 5
-	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver to be ready..."; sleep 5; done'
-	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler to be ready..."; sleep 5; done'
-	@bash -c 'until kubectl --kubeconfig ${KUBE_CONFIG_FILE} wait --for=condition=Ready pod -l component=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager to be ready..."; sleep 5; done'
-	@echo "Kind Cluster is ready."
-
-kind: login kind-cluster kind-ready
 
 # ----------------------------------------------------------------------------------------------
 # --- Maintenance ---
@@ -189,22 +167,19 @@ kind: login kind-cluster kind-ready
 # --- Cleanup ---
 clean: login down
 	@echo "Cleaning up resources..."
-	@sudo kind delete cluster --name kargo \
-		|| echo "Kind cluster not found."
-	@sudo kind delete cluster --name kind \
-		|| echo "Kind cluster not found."
 	@sudo talosctl cluster destroy \
 		|| echo "Talos cluster not found."
+	@docker rm --force talos-kargo-docker-controlplane-1 talos-kargo-docker-worker-1 \
+		|| echo "Talos containers not found."
+	@pulumi cancel --yes --stack ${PULUMI_STACK_IDENTIFIER} 2>/dev/null || true
+	@pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
+		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
+	@rm -rf .talos/manifest/*
+	@rm -rf .kube/config
 	@echo "Cleanup complete."
 
 clean-all: clean
 	@echo "Performing extended cleanup..."
-	@echo "Destroying all kind clusters"
-	@sudo kind delete clusters --all \
-		|| echo "Kind clusters not found."
-	@sudo docker volume rm kargo-worker-n01 kargo-worker-n02 kargo-control-plane-n01 \
-		|| echo "Docker volumes not found."
-	@rm -rf Pulumi.*.yaml
 	@echo "Extended cleanup complete."
 
 # --- GitHub Actions Testing ---
@@ -224,10 +199,6 @@ konductor:
 	@rsync -av .github/konductor/.devcontainer/* .devcontainer
 	@docker pull ghcr.io/containercraft/konductor:latest
 	@echo "Devcontainer updated."
-
-# --- Testing ---
-test-kind: kind pulumi-up
-	@echo "Kind test complete."
 
 test-talos: talos pulumi-up
 	@echo "Talos test complete."

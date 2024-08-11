@@ -82,6 +82,10 @@ pulumi up --skip-preview --refresh=true; pulumi up --skip-preview --refresh=true
 ### 7. Deploy an Ubuntu VM
 
 ```bash
+# Create SSH Public Key secret
+kubectl create secret generic user-kc2-sshpubkey --from-file=key1=.ssh/id_rsa.pub --dry-run=client -oyaml | kubectl apply -f -
+
+# Apply the Ubuntu VM CR
 kubectl apply -f hack/ubuntu-br0.yaml
 ```
 

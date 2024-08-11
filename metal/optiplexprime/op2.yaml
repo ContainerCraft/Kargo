@@ -4,7 +4,7 @@ machine:
   kubelet:
     disableManifestsDirectory: true
     extraArgs:
-      feature-gates: ServerSideApply=true
+      feature-gates: ServerSideApply=false
     extraMounts:
       - destination: /etc/cni/net.d
         type: bind
