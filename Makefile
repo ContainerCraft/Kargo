@@ -24,8 +24,9 @@ ESCAPED_PAT := $(shell echo "${PULUMI_ACCESS_TOKEN}" | sed -e 's/[\/&]/\\&/g')
 ESCAPED_GITHUB_TOKEN := $(shell echo "${GITHUB_TOKEN}" | sed -e 's/[\/&]/\\&/g')
 
 # Define file paths for configurations
-KUBE_CONFIG_FILE := .kube/config
-TALOS_CONFIG_FILE := .talos/config
+KUBE_CONFIG_FILE := $$(pwd)/.kube/config
+TALOS_CONFIG_FILE := $$(pwd)/.talos/config
+PULUMI_HOME := $$(pwd)/.pulumi
 
 # Check if PULUMI_ACCESS_TOKEN is set
 ifeq ($(ESCAPED_PAT),)
@@ -70,32 +71,32 @@ detect-arch:
 pulumi-login:
 	@echo "Logging into Pulumi..."
 	@direnv allow || true
-	@PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi login \
+	@PULUMI_HOME=${PULUMI_HOME} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} pulumi login \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
-	@pulumi install || true
-	@set -ex; pulumi stack select --create ${PULUMI_STACK_IDENTIFIER} || true
+	@PULUMI_HOME=${PULUMI_HOME} pulumi install || true
+	@set -ex; PULUMI_HOME=${PULUMI_HOME} pulumi stack select --create ${PULUMI_STACK_IDENTIFIER} || true
 	@echo "Login successful."
 
 # --- Pulumi Deployment ---
 pulumi-up:
 	@echo "Deploying Pulumi infrastructure..."
-	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
+	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} PULUMI_HOME=${PULUMI_HOME} \
 		pulumi up --yes --skip-preview --refresh --continue-on-error --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
-	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
+	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} PULUMI_HOME=${PULUMI_HOME} \
 		pulumi up --yes --skip-preview --refresh --continue-on-error --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
-	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
+	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} PULUMI_HOME=${PULUMI_HOME} \
 		pulumi up --yes --skip-preview --refresh --continue-on-error --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
 	@echo "Deployment complete."
 
 pulumi-down:
 	@echo "Deploying Pulumi infrastructure..."
-	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
+	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} PULUMI_HOME=${PULUMI_HOME} \
 		pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || \
-		KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} PULUMI_K8S_DELETE_UNREACHABLE=true \
+		KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} PULUMI_HOME=${PULUMI_HOME} PULUMI_K8S_DELETE_UNREACHABLE=true \
 			pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
 			| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
 	@echo "Deployment complete."
@@ -145,11 +146,11 @@ talos-cluster: detect-arch talos-gen-config
 		--workers 1 --memory-workers 2048 \
 		--user-disk "/var/mnt/hostpath-provisioner:4" \
 		--init-node-as-endpoint
-	@pulumi config set --path kubernetes.distribution talos || true
-	@pulumi config set --path kubernetes.context admin@talos-kargo-docker || true
-	@pulumi config set --path cilium.enabled false || true
-	@pulumi config set --path multus.enabled false || true
-	@pulumi config set --path kubernetes.kubeconfig $$(pwd)/.kube/config || true
+	@PULUMI_HOME=${PULUMI_HOME} pulumi config set --path kubernetes.distribution talos || true
+	@PULUMI_HOME=${PULUMI_HOME} pulumi config set --path kubernetes.context admin@talos-kargo-docker || true
+	@PULUMI_HOME=${PULUMI_HOME} pulumi config set --path cilium.enabled false || true
+	@PULUMI_HOME=${PULUMI_HOME} pulumi config set --path multus.enabled false || true
+	@PULUMI_HOME=${PULUMI_HOME} pulumi config set --path kubernetes.kubeconfig $$(pwd)/.kube/config || true
 	@echo "Talos Cluster provisioning..."
 
 # --- Wait for Talos Cluster Ready ---
@@ -175,8 +176,9 @@ clean: login down
 		|| echo "Talos cluster not found."
 	@docker rm --force talos-kargo-docker-controlplane-1 talos-kargo-docker-worker-1 \
 		|| echo "Talos containers not found."
-	@pulumi cancel --yes --stack ${PULUMI_STACK_IDENTIFIER} 2>/dev/null || true
-	@pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
+	@echo "waiting for 5 seconds..." && sleep 5
+	@PULUMI_HOME=${PULUMI_HOME} pulumi cancel --yes --stack ${PULUMI_STACK_IDENTIFIER} 2>/dev/null || true
+	@PULUMI_HOME=${PULUMI_HOME} pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
 	@rm -rf .talos/manifest/*
 	@rm -rf .kube/config
