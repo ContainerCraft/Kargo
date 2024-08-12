@@ -1,3 +1,18 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssh
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 30950
+    port: 30950
+    protocol: TCP
+    targetPort: 22
+  selector:
+    vmi: ubuntu
+---
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
@@ -5,6 +20,7 @@ metadata:
   namespace: default
   labels:
     app: kc2
+    vmi: ubuntu
 spec:
   running: true
   template:
@@ -14,10 +30,10 @@ spec:
           utc: {}
           timer: {}
         cpu:
-          cores: 1
+          cores: 2
           dedicatedCpuPlacement: false
         memory:
-          guest: 1024M
+          guest: 2048M
         devices:
           rng: {}
           autoattachPodInterface: false
@@ -49,7 +65,7 @@ spec:
           type: q35
         resources:
           requests:
-            memory: 1024M
+            memory: 2048M
       hostname: ubuntu
       networks:
         - name: enp1s0

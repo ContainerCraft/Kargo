@@ -145,6 +145,7 @@ talos-cluster: detect-arch talos-gen-config
 		--controlplanes 1 --memory 2048 \
 		--workers 1 --memory-workers 2048 \
 		--user-disk "/var/mnt/hostpath-provisioner:4" \
+		--exposed-ports 30590:30590/tcp
 		--init-node-as-endpoint
 	@PULUMI_HOME=${PULUMI_HOME} pulumi config set --path kubernetes.distribution talos || true
 	@PULUMI_HOME=${PULUMI_HOME} pulumi config set --path kubernetes.context admin@talos-kargo-docker || true
@@ -170,14 +171,20 @@ talos: clean-all talos-cluster talos-ready wait-all-pods
 # ----------------------------------------------------------------------------------------------
 
 # --- Cleanup ---
-clean: login down
+clean: login
 	@echo "Cleaning up resources..."
 	@sudo talosctl cluster destroy \
 		|| echo "Talos cluster not found."
 	@docker rm --force talos-kargo-docker-controlplane-1 talos-kargo-docker-worker-1 \
 		|| echo "Talos containers not found."
-	@echo "waiting for 5 seconds..." && sleep 5
+	@sudo talosctl cluster destroy \
+		|| true
+	@docker rm --force talos-kargo-docker-controlplane-1 talos-kargo-docker-worker-1 \
+		|| true
+	@echo "Waiting for 5 seconds..." && sleep 5
 	@PULUMI_HOME=${PULUMI_HOME} pulumi cancel --yes --stack ${PULUMI_STACK_IDENTIFIER} 2>/dev/null || true
+	@PULUMI_HOME=${PULUMI_HOME} pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
+		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
 	@PULUMI_HOME=${PULUMI_HOME} pulumi down --yes --skip-preview --refresh --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
 	@rm -rf .talos/manifest/*

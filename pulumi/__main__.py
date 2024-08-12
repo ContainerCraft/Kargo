@@ -176,6 +176,7 @@ def run_kubevirt():
     if kubevirt_enabled:
         ns_name = "kubevirt"
         kubevirt_version = config_kubevirt.get('version') or None
+        kubevirt_emulation = config_kubevirt.get('emulation') or False
 
         custom_depends = []
         safe_append(custom_depends, cilium_release)
@@ -185,6 +186,7 @@ def run_kubevirt():
             custom_depends,
             ns_name,
             kubevirt_version,
+            kubevirt_emulation,
             k8s_provider,
             kubernetes_distribution,
         )

@@ -12,6 +12,7 @@ def deploy_kubevirt(
         depends,
         ns_name: str,
         version: str,
+        use_emulation: bool,
         k8s_provider: k8s.Provider,
         kubernetes_distribution: str
     ):
@@ -86,7 +87,7 @@ def deploy_kubevirt(
     pulumi.Output.all().apply(lambda _: os.unlink(temp_file_path))
 
     # Determine useEmulation based on the kubernetes_distribution
-    use_emulation = True if kubernetes_distribution == "kind" else False
+    use_emulation = True if kubernetes_distribution == "kind" else use_emulation
     if use_emulation:
         pulumi.log.info("KVM Emulation configured for KubeVirt in development.")
 

@@ -95,14 +95,9 @@ def deploy_cilium(
 def get_helm_values(
         kubernetes_distribution: str,
         project_name: str,
-<<<<<<< HEAD:src/kargo/cilium/deploy.py
-        kubernetes_endpoint_ip_string: str):
-
-=======
         kubernetes_endpoint_service_address: str
     ):
     # Common Cilium Helm Chart Values
->>>>>>> 869b441 (wip refactoring for mvp release):pulumi/src/cilium/deploy.py
     common_values = {
         "cluster": {
             "id": 1,
@@ -131,10 +126,6 @@ def get_helm_values(
             "operator": {"name": "cilium-operator"},
         },
     }
-<<<<<<< HEAD:src/kargo/cilium/deploy.py
-
-    if kubernetes_distribution == 'talos':
-=======
     # Kind Kubernetes specific Helm values
     if kubernetes_distribution == 'kind':
         return {
@@ -143,7 +134,6 @@ def get_helm_values(
             "k8sServicePort": 6443,
         }
     elif kubernetes_distribution == 'talos':
->>>>>>> 869b441 (wip refactoring for mvp release):pulumi/src/cilium/deploy.py
         # Talos-specific Helm values per the Talos Cilium Docs
         return {
             **common_values,
