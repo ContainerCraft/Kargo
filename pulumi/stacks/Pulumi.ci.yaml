@@ -1,6 +1,9 @@
 config:
   kargo:cilium:
-    enabled: true
+    enabled: false
   kargo:kubernetes:
     context: admin@talos-kargo-docker
     distribution: talos
+    kubeconfig: /workspaces/Kargo/.kube/config
+  kargo:multus:
+    enabled: false

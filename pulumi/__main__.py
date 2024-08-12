@@ -33,7 +33,7 @@ project_name = pulumi.get_project()
 kubernetes_config = config.get_object("kubernetes") or {}
 
 # Get Kubeconfig from Pulumi ESC Config
-kubeconfig = config.get("kubeconfig")
+kubeconfig = kubernetes_config.get("kubeconfig")
 
 # Require Kubernetes context set explicitly
 kubernetes_context = kubernetes_config.get("context")

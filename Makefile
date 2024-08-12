@@ -24,8 +24,8 @@ ESCAPED_PAT := $(shell echo "${PULUMI_ACCESS_TOKEN}" | sed -e 's/[\/&]/\\&/g')
 ESCAPED_GITHUB_TOKEN := $(shell echo "${GITHUB_TOKEN}" | sed -e 's/[\/&]/\\&/g')
 
 # Define file paths for configurations
-KUBE_CONFIG_FILE := ${PWD}/.kube/config
-TALOS_CONFIG_FILE := ${PWD}/.talos/config
+KUBE_CONFIG_FILE := .kube/config
+TALOS_CONFIG_FILE := .talos/config
 
 # Check if PULUMI_ACCESS_TOKEN is set
 ifeq ($(ESCAPED_PAT),)
@@ -81,10 +81,12 @@ pulumi-up:
 	@echo "Deploying Pulumi infrastructure..."
 	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
 		pulumi up --yes --skip-preview --refresh --continue-on-error --stack ${PULUMI_STACK_IDENTIFIER} \
-		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' \
-		|| pulumi up --yes --skip-preview --refresh --continue-on-error --stack ${PULUMI_STACK_IDENTIFIER} \
-		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' \
-		|| pulumi up --yes --skip-preview --refresh --continue-on-error --stack ${PULUMI_STACK_IDENTIFIER} \
+		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
+	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
+		pulumi up --yes --skip-preview --refresh --continue-on-error --stack ${PULUMI_STACK_IDENTIFIER} \
+		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g' || true
+	@KUBECONFIG=${KUBE_CONFIG_FILE} PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN} \
+		pulumi up --yes --skip-preview --refresh --continue-on-error --stack ${PULUMI_STACK_IDENTIFIER} \
 		| sed 's/${ESCAPED_PAT}/***PULUMI_ACCESS_TOKEN***/g'
 	@echo "Deployment complete."
 
@@ -146,6 +148,8 @@ talos-cluster: detect-arch talos-gen-config
 	@pulumi config set --path kubernetes.distribution talos || true
 	@pulumi config set --path kubernetes.context admin@talos-kargo-docker || true
 	@pulumi config set --path cilium.enabled false || true
+	@pulumi config set --path multus.enabled false || true
+	@pulumi config set --path kubernetes.kubeconfig $$(pwd)/.kube/config || true
 	@echo "Talos Cluster provisioning..."
 
 # --- Wait for Talos Cluster Ready ---
