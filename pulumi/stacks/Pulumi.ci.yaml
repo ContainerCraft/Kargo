@@ -1,0 +1,12 @@
+config:
+  kargo:cilium:
+    enabled: false
+  kargo:kubernetes:
+    context: admin@talos-kargo-docker
+    distribution: talos
+    kubeconfig: /workspaces/Kargo/.kube/config
+  kargo:kubevirt:
+    emulation: true
+    enabled: true
+  kargo:multus:
+    enabled: false

@@ -1,0 +1,29 @@
+config:
+  kargo:cdi.enabled: "false"
+  kargo:cdi.version: 1.59.0
+  kargo:cert_manager.enabled: "false"
+  kargo:cert_manager.version: 1.14.5
+  kargo:cilium.enabled: "true"
+  kargo:cnao.enabled: "false"
+  kargo:cnao.version: 0.79.5
+  kargo:hostpath_provisioner.enabled: "false"
+  kargo:hostpath_provisioner.version: 0.19.0
+  kargo:kubernetes: kind
+  kargo:kubernetes.context: kind-kargo
+  kargo:kubernetes.distribution: kind
+  kargo:kubernetes.kubeconfig: /workspaces/Kargo/.kube/config
+  kargo:kubernetes_dashboard.enabled: "false"
+  kargo:kubernetes_dashboard.version: 7.4.0
+  kargo:kubevirt.enabled: "false"
+  kargo:kubevirt.version: 1.2.0
+  kargo:kubevirt_maager.enabled: "false"
+  kargo:multus.enabled: "true"
+  kargo:openunison.dns_suffix: kargo.arpa
+  kargo:openunison.enabled: "false"
+  kargo:openunison.github.client_id: Ov23li28jxV3tmAviMVl
+  kargo:openunison.github.client_secret:
+    secure: AAABAEQGM+PYpnW0+MOeMdrRc1byEVg3Hp+aMPyB9BluzfjjpGeus1U4hhjf0fXt1xTmXrAJ8H6iGpzQmGAFi6ARgYZ3I/gd
+  kargo:openunison.github.teams: ContainerCraft/kubeadmin,ContainerCraft/
+  kargo:openunison.version: 3.0.11
+  kargo:prometheus.enabled: "false"
+  kargo:prometheus.version: 58.7.2

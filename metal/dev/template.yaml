@@ -1,0 +1,154 @@
+version: v1alpha1
+debug: false
+persist: true
+machine:
+    type: controlplane
+    nodeLabels:
+        kargo.dev/node: ""
+        kargo.dev/controlplane: ""
+        kargo.dev/name: "dev"
+        kargo.dev/domain: "kargo.dev"
+        kargo.dev/version: "v1alpha1"
+    certSANs:
+        - 192.168.1.60
+        - 192.168.1.61
+        - 192.168.1.62
+        - 192.168.1.63
+        - api.dev.kargo.dev
+    kubelet:
+        defaultRuntimeSeccompProfileEnabled: true
+        extraArgs:
+            feature-gates: ServerSideApply=true
+        extraMounts:
+            - destination: /etc/cni/net.d
+              type: bind
+              source: /etc/cni/net.d
+              options:
+                - bind
+                - rshared
+                - rw
+            - destination: /opt/cni/bin
+              type: bind
+              source: /opt/cni/bin
+              options:
+                - bind
+                - rshared
+                - rw
+    network:
+        hostname: cp1.dev.kargo.dev
+        nameservers:
+            - 192.168.1.1
+        interfaces:
+            - interface: br0
+              mtu: 1500
+              addresses:
+                  - 192.168.1.61/24
+              routes:
+                  - network: 0.0.0.0/0
+                    gateway: 192.168.1.1
+                    metric: 1024
+              bridge:
+                  stp:
+                      enabled: false
+                  interfaces:
+                      - eth0
+              vip:
+                ip: 192.168.1.60
+        extraHostEntries:
+            - ip: 192.168.1.60
+              aliases:
+                  - api
+                  - api.dev.kargo.dev
+            - ip: 192.168.1.164
+              aliases:
+                  - cp1
+                  - cp1.dev.kargo.dev
+            - ip: 192.168.1.166
+              aliases:
+                  - cp2
+                  - cp2.dev.kargo.dev
+            - ip: 192.168.1.169
+              aliases:
+                  - cp3
+                  - cp3.dev.kargo.dev
+    install:
+        disk: /dev/vda
+        wipe: true
+        extraKernelArgs:
+            - talos.platform=metal
+            - console=ttyS0
+            - reboot=k
+#   disks:
+#       - device: /dev/vdb
+#         partitions:
+#             - mountpoint: /var/mnt/block/dev/vdb
+    features:
+        rbac: true
+        stableHostname: false
+        kubePrism:
+            enabled: true
+            port: 7445
+    time:
+        bootTimeout: 2m0s
+        servers:
+            - time.cloudflare.com
+cluster:
+    clusterName: dev
+    allowSchedulingOnControlPlanes: true
+    controlPlane:
+        endpoint: https://192.168.1.60:6443/
+    network:
+        dnsDomain: cluster.local
+        podSubnets:
+            - 10.244.0.0/16
+        serviceSubnets:
+            - 10.96.0.0/12
+        cni:
+            name: none
+    proxy:
+        disabled: true
+    apiServer:
+        disablePodSecurityPolicy: true
+        certSANs:
+            - 192.168.1.60
+            - 192.168.1.61
+            - 192.168.1.62
+            - 192.168.1.63
+            - api.dev.kargo.dev
+        admissionControl:
+            - name: PodSecurity
+              configuration:
+                apiVersion: pod-security.admission.config.k8s.io/v1alpha1
+                kind: PodSecurityConfiguration
+                defaults:
+                    audit: restricted
+                    audit-version: latest
+                    enforce: baseline
+                    enforce-version: latest
+                    warn: restricted
+                    warn-version: latest
+                exemptions:
+                    namespaces:
+                        - cdi
+                        - cert-manager
+                        - default
+                        - hostpath-provisioner
+                        - kargo
+                        - kube-node-lease
+                        - kube-public
+                        - kube-system
+                        - kubevirt
+                        - rook-ceph
+                    runtimeClasses: []
+                    usernames: []
+        auditPolicy:
+            apiVersion: audit.k8s.io/v1
+            kind: Policy
+            rules:
+                - level: Metadata
+    discovery:
+        enabled: true
+        registries:
+            kubernetes:
+                disabled: true
+            service: {}

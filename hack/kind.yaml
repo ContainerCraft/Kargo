@@ -5,47 +5,47 @@ networking:
   ######################################################################
   # The following is required for Cilium to work with kind
   apiServerPort: 16443
-  podSubnet: "10.242.0.0/16"
-  serviceSubnet: "10.12.0.0/16"
-  #apiServerAddress: "0.0.0.0"
-  #kubeProxyMode: none # disable kube-proxy
-  #disableDefaultCNI: true # disable kindnet
+  #podSubnet: "10.242.0.0/16"
+  #serviceSubnet: "10.12.0.0/16"
+  apiServerAddress: "0.0.0.0"
+  kubeProxyMode: none # disable kube-proxy
+  disableDefaultCNI: true # disable kindnet
 nodes:
-- role: control-plane
-  image: kindest/node:v1.29.0
-  extraMounts: # Persistent image cache
-  - hostPath: /var/lib/docker/volumes/kargo-control-plane-n01/_data
-    containerPath: /var/lib/containerd
-- role: worker
-  image: kindest/node:v1.29.0
-  extraMounts: # Persistent image cache
-  - hostPath: /var/lib/docker/volumes/kargo-worker-n01/_data
-    containerPath: /var/lib/containerd
-- role: worker
-  image: kindest/node:v1.29.0
-  extraMounts: # Persistent image cache
-  - hostPath: /var/lib/docker/volumes/kargo-worker-n02/_data
-    containerPath: /var/lib/containerd
-  # Expose ports on the host:
-  # - 80/tcp
-  # - 443/tcp
-  extraPortMappings:
-  - listenAddress: "0.0.0.0"
-    protocol: TCP
-    hostPort: 80
-    containerPort: 80
-  - listenAddress: "0.0.0.0"
-    protocol: TCP
-    hostPort: 2022
-    containerPort: 2222
-  - listenAddress: "0.0.0.0"
-    protocol: TCP
-    hostPort: 443
-    containerPort: 443
-  kubeadmConfigPatches:
-  - |
-    # Label the worker node listening on service ports
-    kind: JoinConfiguration
-    nodeRegistration:
-      kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
+  - role: control-plane
+    #image: kindest/node:v1.29.0
+    extraMounts: # Persistent image cache
+      - hostPath: /var/lib/docker/volumes/kargo-control-plane-n01/_data
+        containerPath: /var/lib/containerd
+  - role: worker
+    #image: kindest/node:v1.29.0
+    extraMounts: # Persistent image cache
+      - hostPath: /var/lib/docker/volumes/kargo-worker-n01/_data
+        containerPath: /var/lib/containerd
+  - role: worker
+    #image: kindest/node:v1.29.0
+    extraMounts: # Persistent image cache
+      - hostPath: /var/lib/docker/volumes/kargo-worker-n02/_data
+        containerPath: /var/lib/containerd
+    # Expose ports on the host:
+    # - 80/tcp
+    # - 443/tcp
+    # extraPortMappings:
+    # - listenAddress: "0.0.0.0"
+    #   protocol: TCP
+    #   hostPort: 80
+    #   containerPort: 80
+    # - listenAddress: "0.0.0.0"
+    #   protocol: TCP
+    #   hostPort: 2022
+    #   containerPort: 2222
+    # - listenAddress: "0.0.0.0"
+    #   protocol: TCP
+    #   hostPort: 443
+    #   containerPort: 443
+    kubeadmConfigPatches:
+      - |
+        # Label the worker node listening on service ports
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"

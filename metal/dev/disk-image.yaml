@@ -1,0 +1,21 @@
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: talos-disk-image-1.7.4
+  namespace: default
+spec:
+  source:
+    registry:
+      url: "docker://docker.io/containercraft/talos:1.7.4-nocloud-amd64"
+  #   url: "docker://docker.io/containercraft/talos:latest"
+  # http:
+  #   url: "https://factory.talos.dev/image/b027a2d9dddfa5c0752c249cf3194bb5c62294dc7cba591f3bec8119ab578aea/v1.7.4/nocloud-amd64.raw.xz"
+  pvc:
+    storageClassName: "ssd"
+    resources:
+      requests:
+        storage: 8Gi
+    accessModes:
+      - ReadWriteOnce
+    volumeMode: Filesystem

@@ -1,0 +1,136 @@
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: vdb
+spec:
+  source:
+    registry:
+      url: "docker://docker.io/containercraft/talos:latest"
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 32Gi
+    storageClassName: "ssd"
+    volumeMode: Filesystem
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: vdc
+  namespace: default
+spec:
+  source:
+    blank: {}
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 48Gi
+    storageClassName: "ssd"
+    volumeMode: Filesystem
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: vdd
+  namespace: default
+spec:
+  source:
+    blank: {}
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 64Gi
+    storageClassName: "ssd"
+    volumeMode: Filesystem
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: talos
+  namespace: default
+  labels:
+    app: kc2
+spec:
+  running: true
+  template:
+    spec:
+      hostname: cp1
+      domain:
+        clock:
+          utc: {}
+          timer:
+            hpet:
+              present: false
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
+        cpu:
+          cores: 1
+          sockets: 1
+          threads: 8
+          dedicatedCpuPlacement: false
+        machine:
+          type: q35
+        memory:
+          guest: 32768M
+        features:
+          acpi:
+            enabled: true
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
+        devices:
+          rng: {}
+          autoattachSerialConsole: true
+          autoattachGraphicsDevice: true
+          networkInterfaceMultiqueue: false
+          autoattachPodInterface: false
+          disks:
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+            - name: vdb
+              bootOrder: 1
+              disk:
+                bus: virtio
+            - name: vdc
+              disk:
+                bus: virtio
+            - name: vdd
+              disk:
+                bus: virtio
+          interfaces:
+            - name: eth0
+              model: virtio
+              macAddress: 6a:7d:62:36:fc:a0
+              bridge: {}
+      networks:
+        - name: eth0
+          multus:
+            networkName: br0
+      terminationGracePeriodSeconds: 0
+      volumes:
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            secretRef:
+              name: talos-userdata-cp1
+        - name: vdb
+          dataVolume:
+            name: vdb
+        - name: vdc
+          dataVolume:
+            name: vdc
+        - name: vdd
+          dataVolume:
+            name: vdd

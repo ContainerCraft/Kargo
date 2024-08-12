@@ -14,19 +14,18 @@ machine:
     crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQakNCOGFBREFnRUNBaEFEbUdvSHdLVkRyTUhmaUVmNThURzhNQVVHQXl0bGNEQVFNUTR3REFZRFZRUUsKRXdWMFlXeHZjekFlRncweU5EQXhNakV5TXpBeU5UaGFGdzB6TkRBeE1UZ3lNekF5TlRoYU1CQXhEakFNQmdOVgpCQW9UQlhSaGJHOXpNQ293QlFZREsyVndBeUVBZnVZcUlsRzhaa1AzQVcyRzdGc2l2SVI5cWZPTk1QRlNWU3NmCkI0RTFSZnlqWVRCZk1BNEdBMVVkRHdFQi93UUVBd0lDaERBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUkKS3dZQkJRVUhBd0l3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVMWZYM0txSWNWWGZVT3NxUwoySUtzR0tvYXRhNHdCUVlESzJWd0EwRUFHWlllNlFvNG1nMHJ3ekM0dFZzMnVXejdOSlZ6STlTU3JUREI1MXlZCldROHhQL05NY3VSZ0pKMUZibDlSbitkM3grTjE2aXlBUVR5aVpjb3prVUFCRFE9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
     key: LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJRS9TRDhDWE5TTmovRlVOVFpUaVFQZEtoRmpYMWQxYjdxUFVjQzJMWkExcQotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K
   certSANs:
-  - 192.168.1.40
-  - 192.168.1.41
-  - 192.168.1.42
-  - 192.168.1.43
-  - api.optiplexprime.kargo.dev
+    - 192.168.1.40
+    - 192.168.1.41
+    - 192.168.1.42
+    - 192.168.1.43
+    - api.optiplexprime.kargo.dev
   kubelet:
-    image: ghcr.io/siderolabs/kubelet:v1.29.3
     defaultRuntimeSeccompProfileEnabled: true
     disableManifestsDirectory: true
     clusterDNS:
-    - 1.1.1.1
-    - 8.8.8.8
-    - 192.168.1.1
+      - 1.1.1.1
+      - 8.8.8.8
+      - 192.168.1.1
     extraArgs:
       rotate-server-certificates: true
     extraConfig:
@@ -36,50 +35,49 @@ machine:
       enabled: false
     hostname: cp1.optiplexprime.kargo.dev
     nameservers:
-    - 192.168.1.1
-    - 8.8.8.8
-    - 1.1.1.1
+      - 192.168.1.1
+      - 8.8.8.8
+      - 1.1.1.1
     extraHostEntries:
-    - ip: 192.168.1.40
-      aliases:
-      - api
-      - api.optiplexprime.kargo.dev
-    - ip: 192.168.1.41
-      aliases:
-      - cp1
-      - cp1.optiplexprime.kargo.dev
-    - ip: 192.168.1.42
-      aliases:
-      - cp2
-      - cp2.optiplexprime.kargo.dev
-    - ip: 192.168.1.43
-      aliases:
-      - cp3
-      - cp3.optiplexprime.kargo.dev
+      - ip: 192.168.1.40
+        aliases:
+          - api
+          - api.optiplexprime.kargo.dev
+      - ip: 192.168.1.41
+        aliases:
+          - cp1
+          - cp1.optiplexprime.kargo.dev
+      - ip: 192.168.1.42
+        aliases:
+          - cp2
+          - cp2.optiplexprime.kargo.dev
+      - ip: 192.168.1.43
+        aliases:
+          - cp3
+          - cp3.optiplexprime.kargo.dev
     interfaces:
-    - interface: br0
-      mtu: 1500
-      addresses:
-      - 192.168.1.41/24
-      routes:
-      - network: 0.0.0.0/0
-        gateway: 192.168.1.1
-        metric: 1024
-      bridge:
-        stp:
-          enabled: true
-        interfaces:
-        - enp3s0
-        - enp0s31f6
-      vip:
-        ip: 192.168.1.40
+      - interface: br0
+        mtu: 1500
+        addresses:
+          - 192.168.1.41/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 192.168.1.1
+            metric: 1024
+        bridge:
+          stp:
+            enabled: true
+          interfaces:
+            - enp3s0
+            - enp0s31f6
+        vip:
+          ip: 192.168.1.40
   install:
     disk: /dev/nvme0n1
-    image: ghcr.io/siderolabs/installer:v1.6.3
     wipe: true
     extraKernelArgs:
-    - talos.platform=metal
-    - reboot=k
+      - talos.platform=metal
+      - reboot=k
   disks:
     - device: /dev/sda
       partitions:
@@ -96,18 +94,18 @@ machine:
     kubernetesTalosAPIAccess:
       enabled: true
       allowedRoles:
-      - os:reader
+        - os:reader
       allowedKubernetesNamespaces:
-      - kargo-system
-      - kube-system
-      - konductor
+        - kargo-system
+        - kube-system
+        - konductor
   controlPlane:
     scheduler:
       disabled: false
   time:
     bootTimeout: 2m0s
     servers:
-    - time.cloudflare.com
+      - time.cloudflare.com
   sysctls:
     kernel.domainname: kargo.dev
 cluster:
@@ -120,9 +118,9 @@ cluster:
   network:
     dnsDomain: optiplexprime.kargo.dev
     podSubnets:
-    - 10.244.0.0/16
+      - 10.244.0.0/16
     serviceSubnets:
-    - 10.96.0.0/12
+      - 10.96.0.0/12
     # Disabling built in CNI to use Cilium
     cni:
       name: none
@@ -140,13 +138,12 @@ cluster:
   serviceAccount:
     key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSURqc2tBeS9WeFJuRTFTUGxIblJoRUcvdnNjMFd1WjUxdVBGNUJvbmpDVENvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFeFRCdEFoT3hMMnJnaVFPdEYrVTRoR05QMkV6bWZScXBPT01iRTJhSjRWNkMva1JlbHNtKwpaOTZ2d3RzODBWWnhSM0tZajVtL3BxV0gra3FvcUU2SWR3PT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
   apiServer:
-    image: registry.k8s.io/kube-apiserver:v1.29.3
     certSANs:
-    - 192.168.1.40
-    - 192.168.1.41
-    - 192.168.1.42
-    - 192.168.1.43
-    - api.optiplexprime.kargo.dev
+      - 192.168.1.40
+      - 192.168.1.41
+      - 192.168.1.42
+      - 192.168.1.43
+      - api.optiplexprime.kargo.dev
     disablePodSecurityPolicy: true
     admissionControl: []
     #- name: PodSecurity
@@ -169,11 +166,7 @@ cluster:
       apiVersion: audit.k8s.io/v1
       kind: Policy
       rules:
-      - level: Metadata
-  controllerManager:
-    image: registry.k8s.io/kube-controller-manager:v1.29.3
-  scheduler:
-    image: registry.k8s.io/kube-scheduler:v1.29.3
+        - level: Metadata
   discovery:
     enabled: true
     registries:
@@ -184,4 +177,4 @@ cluster:
       crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJmRENDQVNPZ0F3SUJBZ0lRUkgvN3VaSVE3U1NHNGRRRlljcENyakFLQmdncWhrak9QUVFEQWpBUE1RMHcKQ3dZRFZRUUtFd1JsZEdOa01CNFhEVEkwTURFeU1USXpNREkxT0ZvWERUTTBNREV4T0RJek1ESTFPRm93RHpFTgpNQXNHQTFVRUNoTUVaWFJqWkRCWk1CTUdCeXFHU000OUFnRUdDQ3FHU000OUF3RUhBMElBQkV5eHRNOGo0VjZtCjZ6a3l0MlZSV01MTXJxM0kwNk5VakxJYVBaNWgyWnl0dVJTWU1CYlZ0Sm5GQWpkR21BOFM1RnZMQmd1WW5GamYKMjRmWnlucmk4NXVqWVRCZk1BNEdBMVVkRHdFQi93UUVBd0lDaERBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjRApBUVlJS3dZQkJRVUhBd0l3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVUGNRbXRFTnhZZ0l3ClV1aVRRZDZ4WVBTcW9UOHdDZ1lJS29aSXpqMEVBd0lEUndBd1JBSWdGaFBwMkdtejQrSXBXOE9GbXJsa1FUNXkKckZ6OFlBb0ZDalJqMlJvY2EvOENJSFc3ZjlaeUNad0ltUGJzK3NBRHRJZnlFZVdxRU9sWGxva05sNm80K2ZXQwotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
       key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUhGR2ZuQjZzWFVYbG9Pd3hCc1dkNTRIaEFEVHJySHk0S0x1ZFVFOGFFOXNvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFVExHMHp5UGhYcWJyT1RLM1pWRll3c3l1cmNqVG8xU01zaG85bm1IWm5LMjVGSmd3RnRXMAptY1VDTjBhWUR4TGtXOHNHQzVpY1dOL2JoOW5LZXVMem13PT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
     advertisedSubnets:
-    - 192.168.1.0/24
+      - 192.168.1.0/24

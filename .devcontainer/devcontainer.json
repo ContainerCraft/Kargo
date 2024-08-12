@@ -12,7 +12,9 @@
         "seccomp=unconfined"
     ],
     "runArgs": [
-        "--network=host"
+        "--privileged",
+        "--network=host",
+        "--device=/dev/kvm"
     ],
     "mounts": [
         "source=dind-var-lib-docker,target=/var/lib/docker,type=volume"

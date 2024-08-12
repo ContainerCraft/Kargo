@@ -7,6 +7,3 @@
 [submodule "rootfs/etc/skel/.vim/bundle/Vundle.vim"]
 	path = rootfs/etc/skel/.vim/bundle/Vundle.vim
 	url = https://github.com/VundleVim/Vundle.vim.git
-[submodule ".github/konductor"]
-	path = .github/konductor
-	url = https://github.com/containercraft/konductor

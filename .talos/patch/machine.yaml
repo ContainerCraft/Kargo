@@ -1,0 +1,4 @@
+machine:
+  features:
+    hostDNS:
+      forwardKubeDNSToHost: false

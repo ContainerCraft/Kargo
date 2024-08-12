@@ -13,10 +13,11 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 64Gi
+        storage: 256G
     storageClassName: "ssd"
     volumeMode: Filesystem
 ---
+# ssh-keygen
 # kubectl create secret generic user-kc2-sshpubkey --from-file=key1=.ssh/id_rsa.pub --dry-run=client -oyaml | kubectl apply -f -
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
@@ -30,7 +31,7 @@ spec:
   template:
     spec:
       nodeSelector:
-        kubernetes.io/hostname: "cp1"
+        kubernetes.io/hostname: "mordor"
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -39,7 +40,18 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
-                      - "cp1"
+                      - "mordor"
+      #nodeSelector:
+      #  kubernetes.io/hostname: "op1"
+      #affinity:
+      #  nodeAffinity:
+      #    requiredDuringSchedulingIgnoredDuringExecution:
+      #      nodeSelectorTerms:
+      #        - matchExpressions:
+      #            - key: kubernetes.io/hostname
+      #              operator: In
+      #              values:
+      #                - "op1"
       domain:
         clock:
           utc: {}
@@ -50,11 +62,11 @@ spec:
               tickPolicy: delay
             rtc:
               tickPolicy: catchup
-            hyperv: {}
         cpu:
           cores: 1
           sockets: 1
-          threads: 4
+          threads: 6
+          model: host-passthrough
           dedicatedCpuPlacement: false
         memory:
           guest: 8192M
@@ -75,8 +87,6 @@ spec:
           interfaces:
             - name: enp1s0
               bridge: {}
-            - name: enp2s0
-              bridge: {}
         features:
           acpi:
             enabled: true
@@ -91,14 +101,14 @@ spec:
         resources:
           requests:
             memory: 8192M
-      hostname: ubuntu
+      hostname: ccio
       networks:
         - name: enp1s0
           multus:
             networkName: lan
         - name: enp2s0
           multus:
-            networkName: lan
+            networkName: br0
       terminationGracePeriodSeconds: 0
       accessCredentials:
         - sshPublicKey:
@@ -141,18 +151,31 @@ spec:
                   shell: /bin/bash
                   lock_passwd: false
                   sudo: ['ALL=(ALL) NOPASSWD:ALL']
-                  groups: sudo,lxd,libvirt,microk8s,xrdp,docker,ssl-cert
+                  groups: sudo,kvm,lxd,libvirt,microk8s,xrdp,docker,ssl-cert
               growpart:
                 mode: auto
                 devices: ['/']
                 ignore_growroot_disabled: true
+              package_update: true
               package_upgrade: true
+              package_reboot_if_required: true
               packages:
+                - vim
                 - docker.io
                 - neofetch
-                - openvswitch-switch
+                - ubuntu-desktop
+                - gnome-tweaks
+                - firefox
+                - xrdp
               reboot: true
               runcmd:
-                - "systemctl enable --now openvswitch-switch"
+                - screenfetch
+                - "apt-get remove apport apport-gtk python3-apport python3-problem-report shim-signed apport-symptoms python3-systemd ansible -y --allow-remove-essential"
+                - "apt-get autoremove -y"
+                - "snap install helm --classic"
+                - "snap install kubectl --classic"
+                - "mkdir -p /home/kc2/.kube"
+                - "chown -R kc2:kc2 /home/kc2/.kube"
                 - "echo H4sIAAAAAAACA7WRwU7DMAyG73mKaHe6dRrTyKsghELibWYhjhy3gBDvTkIXtRJC4oJP8R/ntz/HUTziyeiPTxVBXokv2agb7SZZ6RKYxl0XrRi9Eh5gNYvWe4acje7vtl2/P3S3h65fb3f6X6L13c99I0UosofsGJMgxTJkHTDaFzA6vPkn3pRU3hNcbxLTM7gC4+FohyAqC7E9wWMiCkv2upLfrdvrUsE4AhcFWRXzIwb4i42HEV2trFQg5810av5VacL0LwucGhNSRPedM5E0g2TlbPS6ZQVrOe781mO+/OC5rqfs9v5BuTBkqWxxCEF9AXZkJoMrAgAA | base64 -d | gzip -d | lxd init --preseed"
-                - "neofetch"
+                - "screenfetch"
+                - "ip a"

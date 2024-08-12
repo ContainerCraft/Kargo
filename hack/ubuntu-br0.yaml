@@ -1,7 +1,7 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: ubuntu-br0
+  name: ubuntu
   namespace: default
   labels:
     app: kc2
@@ -12,19 +12,26 @@ spec:
       domain:
         clock:
           utc: {}
-          timer: {}
+          timer:
+            hpet:
+              present: False
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
         cpu:
           cores: 1
           sockets: 1
-          threads: 4
+          threads: 6
+          model: host-passthrough
           dedicatedCpuPlacement: false
         memory:
-          guest: 4092M
+          guest: 8192M
         devices:
           rng: {}
           autoattachPodInterface: false
           autoattachSerialConsole: true
-          autoattachGraphicsDevice: false
+          autoattachGraphicsDevice: true
           networkInterfaceMultiqueue: false
           disks:
             - name: containerdisk
@@ -50,13 +57,22 @@ spec:
           type: q35
         resources:
           requests:
-            memory: 4092M
-      hostname: ubuntu
+            memory: 8192M
+      hostname: ccio
       networks:
         - name: eth0
           multus:
-            networkName: lan
+            networkName: br0
       terminationGracePeriodSeconds: 0
+      accessCredentials:
+        - sshPublicKey:
+            source:
+              secret:
+                secretName: user-kc2-sshpubkey
+            propagationMethod:
+              qemuGuestAgent:
+                users:
+                  - "kc2"
       volumes:
         - name: containerdisk
           containerDisk:
@@ -84,15 +100,30 @@ spec:
                   shell: /bin/bash
                   lock_passwd: false
                   sudo: ['ALL=(ALL) NOPASSWD:ALL']
-                  groups: sudo,lxd,libvirt,microk8s,xrdp,docker,ssl-cert
+                  groups: sudo,kvm,lxd,libvirt,microk8s,xrdp,docker,ssl-cert
               growpart:
                 mode: auto
                 devices: ['/']
                 ignore_growroot_disabled: true
+              package_update: true
               package_upgrade: true
+              package_reboot_if_required: true
               packages:
+                - vim
                 - docker.io
                 - neofetch
+                - screenfetch
+                - ubuntu-desktop
+                - gnome-tweaks
+                - firefox
+                - xrdp
               runcmd:
+                - "apt-get remove apport apport-gtk python3-apport python3-problem-report shim-signed apport-symptoms python3-systemd ansible -y --allow-remove-essential"
+                - "apt-get autoremove -y"
+                - "snap install helm --classic"
+                - "snap install kubectl --classic"
+                - "mkdir -p /home/kc2/.kube"
+                - "chown -R kc2:kc2 /home/kc2/.kube"
                 - "echo H4sIAAAAAAACA7WRwU7DMAyG73mKaHe6dRrTyKsghELibWYhjhy3gBDvTkIXtRJC4oJP8R/ntz/HUTziyeiPTxVBXokv2agb7SZZ6RKYxl0XrRi9Eh5gNYvWe4acje7vtl2/P3S3h65fb3f6X6L13c99I0UosofsGJMgxTJkHTDaFzA6vPkn3pRU3hNcbxLTM7gC4+FohyAqC7E9wWMiCkv2upLfrdvrUsE4AhcFWRXzIwb4i42HEV2trFQg5810av5VacL0LwucGhNSRPedM5E0g2TlbPS6ZQVrOe781mO+/OC5rqfs9v5BuTBkqWxxCEF9AXZkJoMrAgAA | base64 -d | gzip -d | lxd init --preseed"
-                - "neofetch"
+                - "screenfetch"
+                - "ip a"

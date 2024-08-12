@@ -1,0 +1,30 @@
+network:
+  version: 2
+  ethernets:
+    eth0:
+      match:
+        name: eth0
+      mtu: 1500
+  bridges:
+    br0:
+      interfaces: [eth0]
+      addresses:
+        - 192.168.1.61/24
+      routes:
+        - to: 0.0.0.0/0
+          via: 192.168.1.1
+          metric: 1024
+  vlans: {}
+  bonds: {}
+  nameservers:
+    addresses: [8.8.8.8]
+  host_entries:
+    - ip: 192.168.1.60
+      aliases: [api, api.dev.kargo.dev]
+    - ip: 192.168.1.164
+      aliases: [cp1, cp1.dev.kargo.dev]
+    - ip: 192.168.1.166
+      aliases: [cp2, cp2.dev.kargo.dev]
+    - ip: 192.168.1.169
+      aliases: [cp3, cp3.dev.kargo.dev]
+

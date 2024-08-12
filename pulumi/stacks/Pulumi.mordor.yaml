@@ -1,0 +1,37 @@
+config:
+  kargo:kubernetes:
+    context: usrbinkat-optiplexprime
+    kubeconfig: /tmp/esc-1934694674
+  kargo:cilium:
+    enabled: false
+  kargo:cert_manager:
+    enabled: false
+    version: 1.15.1
+  kargo:kubevirt:
+    enabled: false
+    version: 1.3.0
+  kargo:hostpath_provisioner:
+    enabled: false
+    version: 0.19.0
+    default_storage_class: true
+  kargo:prometheus:
+    enabled: false
+    version: 61.3.2
+  kargo:cdi:
+    enabled: false
+    version: 1.59.0
+  kargo:multus:
+    enabled: false
+  kargo:cnao:
+    enabled: false
+    version: 0.94.2
+  kargo:kubernetes_dashboard:
+    enabled: false
+    version: 7.4.0
+  kargo:openunison:
+    enabled: false
+    version: 3.0.11
+    dns_suffix: kargo.arpa
+    github:
+      client_id: Ov23li28jxV3tmAviMVl
+      teams: ContainerCraft/kubeadmin,ContainerCraft/
