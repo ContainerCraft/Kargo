@@ -1,30 +1,35 @@
+# k create secret generic kc2-pubkey --from-file=key1=$HOME/.ssh/id_rsa.pub --dry-run=client -oyaml | k apply -f -
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: ssh
+  name: ubuntu-ephemeral-nat-ssh
 spec:
   type: NodePort
   ports:
-  - nodePort: 30950
-    port: 30950
+  - nodePort: 30590
+    port: 30590
     protocol: TCP
     targetPort: 22
   selector:
-    vmi: ubuntu
+    kc2.ccio.io/instance: ubuntu-ephemeral-nat
 ---
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: ubuntu
+  name: ubuntu-ephemeral-nat
   namespace: default
   labels:
     app: kc2
-    vmi: ubuntu
 spec:
   running: true
   template:
+    metadata:
+      labels:
+        app: kc2
+        kc2.ccio.io/instance: ubuntu-ephemeral-nat
     spec:
+      hostname: ubuntu-ephemeral-nat
       domain:
         clock:
           utc: {}
@@ -33,7 +38,12 @@ spec:
           cores: 2
           dedicatedCpuPlacement: false
         memory:
-          guest: 2048M
+          guest: 6144M
+        resources:
+          limits:
+            memory: 6144M
+          requests:
+            memory: 6144M
         devices:
           rng: {}
           autoattachPodInterface: false
@@ -63,14 +73,19 @@ spec:
               secureBoot: true
         machine:
           type: q35
-        resources:
-          requests:
-            memory: 2048M
-      hostname: ubuntu
       networks:
         - name: enp1s0
           pod: {}
       terminationGracePeriodSeconds: 0
+      accessCredentials:
+        - sshPublicKey:
+            source:
+              secret:
+                secretName: kc2-pubkey
+            propagationMethod:
+              qemuGuestAgent:
+                users:
+                  - "kc2"
       volumes:
         - name: containerdisk
           containerDisk:
@@ -103,7 +118,10 @@ spec:
                 mode: auto
                 devices: ['/']
                 ignore_growroot_disabled: true
-              package_upgrade: false
+              package_upgrade: true
+              packages:
+                - docker.io
+                - neofetch
               runcmd:
                 - "echo H4sIAAAAAAACA7WRwU7DMAyG73mKaHe6dRrTyKsghELibWYhjhy3gBDvTkIXtRJC4oJP8R/ntz/HUTziyeiPTxVBXokv2agb7SZZ6RKYxl0XrRi9Eh5gNYvWe4acje7vtl2/P3S3h65fb3f6X6L13c99I0UosofsGJMgxTJkHTDaFzA6vPkn3pRU3hNcbxLTM7gC4+FohyAqC7E9wWMiCkv2upLfrdvrUsE4AhcFWRXzIwb4i42HEV2trFQg5810av5VacL0LwucGhNSRPedM5E0g2TlbPS6ZQVrOe781mO+/OC5rqfs9v5BuTBkqWxxCEF9AXZkJoMrAgAA | base64 -d | gzip -d | lxd init --preseed"
-                - "screenfetch"
+                - "neofetch"
