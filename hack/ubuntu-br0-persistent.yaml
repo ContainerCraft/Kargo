@@ -17,8 +17,7 @@ spec:
     storageClassName: "ssd"
     volumeMode: Filesystem
 ---
-# ssh-keygen
-# kubectl create secret generic user-kc2-sshpubkey --from-file=key1=.ssh/id_rsa.pub --dry-run=client -oyaml | kubectl apply -f -
+# ssh-keygen: kubectl create secret generic user-kc2-sshpubkey --from-file=key1=.ssh/id_rsa.pub --dry-run=client -oyaml | kubectl apply -f -
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
