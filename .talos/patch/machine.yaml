@@ -1,4 +1,3 @@
-machine:
-  features:
-    hostDNS:
-      forwardKubeDNSToHost: false
+cluster:
+    clusterName: talos-kargo-docker
+    allowSchedulingOnControlPlanes: true
