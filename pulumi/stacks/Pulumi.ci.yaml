@@ -4,9 +4,9 @@ config:
   kargo:kubernetes:
     context: admin@talos-kargo-docker
     distribution: talos
-    kubeconfig: /workspaces/Kargo/.kube/config
+    kubeconfig: /workspaces/kargo/.kube/config
   kargo:kubevirt:
-    emulation: true
+    emulation: false
     enabled: true
   kargo:multus:
     enabled: false
