@@ -1,7 +1,5 @@
 # Kargo - The Cloud-Native ESXi Replacement
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/ContainerCraft/Kargo)
-
 [![CI - Kargo on Kind](https://github.com/ContainerCraft/Kargo/actions/workflows/kind.yaml/badge.svg)](https://github.com/ContainerCraft/Kargo/actions/workflows/kind.yaml)
 
 Join the conversation on the [ContainerCraft Community Discord Kargo Channel](https://discord.gg/Jb5jgDCksX).
@@ -33,106 +31,166 @@ For more information, see the [Kargo Project FAQ](FAQ.md).
 
 ## Getting Started
 
-### Prerequisites
+The following steps guide users through the basic steps of getting started with Kargo in [GitHub Codespaces] or locally on a linux machine with Docker, VSCode, and Dev Containers.
 
-Success with Kargo depends on two things, the server side infrastructure, and the client side tooling. Kargo is the server side platform, and the client side tooling is distributed via the [ContainerCraft Konductor](https://github.com/ContainerCraft/Konductor) devcontainer.
+While MacOS is supported, virtual machines will not start due to the lack of nested virtualization support.
 
-#### Client Side Cloud Dependencies
+## Prerequisites
 
-If running in Github Codespaces, all you need is a browser and a Github account!
+Accounts:
 
-#### Client Side Local Dependencies
+1. [GitHub](https://github.com)
+2. [Pulumi Cloud](https://app.pulumi.com/signup)
 
-If running locally on your own machine, you will need the following:
+Tools (Either/Or):
 
-- [Visual Studio Code](https://code.visualstudio.com/)
-- [Visual Studio Code Remote - Containers Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop)
-- [Pulumi Cloud Login & Access Token from app.pulumi.com](https://app.pulumi.com/)
-  - [Pulumi Cloud PAT Docs](https://www.pulumi.com/docs/pulumi-cloud/access-management/access-tokens/)
+- [VSCode](https://code.visualstudio.com/download) with the [VSCode GitHub Codespaces](https://marketplace.visualstudio.com/items?itemName=GitHub.codespaces) extension.
+- [Chrome](https://www.google.com/chrome) or [Edge](https://www.microsoft.com/en-us/edge) Browser to launch [GitHub Codespaces].
 
-After installing VSCode, the Remote Containers extension, and Docker Desktop, you can proceed to clone the Kargo repository and open it in VSCode with this one-liner:
+#### BEFORE YOU BEGIN:
+
+Select from the following ways to run the quickstart:
+
+- Using a Web Browser
+- Using VSCode with GitHub Codespaces
+- Using VSCode with Docker + Dev Containers on Local Linux Machine
+- Using VSCode with Docker + Dev Containers on Local MacOS Machine
+
+<details><summary>CLICK TO EXPAND</summary>
+
+### For using a Web Browser
+
+<details><summary>click to expand steps</summary>
+
+Tested in Google Chrome & Microsoft Edge browsers.
+
+1. Open the [Kargo GitHub repository](https://github.com/ContainerCraft/Kargo) in your browser.
+2. Click the `Code` button and select `Codespaces` tab.
+3. Click the Codespaces > Codespaces > 3-dot menu > `New with options`.
+4. select the following:
+
+| Option                        | Value                          |
+| ----------------------------- | ------------------------------ |
+| `Branch`                      | `main`                         |
+| `Dev container configuration` | `konductor`                    |
+| `Region`                      | `$USERS_CHOICE`                |
+| `Machine type`                | `4 cores, 16 GB RAM` or better |
+
+5. Click the `Create` button.
+
+Wait for Codespace build.
+
+Then continue with the [How To](#how-to) instructions.
+
+</details>
+
+### For VSCode with GitHub Codespaces
+
+<details><summary>click to expand steps</summary>
+
+Run the following steps in the [VSCode command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) by pressing '`Ctrl + Shift + P`'
+
+1. `Codespaces: Create New Codespace`
+2. `Select a repository` use fuzzy search to find `ContainerCraft/Kargo`
+3. `Select the branch main`
+4. `Select an instance size of at least 4 cores & 16GB of RAM`
+
+Wait for Codespace build.
+
+Then continue with the [How To](#how-to) instructions.
+
+</details>
+
+### For VSCode with Docker + Dev Containers on Local Linux Machine
+
+<details><summary>click to expand steps</summary>
+
+Ensure you have the following installed:
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [VSCode](https://code.visualstudio.com/download)
+- [VSCode Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+
+1. Open the Kargo repository in VSCode.
+2. Click the green `><` icon in the bottom left corner of the VSCode window.
+3. Select `Remote-Containers: Reopen in Container`.
+4. Select the `konductor` dev container configuration.
+
+Wait for the dev container to build.
+
+Then continue with the [How To](#how-to) instructions.
+
+</details>
+
+### For VSCode with Docker + Dev Containers on Local MacOS Machine
+* NOTE: This configuration works for development, but virtual machines will not start. *
+
+<details><summary>click to expand steps</summary>
+
+Ensure you have the following installed:
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [VSCode](https://code.visualstudio.com/download)
+- [VSCode Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+
+1. Open the Kargo repository in VSCode.
+2. Click the green `><` icon in the bottom left corner of the VSCode window.
+3. Select `Remote-Containers: Reopen in Container`.
+4. Select the `konductor` dev container configuration.
+
+Wait for the dev container to build.
+
+Then continue with the [How To](#how-to) instructions.
+
+</details>
+
+</details>
+
+## How To
+
+1. Open the VSCode [integrated terminal](https://code.visualstudio.com/docs/editor/integrated-terminal) by pressing '`` Ctrl + ` ``'.
+2. Login to Pulumi Cloud by running `pulumi login` in the terminal.
 
 ```bash
-git clone https://github.com/ContainerCraft/Kargo && cd Kargo && code .
-```
-
-When prompted, click "Reopen in Container" to open the Kargo repository in the Konductor devcontainer.
-
-### Server Side Dependencies
-
-There are two ways to run the server side infrastructure for Kargo. Choose between running, testing, and developing Kargo using [Kind](https://kind.sigs.k8s.io/) from within the Konductor container, or running Kargo on a local or remote [Sidero Talos Kubernetes](https://talos.dev/) cluster.
-
-#### Virtual Kind Kubernetes
-
-Using Kind is the easiest way to get started with Kargo. Kind is a Kubernetes-in-Docker platform that allows you to run a Kubernetes cluster on your local machine. Kind allows for easy testing and development of Kubernetes and Kargo and is the recommended first step for new Kargonauts to familiarize yourself with the project before investing in and provisioning physical hardware.
-
-Kind is also used by the Kargo maintainers and contributors to develop and test Kargo.
-
-##### How to Run Kargo on Kind
-
-> NOTE: the following assumes you have already installed VSCode, the Remote Containers extension, and Docker Desktop.
-
-1. Clone the Kargo repository to your local machine
-2. Open the Kargo repository in VSCode
-3. When prompted, click "Reopen in Container" to open the Kargo repository in the Konductor devcontainer
-4. Login to Pulumi and configure a new pulumi stack for Kargo
-
-> NOTE: substitute your kubecontext name for `kind-kargo` if you are using a different kubecontext.
-
-```bash
-# Setup Pulumi CLI
+# Login to Pulumi Cloud
 pulumi login
-pulumi install
-pulumi stack select --create kind-kargo
-
-# Configure Kargo Stack
-pulumi config set kubernetes kind
-pulumi config set kubecontext kind-kargo
 ```
 
-5. Start a local Kind cluster
+# Start a Talos-in-Docker Kubernetes cluster
+
+3. Execute the following commands in the terminal
 
 ```bash
-make kind
+# 1. Start a Talos-in-Docker Kubernetes cluster
+# 2. Deploy the Kargo Kubevirt PaaS Pulumi IaC
+task deploy
 ```
 
-6. Once the Kind cluster is running, you can validate access the Kubernetes API with the following command:
+4. Deploy a Kubevirt VM instance
 
 ```bash
-kubectl cluster-info
-```
+# Enable the VM instance
+pulumi config set --path vm.enabled true
 
-7. Deploy the Kargo platform to the Kind cluster with the following commands:
-
-```bash
-# Deploy Kargo
+# Deploy the Kubevirt VM instance
 pulumi up
 ```
 
-7. Test with a VM!
+5. Access the VM instance
 
 ```bash
-kubectl apply -f hack/ubuntu-nat.yaml
+# Access the VM instance via ssh with virtctl
+# uname:passwd = kc2:kc2
+virtctl ssh kc2@ubuntu-ephemeral-nat
+
+# Access the VM instance via ssh
+ssh -p 30590 -i ~/.ssh/id_rsa kc2@localhost
+
+# Access the VM instance via serial console
+virtctl console ubuntu-ephemeral-nat
 ```
 
-This vm will take a while to start in emulator mode if testing on Kind. You can check the status of the VM with the following command:
-
-```bash
-# Connect to the console of the VM
-virtctl console ubuntu
-
-# use ssh to connect to the VM
-# user:pass == [kc2:kc2]
-virtctl ssh kc2@ubuntu
-```
-
-##### Physical Talos Kubernetes
-
-[Talos](https://talos.dev/) is a modern OS for Kubernetes. Talos is designed to be secure, immutable, and minimal. Talos is the recommended platform for running Kargo in a production-like homelab environment. Find out more about why in our [FAQ](FAQ.md).
-
-The Talos documentation and deployment automation is still a work in progress under discovery in the [./metal directory](./metal/3node-optiplex-cluster) of this repository. Find the README with current build notes and example configs there.
-
+[GitHub Codespaces]: https://github.com/features/codespaces
 
 ## Contributing
 
