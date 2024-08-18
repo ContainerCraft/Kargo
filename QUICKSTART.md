@@ -97,11 +97,11 @@ task deploy
 4. Deploy a Kubevirt VM instance
 
 ```bash
-# Create an ssh-pubkey kubernetes secret
-k create secret generic kc2-pubkey --from-file=key1=$HOME/.ssh/id_rsa.pub --dry-run=client -oyaml | k apply -f -
+# Enable the VM instance
+pulumi config set --path vm.enabled true
 
-# Deploy a Kubevirt VM instance
-kubectl apply -f hack/ubuntu-nat.yaml
+# Deploy the Kubevirt VM instance
+pulumi up
 ```
 
 5. Access the VM instance

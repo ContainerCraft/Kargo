@@ -17,6 +17,7 @@ from src.prometheus.deploy import deploy_prometheus
 from src.kubernetes_dashboard.deploy import deploy_kubernetes_dashboard
 from src.kv_manager.deploy import deploy_ui_for_kubevirt
 from src.ceph.deploy import deploy_rook_operator
+from src.vm.ubuntu import deploy_ubuntu_vm
 
 ##################################################################################
 # Load the Pulumi Config
@@ -72,6 +73,7 @@ config_hostpath_provisioner, hostpath_provisioner_enabled = get_module_config('h
 config_cnao, cnao_enabled = get_module_config('cnao')
 config_kubernetes_dashboard, kubernetes_dashboard_enabled = get_module_config('kubernetes_dashboard')
 config_kubevirt_manager, kubevirt_manager_enabled = get_module_config('kubevirt_manager')
+config_vm, vm_enabled = get_module_config('vm')
 
 ##################################################################################
 ## Get the Kubernetes API endpoint IP
@@ -463,6 +465,53 @@ def run_kubevirt_manager():
     return None
 
 kubevirt_manager = run_kubevirt_manager()
+
+##################################################################################
+# Deploy Ubuntu VM
+def run_ubuntu_vm():
+    if vm_enabled:
+
+        # Get the SSH Public Key string from Pulumi Config if it exists
+        # Otherwise, read the SSH Public Key from the local filesystem
+        ssh_pub_key = config.get("ssh_pub_key")
+        if not ssh_pub_key:
+            # Get the SSH public key
+            with open(f"{os.environ['HOME']}/.ssh/id_rsa.pub", "r") as f:
+                ssh_pub_key = f.read().strip()
+
+        # Define the default values
+        default_vm_config = {
+            "namespace": "default",
+            "instance_name": "ubuntu",
+            "image_name": "docker.io/containercraft/ubuntu:22.04",
+            "node_port": 30590,
+            "ssh_user": "kc2",
+            "ssh_password": "kc2",
+            "ssh_pub_key": ssh_pub_key
+        }
+
+        # Merge the default values with the existing config_vm values
+        config_vm_merged = {**default_vm_config, **{k: v for k, v in config_vm.items() if v is not None}}
+
+        # Pass the merged configuration to the deploy_ubuntu_vm function
+        ubuntu_vm, ubuntu_ssh_service = deploy_ubuntu_vm(
+            config_vm_merged,
+            k8s_provider,
+            depends
+        )
+
+        versions["ubuntu_vm"] = {
+            "enabled": vm_enabled,
+            "name": ubuntu_vm.metadata["name"]
+        }
+
+        safe_append(depends, ubuntu_ssh_service)
+
+        return ubuntu_vm, ubuntu_ssh_service
+
+    return None, None
+
+ubuntu_vm, ubuntu_ssh_service = run_ubuntu_vm()
 
 # Export the component versions
 pulumi.export("versions", versions)

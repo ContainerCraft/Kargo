@@ -10,3 +10,5 @@ config:
     enabled: true
   kargo:multus:
     enabled: false
+  kargo:vm:
+    enabled: false
