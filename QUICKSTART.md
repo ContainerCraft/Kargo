@@ -146,15 +146,15 @@ pulumi up
 5. Access the VM instance
 
 ```bash
-# Access the VM instance via serial console
-virtctl console ubuntu-ephemeral-nat
-
 # Access the VM instance via ssh with virtctl
 # uname:passwd = kc2:kc2
 virtctl ssh kc2@ubuntu-ephemeral-nat
 
 # Access the VM instance via ssh
 ssh -p 30590 -i ~/.ssh/id_rsa kc2@localhost
+
+# Access the VM instance via serial console
+virtctl console ubuntu-ephemeral-nat
 ```
 
 [GitHub Codespaces]: https://github.com/features/codespaces
