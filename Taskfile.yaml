@@ -107,6 +107,18 @@ tasks:
       - task: pulumi-config
       - task: pulumi-deploy
 
+  vm-deploy:
+    desc: "Enable the built in pulumi Ubuntu vm iac feature"
+    cmds:
+      - pulumi config set --path vm.enabled true
+      - pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
+
+  vm-destroy:
+    desc: "Enable the built in pulumi Ubuntu vm iac feature"
+    cmds:
+      - pulumi config set --path vm.enabled false
+      - pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
+
   deploy:
     desc: "Deploy all resources."
     deps:
