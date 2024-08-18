@@ -1,3 +1,0 @@
-cluster:
-    clusterName: talos-kargo-docker
-    allowSchedulingOnControlPlanes: true

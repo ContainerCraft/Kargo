@@ -7,10 +7,10 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - nodePort: 30590
-    port: 30590
-    protocol: TCP
-    targetPort: 22
+    - nodePort: 30590
+      port: 30590
+      protocol: TCP
+      targetPort: 22
   selector:
     kc2.ccio.io/instance: ubuntu-ephemeral-nat
 ---
@@ -35,15 +35,18 @@ spec:
           utc: {}
           timer: {}
         cpu:
-          cores: 2
+          cores: 1
+          sockets: 1
+          threads: 2
+          model: host-passthrough
           dedicatedCpuPlacement: false
         memory:
-          guest: 6144M
+          guest: 4096M
         resources:
           limits:
-            memory: 6144M
+            memory: 4096M
           requests:
-            memory: 6144M
+            memory: 4096M
         devices:
           rng: {}
           autoattachPodInterface: false
@@ -62,15 +65,15 @@ spec:
             - name: enp1s0
               model: virtio
               bridge: {}
-        features:
-          acpi:
-            enabled: true
-          smm:
-            enabled: true
-        firmware:
-          bootloader:
-            efi:
-              secureBoot: true
+        #features:
+        #  acpi:
+        #    enabled: true
+        #  smm:
+        #    enabled: true
+        #firmware:
+        #  bootloader:
+        #    efi:
+        #      secureBoot: false
         machine:
           type: q35
       networks:
