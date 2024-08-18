@@ -12,6 +12,15 @@ config:
   pulumi:tags:
     value:
       pulumi:template: ccio-kargo-python
+  vm:
+    value:
+      enabled: false
+      namespace: default
+      instance_name: ubuntu
+      image_name: docker.io/containercraft/ubuntu:22.04
+      node_port: 30590
+      ssh_user: kc2
+      ssh_password: kc2
   kubernetes:
     value:
       context: kargo
