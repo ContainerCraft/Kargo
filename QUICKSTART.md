@@ -18,12 +18,12 @@ Tools (Either/Or):
 
 Select from the following ways to run the quickstart:
 
-- [Using a Web Browser](#for-using-a-web-browser)
-- [Using VSCode with GitHub Codespaces](#for-vscode-with-github-codespaces)
-- [Using VSCode with Docker + Dev Containers on Local Linux Machine](#for-vscode-with-docker--dev-containers-on-local-linux-machine)
-- [Using VSCode with Docker + Dev Containers on Local MacOS Machine](#for-vscode-with-docker--dev-containers-on-local-macos-machine)
+- Using a Web Browser
+- Using VSCode with GitHub Codespaces
+- Using VSCode with Docker + Dev Containers on Local Linux Machine
+- Using VSCode with Docker + Dev Containers on Local MacOS Machine
 
-<details><summary>click to expand steps</summary>
+<details><summary>CLICK TO EXPAND</summary>
 
 ### For using a Web Browser
 
