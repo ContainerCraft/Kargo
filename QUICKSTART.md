@@ -14,15 +14,22 @@ Tools (Either/Or):
 - [VSCode](https://code.visualstudio.com/download) with the [VSCode GitHub Codespaces](https://marketplace.visualstudio.com/items?itemName=GitHub.codespaces) extension.
 - [Chrome](https://www.google.com/chrome) or [Edge](https://www.microsoft.com/en-us/edge) Browser to launch [GitHub Codespaces].
 
-### BEFORE YOU BEGIN:
+#### BEFORE YOU BEGIN:
 
-Select between running this quickstart in either GitHub Codespaces from within your browser window, or running in GitHub Codespaces from within a local VSCode installation with the [VSCode GitHub Codespaces](https://marketplace.visualstudio.com/items?itemName=GitHub.codespaces) extension.
+Select from the following ways to run the quickstart:
+
+- [Using a Web Browser](#for-using-a-web-browser)
+- [Using VSCode with GitHub Codespaces](#for-vscode-with-github-codespaces)
+- [Using VSCode with Docker + Dev Containers on Local Linux Machine](#for-vscode-with-docker--dev-containers-on-local-linux-machine)
+- [Using VSCode with Docker + Dev Containers on Local MacOS Machine](#for-vscode-with-docker--dev-containers-on-local-macos-machine)
+
+<details><summary>click to expand steps</summary>
 
 ### For using a Web Browser
 
-Tested in Google Chrome & Microsoft Edge browsers.
-
 <details><summary>click to expand steps</summary>
+
+Tested in Google Chrome & Microsoft Edge browsers.
 
 1. Open the [Kargo GitHub repository](https://github.com/ContainerCraft/Kargo) in your browser.
 2. Click the `Code` button and select `Codespaces` tab.
@@ -40,13 +47,15 @@ Tested in Google Chrome & Microsoft Edge browsers.
 
 Wait for Codespace build.
 
+Then continue with the [How To](#how-to) instructions.
+
 </details>
 
 ### For VSCode with GitHub Codespaces
 
-Run the following steps in the [VSCode command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) by pressing '`Ctrl + Shift + P`'
-
 <details><summary>click to expand steps</summary>
+
+Run the following steps in the [VSCode command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) by pressing '`Ctrl + Shift + P`'
 
 1. `Codespaces: Create New Codespace`
 2. `Select a repository` use fuzzy search to find `ContainerCraft/Kargo`
@@ -55,9 +64,13 @@ Run the following steps in the [VSCode command palette](https://code.visualstudi
 
 Wait for Codespace build.
 
+Then continue with the [How To](#how-to) instructions.
+
 </details>
 
 ### For VSCode with Docker + Dev Containers on Local Linux Machine
+
+<details><summary>click to expand steps</summary>
 
 Ensure you have the following installed:
 
@@ -65,12 +78,38 @@ Ensure you have the following installed:
 - [VSCode](https://code.visualstudio.com/download)
 - [VSCode Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
+1. Open the Kargo repository in VSCode.
+2. Click the green `><` icon in the bottom left corner of the VSCode window.
+3. Select `Remote-Containers: Reopen in Container`.
+4. Select the `konductor` dev container configuration.
+
+Wait for the dev container to build.
+
+Then continue with the [How To](#how-to) instructions.
+
+</details>
+
+### For VSCode with Docker + Dev Containers on Local MacOS Machine
+* NOTE: This configuration works for development, but virtual machines will not start. *
+
 <details><summary>click to expand steps</summary>
+
+Ensure you have the following installed:
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [VSCode](https://code.visualstudio.com/download)
+- [VSCode Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
 1. Open the Kargo repository in VSCode.
 2. Click the green `><` icon in the bottom left corner of the VSCode window.
 3. Select `Remote-Containers: Reopen in Container`.
 4. Select the `konductor` dev container configuration.
+
+Wait for the dev container to build.
+
+Then continue with the [How To](#how-to) instructions.
+
+</details>
 
 </details>
 
