@@ -2,32 +2,25 @@
 
 [![CI - Kargo on Kind](https://github.com/ContainerCraft/Kargo/actions/workflows/kind.yaml/badge.svg)](https://github.com/ContainerCraft/Kargo/actions/workflows/kind.yaml)
 
-Join the conversation on the [ContainerCraft Community Discord Kargo Channel](https://discord.gg/Jb5jgDCksX).
-
-> Kargo Project opened in the [Konductor Devcontainer](https://github.com/ContainerCraft/Konductor) with Github Codespaces.
-> ![Screenshot of Kargo open in Konductor Devcontainer](.github/images/konductor-codespaces.png?raw=true "Kargo Konductor Codespaces")
-> NOTE: This project is in pre-alpha pathfinding mode. See the [inaugural Twitter/X Thread post](https://x.com/usrbinkat/status/1749186949590794551) by [@usrbinkat](https://twitter.com/usrbinkat)
-
 ## About
+
+Join the conversation on the [ContainerCraft Community Discord Kargo Channel](https://discord.gg/Jb5jgDCksX).
 
 Kargo is a community project to build the first Platform Engineered virtualization environment to replace the need for hypervisors that may no longer be suitable for cloud-native environments. The project is a collaboration between the ContainerCraft community, Kubernetes industry leaders, virtualization experts, and practitioners to build a common sharable platform for virtualized environments in both on-prem, cloud, and local environments.
 
 For more information, see the [Kargo Project FAQ](FAQ.md).
 
+> Kargo Project opened in the [Konductor Devcontainer](https://github.com/ContainerCraft/Konductor) with Github Codespaces.
+> ![Screenshot of Kargo open in Konductor Devcontainer](.github/images/konductor-docker-linux-devcontainer.png?raw=true "Kargo Konductor Codespaces")
+> NOTE: This project is in pre-alpha pathfinding mode. See the [inaugural Twitter/X Thread post](https://x.com/usrbinkat/status/1749186949590794551) by [@usrbinkat](https://twitter.com/usrbinkat)
+
 ### Goals
 
-- Eliminate the barrier to entry for learning Kubernetes and Cloud Native technologies
-- Provide a common platform for the community to collaborate and share knowledge
-- Enable anyone to experience the power of owning a local cloud platform
-- Accelerate the time-to-achievement for new projects and ideas
-- Develop a community library of sharable middleware and application IaC for use on Kargo
-- Select enterprise-grade technologies and practices to build a valuable learning platform
-- Be the best hypervisor and container platform for the Homelab community
-
-### Non-Goals
-
-- Kargo is not a production platform
-- Kargo will not try to be everything for everyone
+- Simpler Kubernetes skills development
+- Accelerate time-to-success for new projects and ideas
+- Build a common community platform for sharing and collaboration
+- Build an enterprise-grade hyperconverged homelab compute platform
+- Develop a reliable platform for community equity building
 
 ## Getting Started
 
@@ -203,16 +196,10 @@ To get started, join the conversation on the [ContainerCraft Community Discord K
 
 Manually testing with the kargo on kind workflow is a great way to get started with Kargo development.
 
-Additionally, Konductor and
-
-the Kargo repository are built with support for [act](https://nektosact.com/), a tool for running Github Action Runner pipelines locally. This is a great way to test your code changes for CI before committing to git.
+Additionally, Konductor and the Kargo repository are built with support for [act](https://nektosact.com/), a tool for running Github Action Runner pipelines locally. This is a great way to test your code changes for CI before committing to git.
 
 The following commands are useful for testing Kargo CI locally:
 
 ```bash
-make act
+task act
 ```
-
-Running CI in GitHub Codespaces currently takes approximately 3 minutes when using the `act` tool. A successful run will conclude something like this:
-
-![Successful act kargo on kind pipeline run](.github/images/gha-act-kargo-on-kind.png)
