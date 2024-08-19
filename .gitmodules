@@ -1,9 +1,0 @@
-[submodule "rootfs/etc/skel/.tmux/plugins/tpm"]
-	path = rootfs/etc/skel/.tmux/plugins/tpm
-	url = https://github.com/tmux-plugins/tpm
-[submodule "rootfs/etc/skel/.local/share/omf"]
-	path = rootfs/etc/skel/.local/share/omf
-	url = https://github.com/oh-my-fish/oh-my-fish.git
-[submodule "rootfs/etc/skel/.vim/bundle/Vundle.vim"]
-	path = rootfs/etc/skel/.vim/bundle/Vundle.vim
-	url = https://github.com/VundleVim/Vundle.vim.git
