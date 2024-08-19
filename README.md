@@ -146,7 +146,7 @@ Wait for the dev container to build and open in VSCode, then proceed with [How T
 
 ## How To
 
-1. Open the VSCode [integrated terminal](https://code.visualstudio.com/docs/editor/integrated-terminal) by pressing '`Ctrl + ` `'.
+1. Open the [VSCode integrated terminal] by pressing '`` Ctrl + ` ``'.
 2. Login to Pulumi Cloud by running `pulumi login` in the terminal.
 
 ```bash
@@ -154,13 +154,9 @@ Wait for the dev container to build and open in VSCode, then proceed with [How T
 pulumi login
 ```
 
-# Start a Talos-in-Docker Kubernetes cluster
-
-3. Execute the following commands in the terminal
+3. Launch Talos-in-Docker Kubernetes + Deploy Kargo Kubevirt PaaS IaC.
 
 ```bash
-# 1. Start a Talos-in-Docker Kubernetes cluster
-# 2. Deploy the Kargo Kubevirt PaaS Pulumi IaC
 task deploy
 ```
 
@@ -177,18 +173,19 @@ pulumi up
 5. Access the VM instance
 
 ```bash
+# Access the VM instance via ssh
+ssh -p 30590 -i ~/.ssh/id_rsa kc2@localhost screenfetch
+
 # Access the VM instance via ssh with virtctl
 # uname:passwd = kc2:kc2
-virtctl ssh kc2@ubuntu-ephemeral-nat
-
-# Access the VM instance via ssh
-ssh -p 30590 -i ~/.ssh/id_rsa kc2@localhost
+virtctl ssh kc2@ubuntu
 
 # Access the VM instance via serial console
-virtctl console ubuntu-ephemeral-nat
+virtctl console ubuntu
 ```
 
 [GitHub Codespaces]: https://github.com/features/codespaces
+[VSCode integrated terminal]: https://code.visualstudio.com/docs/editor/integrated-terminal
 
 ## Contributing
 
