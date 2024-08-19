@@ -89,6 +89,10 @@ Wait for the Codespace to build, then continue with the [How To](#how-to) instru
 
 Ensure you have the following installed:
 
+
+
+[![Kargo Kubevirt PaaS IaC Quickstart Prerequisites on Linux](https://img.youtube.com/vi/RyXZrcZKen8/0.jpg)](https://www.youtube.com/watch?v=RyXZrcZKen8)
+
 - [Docker](https://docs.docker.com/get-docker/)
 - [VSCode](https://code.visualstudio.com/download)
 - [VSCode Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
@@ -138,6 +142,8 @@ Wait for the dev container to build and open in VSCode, then proceed with [How T
 </details>
 
 ## How To
+
+[![Deploy Kargo Kubevirt PaaS IaC Quickstart on Linux](https://img.youtube.com/vi/qo7EfF-xdK0/0.jpg)](https://www.youtube.com/watch?v=qo7EfF-xdK0)
 
 1. Open the [VSCode integrated terminal] by pressing '`` Ctrl + ` ``'.
 2. Login to Pulumi Cloud by running `pulumi login` in the terminal.
