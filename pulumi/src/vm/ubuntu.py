@@ -139,7 +139,7 @@ def deploy_ubuntu_vm(
                                 {"name": "enp1s0", "model": "virtio", "bridge": {}}
                             ],
                         },
-                        "machine": {"type": "virt"}
+                        "machine": {"type": "q35"}
                     },
                     "networks": [{"name": "enp1s0", "pod": {}}],
                     "terminationGracePeriodSeconds": 0,

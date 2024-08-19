@@ -81,6 +81,7 @@ tasks:
       - pulumi config set --path kubernetes.kubeconfig {{.kube_config_file}}
       - pulumi config set --path cilium.enabled false
       - pulumi config set --path multus.enabled false
+      - pulumi config set --path vm.enabled false
 
   pulumi-deploy:
     desc: "Deploy Pulumi infrastructure."

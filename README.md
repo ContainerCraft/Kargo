@@ -184,6 +184,12 @@ virtctl ssh kc2@ubuntu
 virtctl console ubuntu
 ```
 
+6. Cleanup
+
+```bash
+task clean
+```
+
 [GitHub Codespaces]: https://github.com/features/codespaces
 [VSCode integrated terminal]: https://code.visualstudio.com/docs/editor/integrated-terminal
 
