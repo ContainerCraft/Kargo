@@ -264,6 +264,9 @@
                     "action.terminal.focusNext": {
                         "key": "ctrl+shift+down",
                         "mac": "cmd+shift+down"
+                    },
+                    "editorAssociations": {
+                      "*.md": "runme"
                     }
                 },
                 "autoOpenPreviewPanel.openPreviewToTheSide": false,
