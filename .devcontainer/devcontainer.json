@@ -269,7 +269,6 @@
                       "*.md": "runme"
                     }
                 },
-                "autoOpenPreviewPanel.openPreviewToTheSide": false,
                 "explorer.openEditors.visible": 1,
                 "explorer": {
                     "openEditors": {
