@@ -71,6 +71,9 @@ tasks:
       - mkdir -p .kube .pulumi .talos
       - touch {{.kube_config_file}} {{.talos_config_file}}
       - chmod 600 {{.kube_config_file}} {{.talos_config_file}}
+      - sudo ln -sf ./.pulumi /.pulumi
+      - sudo ln -sf ./.talos /.talos
+      - sudo ln -sf ./.kube /.kube
 
   pulumi-login:
     desc: "Authenticate with Pulumi."
