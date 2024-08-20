@@ -77,7 +77,7 @@ Tools and Accounts:
 4. Login to Pulumi Cloud by running `pulumi login` in the terminal.
 
 ```sh {"cwd":"/workspaces/Kargo","id":"01J5PTD6JZYE6F79ZEAEG8FY41","interpreter":"/usr/bin/bash","name":"step4-login-task","terminalRows":"25"}
-./run.sh pulumi login
+pulumi login
 ```
 
 5. Launch Talos-in-Docker Kubernetes + Deploy Kargo Kubevirt PaaS IaC.
