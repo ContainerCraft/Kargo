@@ -47,45 +47,48 @@ Tools and Accounts:
 1. Login to Github
 2. Launch [Kargo in Github Codspaces](https://bit.ly/launch-kargo-kubevirt-paas-in-github-codespaces)
 
-   > <details><summary> Click to expand: HOW TO LAUNCH IN GITHUB CODESPACES</summary>
-   >
-   > > **NOTE**: Find other ways to run the quickstart in the [Kargo Quickstart Guide](docs/QUICKSTART.md).
-   >
-   > Using either [Google Chrome](https://www.google.com/chrome) or [Microsoft Edge](https://www.microsoft.com/en-us/edge), follow the steps below to launch the Kargo project in GitHub Codespaces from your browser.
-   >
-   > | Step Number | Action                                                                                       | Example / Suggestions          |
-   > | ----------- | -------------------------------------------------------------------------------------------- | ------------------------------ |
-   > | 1           | Open the [Kargo GitHub repository](https://github.com/ContainerCraft/Kargo) in your browser. |                                |
-   > | 2           | Click the `Code` button and select the `Codespaces` tab.                                     |                                |
-   > | 3           | Click `Codespaces > New with options` in the 3-dot menu.                                     |                                |
-   > | 4           | Select the following options:                                                                |                                |
-   > |             | __Branch__                                                                                   | `main`                         |
-   > |             | __Dev container configuration__                                                              | `konductor`                    |
-   > |             | __Region__                                                                                   | `$USERS_CHOICE`                |
-   > |             | __Machine type__                                                                             | `4 cores, 16 GB RAM` or better |
-   > | 5           | Click the `Create` button.                                                                   |                                |
-   >
-   > Wait for the Codespace to build, and then proceed.
-   >
-   > </details>
-   >
+   > 
+
+> 
+>
+> <details><summary> Click to expand: HOW TO LAUNCH IN GITHUB CODESPACES</summary>
+>
+> > **NOTE**: Find other ways to run the quickstart in the [Kargo Quickstart Guide](docs/QUICKSTART.md).
+>
+> Using either [Google Chrome](https://www.google.com/chrome) or [Microsoft Edge](https://www.microsoft.com/en-us/edge), follow the steps below to launch the Kargo project in GitHub Codespaces from your browser.
+>
+> | Step Number | Action                                                                                       | Example / Suggestions          |
+> | ----------- | -------------------------------------------------------------------------------------------- | ------------------------------ |
+> | 1           | Open the [Kargo GitHub repository](https://github.com/ContainerCraft/Kargo) in your browser. |                                |
+> | 2           | Click the `Code` button and select the `Codespaces` tab.                                     |                                |
+> | 3           | Click `Codespaces > New with options` in the 3-dot menu.                                     |                                |
+> | 4           | Select the following options:                                                                |                                |
+> |             | __Branch__                                                                                   | `main`                         |
+> |             | __Dev container configuration__                                                              | `konductor`                    |
+> |             | __Region__                                                                                   | `$USERS_CHOICE`                |
+> |             | __Machine type__                                                                             | `4 cores, 16 GB RAM` or better |
+> | 5           | Click the `Create` button.                                                                   |                                |
+>
+> Wait for the Codespace to build, and then proceed.
+>
+> </details>
 
 3. Open the [VSCode integrated terminal](https://code.visualstudio.com/docs/editor/integrated-terminal) by pressing '`Ctrl + ``'.
 4. Login to Pulumi Cloud by running `pulumi login` in the terminal.
 
-```sh {"id":"01J5PTD6JZYE6F79ZEAEG8FY41","name":"step1-login-task"}
-pulumi login
+```sh {"cwd":"/workspaces/Kargo","id":"01J5PTD6JZYE6F79ZEAEG8FY41","interpreter":"/usr/bin/bash","name":"step4-login-task","terminalRows":"25"}
+set -x; source /home/vscode/.bashrc; printenv; eval "$(direnv hook bash)"; direnv allow && pulumi login
 ```
 
 5. Launch Talos-in-Docker Kubernetes + Deploy Kargo Kubevirt PaaS IaC.
 
-```sh {"id":"01J5PTD6JZYE6F79ZEAJ5XWTPG","name":"step2-deploy-task"}
+```sh {"cwd":"/workspaces/Kargo","id":"01J5PTD6JZYE6F79ZEAJ5XWTPG","interpreter":"/usr/bin/bash","name":"step5-deploy-task","terminalRows":"40"}
 task deploy
 ```
 
 6. Deploy a new Kubevirt VM instance
 
-```bash {"id":"01J5PTD6JZYE6F79ZEAKYKZ1D9","name":"step3-deploy-vm"}
+```bash {"id":"01J5PTD6JZYE6F79ZEAKYKZ1D9","name":"step6-deploy-vm"}
 # Enable the VM instance
 pulumi config set --path vm.enabled true
 
@@ -93,29 +96,31 @@ pulumi config set --path vm.enabled true
 pulumi up
 ```
 
-7. SSH to the new Ubuntu VM instance
+7. SSH to the new Ubuntu VM instance (ignore strict host key checking).
 
-```bash {"id":"01J5PTD6JZYE6F79ZEAN9XGXBQ","name":"step4-access-vm"}
+```bash {"id":"01J5PTD6JZYE6F79ZEAN9XGXBQ","name":"step7-access-vm"}
 # Access the VM instance via ssh
-ssh -p 30590 -i ~/.ssh/id_rsa kc2@localhost screenfetch
+ssh -p 30590 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no kc2@localhost screenfetch
 ```
 
 8. Practice using the `virtctl` command to access the VM instance.
 
-```bash {"id":"01J5PZ5GDMMFDRGG3D5G0ZGDBV","name":"step5-virtctl"}
+```bash {"id":"01J5PZ5GDMMFDRGG3D5G0ZGDBV","name":"step8-virtctl"}
 # Access the VM instance via ssh with virtctl
 # uname:passwd = kc2:kc2
 virtctl ssh kc2@ubuntu
+```
 
+```bash {"id":"01J5Q78V4RYNTPDDA9ASXTGSR1","name":"step9-virtctl"}
 # Access the VM instance via serial console
 virtctl console ubuntu
 ```
 
 > **NOTE:** `virtctl console` connects serial console. To exit the console, press `Ctrl + ]` or delete the integrated terminal.
 
-9. Cleanup
+10. Cleanup
 
-```bash {"id":"01J5PTD6JZYE6F79ZEANMY688P","name":"step6-cleanup"}
+```bash {"id":"01J5PTD6JZYE6F79ZEANMY688P","name":"step10-cleanup"}
 task clean
 ```
 
@@ -133,6 +138,6 @@ Additionally, Konductor and the Kargo repository are built with support for [act
 
 The following commands are useful for testing Kargo CI locally:
 
-```bash {"id":"01J5PTD6JZYE6F79ZEAP4QGVMA"}
+```bash {"id":"01J5PTD6JZYE6F79ZEAP4QGVMA","name":"test-kargo-ci"}
 task act
 ```

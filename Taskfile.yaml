@@ -12,6 +12,8 @@ vars:
   kube_config_file: "{{.PWD}}/.kube/config"
   talos_config_file: "{{.PWD}}/.talos/manifest/talosconfig"
   pulumi_stack_identifier: "{{.organization}}/{{.project}}/{{.deployment}}"
+  home:
+    sh: echo $HOME
   arch:
     sh: |
       arch=$(uname -m)
@@ -133,9 +135,10 @@ tasks:
     cmds:
       - talosctl gen config {{.project}} https://10.0.5.2:6443 --config-patch {{.talos_patch}} --force --output .talos/manifest --context {{.cluster_name}}
 
-  talos-cluster:
+  talos-deploy:
     desc: "Create the Talos Kubernetes cluster."
     cmds:
+      - task: init
       - |
         talosctl cluster create \
           --arch={{.arch}} \
@@ -147,7 +150,7 @@ tasks:
           --exposed-ports {{.exposed_ports}} \
           --context {{.cluster_name}} \
           --name {{.cluster_name}} \
-          --workers 0
+          --workers 0 --crashdump
 
   talos-ready:
     desc: "Wait for the Talos cluster control plane components to be ready."
@@ -174,7 +177,7 @@ tasks:
     cmds:
       - task: init
       - task: talos-gen-config
-      - task: talos-cluster
+      - task: talos-deploy
       - task: talos-ready
       - task: all-pods-ready
 
