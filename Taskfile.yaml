@@ -29,6 +29,11 @@ vars:
   memory: "8192"
 
 tasks:
+  printenv:
+    desc: "Print environment variables."
+    cmds:
+      - /usr/bin/printenv
+
   default:
     desc: "Run all tasks to set up and configure a Talos Kubernetes cluster."
     cmds:
@@ -63,7 +68,6 @@ tasks:
   init:
     desc: "Initialize directories and configuration files."
     cmds:
-      - direnv allow || true
       - mkdir -p .kube .pulumi .talos
       - touch {{.kube_config_file}} {{.talos_config_file}}
       - chmod 600 {{.kube_config_file}} {{.talos_config_file}}

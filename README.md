@@ -76,6 +76,10 @@ Tools and Accounts:
 3. Open the [VSCode integrated terminal](https://code.visualstudio.com/docs/editor/integrated-terminal) by pressing '`Ctrl + ``'.
 4. Login to Pulumi Cloud by running `pulumi login` in the terminal.
 
+```sh {"cwd":"/workspaces/Kargo","id":"01J5S0W4CQ3XSZXR5N449SPNE9","interpreter":"/usr/bin/bash -x","name":"task0-printenv-test","terminalRows":"20"}
+task printenv
+```
+
 ```sh {"cwd":"/workspaces/Kargo","id":"01J5PTD6JZYE6F79ZEAEG8FY41","interpreter":"/usr/bin/bash","name":"step4-login-task","terminalRows":"25"}
 pulumi login
 ```
