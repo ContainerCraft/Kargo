@@ -74,60 +74,56 @@ Tools and Accounts:
 > </details>
 
 3. Open the [VSCode integrated terminal](https://code.visualstudio.com/docs/editor/integrated-terminal) by pressing `[ Ctrl + ` ]`.
-4. Login to Pulumi Cloud by running `pulumi login` in the terminal.
+4. Login to Pulumi Cloud by running `task pulumi-login` in the terminal.
 
-```sh {"id":"01J5PTD6JZYE6F79ZEAEG8FY41","name":"step4-login-task","terminalRows":"25"}
-pulumi login
+```bash {"id":"01J5PTD6JZYE6F79ZEAEG8FY41","name":"login","terminalRows":"25"}
+task pulumi-login
 ```
 
-```sh {"id":"01J5S0W4CQ3XSZXR5N449SPNE9","name":"task0-printenv-test","terminalRows":"20"}
-echo $PWD
-env | grep -iE "PWD|HOME"
+5. Configure the Pulumi Stack
+
+```bash {"id":"01J5V957H870S6469HE84QXHCT","name":"configure","terminalRows":"25"}
+task pulumi-configure
 ```
 
-```sh {"id":"01J5TZA82C9S924N36FVQS9BRH"}
-/usr/bin/echo $PWD
-/usr/bin/echo $KUBECONFIG
-/usr/bin/task printenv
+6. Launch Talos-in-Docker Kubernetes
+
+```bash {"id":"01J5PTD6JZYE6F79ZEAJ5XWTPG","name":"deploy","terminalRows":"40"}
+task kubernetes
 ```
 
-5. Launch Talos-in-Docker Kubernetes + Deploy Kargo Kubevirt PaaS IaC.
+7. Deploy Kargo Kubevirt PaaS IaC.
 
-```sh {"id":"01J5PTD6JZYE6F79ZEAJ5XWTPG","name":"step5-deploy-task","terminalRows":"40"}
-task talos
-```
-
-```sh {"cwd":"/workspaces/Kargo","id":"01J5V1EC07VNW61SKJTK7AEPDR","terminalRows":"40"}
-set -x
+```bash {"cwd":"/workspaces/Kargo","id":"01J5V1EC07VNW61SKJTK7AEPDR","terminalRows":"40"}
 task pulumi-deploy
 ```
 
 6. Deploy a new Kubevirt VM instance
 
-```bash {"id":"01J5PTD6JZYE6F79ZEAKYKZ1D9","name":"step6-deploy-vm"}
+```bash {"id":"01J5PTD6JZYE6F79ZEAKYKZ1D9","name":"vm-deploy"}
 # Enable the VM instance
 pulumi config set --path vm.enabled true
 
 # Deploy the Kubevirt VM instance
-pulumi up
+task pulumi-deploy
 ```
 
 7. SSH to the new Ubuntu VM instance (ignore strict host key checking).
 
-```bash {"id":"01J5PTD6JZYE6F79ZEAN9XGXBQ","name":"step7-access-vm"}
+```bash {"id":"01J5PTD6JZYE6F79ZEAN9XGXBQ","name":"vm-access"}
 # Access the VM instance via ssh
 ssh -p 30590 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no kc2@localhost screenfetch
 ```
 
 8. Practice using the `virtctl` command to access the VM instance.
 
-```bash {"id":"01J5PZ5GDMMFDRGG3D5G0ZGDBV","name":"step8-virtctl"}
+```bash {"id":"01J5PZ5GDMMFDRGG3D5G0ZGDBV","name":"virtctl-ssh"}
 # Access the VM instance via ssh with virtctl
 # uname:passwd = kc2:kc2
 virtctl ssh kc2@ubuntu
 ```
 
-```bash {"id":"01J5Q78V4RYNTPDDA9ASXTGSR1","name":"step9-virtctl"}
+```bash {"id":"01J5Q78V4RYNTPDDA9ASXTGSR1","name":"virtctl-console"}
 # Access the VM instance via serial console
 virtctl console ubuntu
 ```
@@ -136,7 +132,7 @@ virtctl console ubuntu
 
 10. Cleanup
 
-```bash {"id":"01J5PTD6JZYE6F79ZEANMY688P","name":"step10-cleanup"}
+```bash {"id":"01J5PTD6JZYE6F79ZEANMY688P","name":"clean"}
 task clean
 ```
 

@@ -7,15 +7,15 @@ vars:
   deployment: ci
   project: kargo
   organization: "{{.GITHUB_USER | default `containercraft`}}"
-  cluster_name: "talos-kargo-docker"
   #pwd: "{{.CODESPACE_VSCODE_FOLDER | default `/workspaces/Kargo`}}"
   pulumi_dir: "{{.PWD}}/.pulumi"
-  talos_dir: "{{.PWD}}/.talos"
   kube_dir: "{{.PWD}}/.kube"
   kube_config_file: "{{.kube_dir}}/config"
-  talos_config_file: "{{.talos_dir}}/manifest/talosconfig"
   pulumi_stack_identifier: "{{.organization}}/{{.project}}/{{.deployment}}"
+  talos_dir: "{{.PWD}}/.talos"
   talos_patch: "{{.talos_dir}}/patch/cluster.yaml"
+  talos_config_file: "{{.talos_dir}}/manifest/talosconfig"
+  cluster_name: "talos-kargo-docker"
   exposed_ports: "30590:30590/tcp"
   memory: "8192"
   arch:
@@ -34,7 +34,7 @@ tasks:
   # Meta & Utility Tasks
 
   default:
-    desc: "Run all tasks to set up and configure a Talos Kubernetes cluster."
+    desc: "Run all tasks to set up and configure a Kubernetes cluster."
     cmds:
     - task: deploy
 
@@ -50,36 +50,22 @@ tasks:
     - touch {{.kube_config_file}} {{.talos_config_file}}
     - chmod 600 {{.kube_config_file}} {{.talos_config_file}}
 
-  # TODO: @RUNME resolve issue that requires symlinking dotfiles to root filesystem due to missing env
-  #symlink:
-  #  desc: "Symlink dotfiles to root filesystem."
-  #  cwd: "/"
-  #  env:
-  #    KUBECONFIG: "{{.kube_config_file}}"
-  #  cmds:
-  #  - sudo ln -sf {{.pulumi_dir}} /.pulumi
-  #  - ln -sf {{.pulumi_dir}} {{.HOME}}/.pulumi
-  #  - sudo ln -sf {{.talos_dir}} /.talos
-  #  - ln -sf {{.talos_dir}} {{.HOME}}/.talos
-  #  - sudo ln -sf {{.kube_dir}} /.kube
-  #  - ln -sf {{.kube_dir}} {{.HOME}}/.kube
-
   deploy:
     desc: "Deploy all resources."
     deps:
     - clean
     cmds:
-    - task: talos
+    - task: kubernetes
     - task: pulumi
 
   all-pods-ready:
-    desc: "Wait for all pods in the Talos cluster to be ready."
+    desc: "Wait for all Kubernetes pods in the cluster to be ready."
     cmds:
     - bash -c 'until [ "$(kubectl get pods --all-namespaces --no-headers | grep -v "Running\\|Completed\\|Succeeded" | wc -l)" -eq 0 ]; do echo "Waiting for pods..."; sleep 5; done'
     - kubectl get pods --all-namespaces --show-labels --kubeconfig {{.kube_config_file}}
 
   destroy:
-    desc: "Clean up and destroy all Pulumi and Talos resources."
+    desc: "Clean up and destroy all Pulumi and Kubernetes resources."
     cmds:
     - task: pulumi-destroy
 
@@ -93,7 +79,7 @@ tasks:
     desc: "Clean up all local Kargo resources."
     cmds:
     - task: pulumi-cancel
-    - task: talos-clean
+    - task: kubernetes-clean
     - task: pulumi-clean
     - ssh-keygen -f "/home/vscode/.ssh/known_hosts" -R "[127.0.0.1]:30590" 2>/dev/null || true
     - rm -rf .talos/manifest/* .kube/config .ssh/known_hosts 2>/dev/null || true
@@ -126,10 +112,11 @@ tasks:
   pulumi-login:
     desc: "Authenticate with Pulumi."
     cmds:
+    - task: init
     - pulumi login
     - pulumi install
 
-  pulumi-config:
+  pulumi-configure:
     desc: "Configure Pulumi stack settings."
     cmds:
     - pulumi stack select --create {{.pulumi_stack_identifier}} || true
@@ -171,22 +158,21 @@ tasks:
   pulumi:
     desc: "Pulumi Up - Deploy Kargo Kubevirt PaaS IaC"
     cmds:
-    - task: init
     - task: pulumi-login
-    - task: pulumi-config
+    - task: pulumi-configure
     - task: pulumi-deploy
 
   ##################################################################################
   # Talos Tasks
 
-  talos-gen-config:
+  kubernetes-gen-config:
     desc: "Generate Talos cluster configuration."
     cmds:
     - talosctl gen config {{.project}} https://10.0.5.2:6443 --config-patch @{{.talos_patch}} --force --output .talos/manifest --context {{.cluster_name}}
 
   # TODO: @RUNME resolve issue that requires hardcoding HOME env due to missing env
-  talos-deploy:
-    desc: "Create the Talos Kubernetes cluster."
+  kubernetes-deploy:
+    desc: "Deploy Kubernetes cluster."
     cmds:
     - task: init
     - |
@@ -202,26 +188,26 @@ tasks:
         --name {{.cluster_name}} \
         --workers 0 --crashdump
 
-  talos-ready:
+  kubernetes-ready:
     desc: "Wait for the Talos cluster control plane components to be ready."
     cmds:
     - bash -c 'until kubectl --kubeconfig {{.kube_config_file}} wait --for=condition=Ready pod -l k8s-app=kube-scheduler --namespace=kube-system --timeout=180s; do echo "Waiting for kube-scheduler..."; sleep 5; done' || true
     - bash -c 'until kubectl --kubeconfig {{.kube_config_file}} wait --for=condition=Ready pod -l k8s-app=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager..."; sleep 5; done' || true
     - bash -c 'until kubectl --kubeconfig {{.kube_config_file}} wait --for=condition=Ready pod -l k8s-app=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver..."; sleep 5; done' || true
 
-  talos-clean:
-    desc: "Clean up all Talos resources."
+  kubernetes-clean:
+    desc: "Clean up all Kubernetes resources."
     cmds:
     - talosctl cluster destroy --name {{.cluster_name}} 2>/dev/null || true
     - docker rm --force {{.cluster_name}}-controlplane-1 2>/dev/null || true
 
-  talos:
-    desc: "Complete setup and configuration of a Talos Kubernetes cluster."
+  kubernetes:
+    desc: "Complete setup and configuration of a Kubernetes cluster."
     deps:
     - clean
     cmds:
     - task: init
-    - task: talos-gen-config
-    - task: talos-deploy
-    - task: talos-ready
+    - task: kubernetes-gen-config
+    - task: kubernetes-deploy
+    - task: kubernetes-ready
     - task: all-pods-ready
