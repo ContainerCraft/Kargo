@@ -1,5 +1,4 @@
 ---
-cwd: /workspaces/Kargo
 shell: /usr/bin/bash
 ---
 
@@ -52,8 +51,6 @@ Tools and Accounts:
 1. Login to Github
 2. Launch [Kargo in Github Codspaces](https://bit.ly/launch-kargo-kubevirt-paas-in-github-codespaces)
 
-> 
->
 > <details><summary> > Click to expand < </summary>
 >
 > > _Find other ways to run the quickstart in the [Kargo Quickstart Guide](docs/QUICKSTART.md)._
@@ -66,10 +63,10 @@ Tools and Accounts:
 > | 2           | Click the `Code` button and select the `Codespaces` tab.                                     |                                |
 > | 3           | Click `Codespaces > New with options` in the 3-dot menu.                                     |                                |
 > | 4           | Select the following options:                                                                |                                |
-> |             | __Branch__                                                                                   | `main`                         |
-> |             | __Dev container configuration__                                                              | `konductor`                    |
-> |             | __Region__                                                                                   | `$USERS_CHOICE`                |
-> |             | __Machine type__                                                                             | `4 cores, 16 GB RAM` or better |
+> |             | **Branch**                                                                                   | `main`                         |
+> |             | **Dev container configuration**                                                              | `konductor`                    |
+> |             | **Region**                                                                                   | `$USERS_CHOICE`                |
+> |             | **Machine type**                                                                             | `4 cores, 16 GB RAM` or better |
 > | 5           | Click the `Create` button.                                                                   |                                |
 >
 > Wait for the Codespace to build, and then proceed.
