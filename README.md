@@ -99,14 +99,15 @@ env | grep -iE "PWD|HOME"
 task talos
 ```
 
-```sh {"id":"01J5V1EC07VNW61SKJTK7AEPDR","terminalRows":"40"}
+```sh {"cwd":"/workspaces/Kargo","id":"01J5V1EC07VNW61SKJTK7AEPDR","terminalRows":"40"}
 set -x
 cat $KUBECONFIG
 echo $KUBECONFIG
 echo $PWD
 ls -lah
 ls -lah .pulumi
-pulumi up
+which pulumi
+pulumi up --verbose 9
 ```
 
 6. Deploy a new Kubevirt VM instance
