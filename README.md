@@ -1,4 +1,5 @@
 ---
+cwd: /workspaces/Kargo
 shell: /usr/bin/bash
 ---
 
@@ -16,7 +17,7 @@ For more information, see the [Kargo Project FAQ](FAQ.md).
 
 ![Screenshot of the Kargo project opened in the Konductor Devcontainer with Github Codespaces.](.github/images/konductor-docker-linux-devcontainer.png?raw=true "Kargo Konductor Codespaces")
 
-> *Image depicts Kargo Project opened in the [Konductor Devcontainer](https://github.com/ContainerCraft/Konductor) with Github Codespaces.
+> \*Image depicts Kargo Project opened in the [Konductor Devcontainer](https://github.com/ContainerCraft/Konductor) with Github Codespaces.
 >
 > **NOTE**: This project is in pre-alpha pathfinding mode. See the [inaugural Twitter/X Thread post](https://x.com/usrbinkat/status/1749186949590794551) by [@usrbinkat](https://twitter.com/usrbinkat)
 
@@ -55,7 +56,7 @@ Tools and Accounts:
 >
 > <details><summary> > Click to expand < </summary>
 >
-> > *Find other ways to run the quickstart in the [Kargo Quickstart Guide](docs/QUICKSTART.md).*
+> > _Find other ways to run the quickstart in the [Kargo Quickstart Guide](docs/QUICKSTART.md)._
 >
 > Using either [Google Chrome](https://www.google.com/chrome) or [Microsoft Edge](https://www.microsoft.com/en-us/edge), follow the steps below to launch the Kargo project in GitHub Codespaces from your browser.
 >
