@@ -57,10 +57,10 @@ Check out the video to see Kargo deploy for yourself, or try it in your browser 
 
    - Use the [Launch Kargo](https://bit.ly/launch-kargo-kubevirt-paas-in-github-codespaces) link directly or use the green `Code` button above to start a new Codespace.
    - Create a new Codespace with the following options:
-      - **Branch:** `main`
-      - **Dev Container Configuration:** `konductor`
-      - **Region:** Your choice
-      - **Machine Type:** 4 cores, 16 GB RAM, or better
+     - **Branch:** `main`
+     - **Dev Container Configuration:** `konductor`
+     - **Region:** Your choice
+     - **Machine Type:** 4 cores, 16 GB RAM, or better
 
 3. **Open the VSCode Integrated Terminal:**
 
@@ -138,7 +138,7 @@ Use our GitHub Actions integration and the `act` tool to test CI pipelines local
 
 To test Kargo CI locally:
 
-```bash {"id":"01J5VC1KTJBR22WEDNT92WYZEH"}
+```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT92WYZEH"}
 task act
 ```
 
