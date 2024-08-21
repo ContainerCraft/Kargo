@@ -60,12 +60,9 @@ tasks:
   deploy:
     desc: "Deploy Kubernetes + Kargo Kubevirt PaaS IaC"
     deps:
-    - clean
+    - iac-cancel
     cmds:
-    - task: login
-    - task: configure
-    - task: kubernetes
-    - task: deploy
+    - task: iac-deploy
 
   all-pods-ready:
     desc: "Wait for all Kubernetes pods in the cluster to be ready."
@@ -88,8 +85,14 @@ tasks:
     desc: "Clean up all local Kargo resources."
     cmds:
     - task: iac-cancel
-    - task: kubernetes-clean
     - task: iac-clean
+
+  clean-all:
+    desc: "Clean up all local Kargo resources."
+    deps:
+    - kubernetes-clean
+    - clean
+    cmds:
     - ssh-keygen -f "/home/vscode/.ssh/known_hosts" -R "[127.0.0.1]:30590" 2>/dev/null || true
     - rm -rf .talos/manifest/* .kube/config .ssh/known_hosts 2>/dev/null || true
     - rm ${HOME}/.pulumi ${HOME}/.kube ${HOME}/.talos 2>/dev/null || true
@@ -118,7 +121,7 @@ tasks:
   ##################################################################################
   # Pulumi Tasks
 
-  iac-configure:
+  configure:
     desc: "Configure Pulumi stack settings."
     cmds:
     - pulumi stack select --create {{.pulumi_stack_identifier}} || true
@@ -133,9 +136,9 @@ tasks:
     desc: "Deploy Pulumi infrastructure."
     cmds:
     - task: iac-cancel
-    - |
-      pulumi up --yes --skip-preview --refresh --continue-on-error --stack {{.pulumi_stack_identifier}} || true
-      pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
+    - pulumi up --yes --skip-preview --refresh --continue-on-error --stack {{.pulumi_stack_identifier}} || true
+    - task: all-pods-ready
+    - pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
     - task: all-pods-ready
 
   iac-destroy:
@@ -196,10 +199,11 @@ tasks:
     - talosctl cluster destroy --name {{.cluster_name}} 2>/dev/null || true
     - docker rm --force {{.cluster_name}}-controlplane-1 2>/dev/null || true
 
-  cluster:
+  kubernetes:
     desc: "Complete setup and configuration of a Kubernetes cluster."
     deps:
     - clean
+    - kubernetes-clean
     cmds:
     - task: init
     - task: kubernetes-gen-config

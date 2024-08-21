@@ -339,9 +339,7 @@
                 "github.vscode-pull-request-github",
                 "ms-vscode-remote.remote-containers",
                 "randomfractalsinc.vscode-data-table",
-                "bierner.markdown-preview-github-styles",
                 "visualstudioexptteam.vscodeintellicode",
-                "bierner.markdown-preview-github-styles",
                 "ms-kubernetes-tools.vscode-kubernetes-tools"
             ]
         }

@@ -57,10 +57,10 @@ Check out the video to see Kargo deploy for yourself, or try it in your browser 
 
    - Use the [Launch Kargo](https://bit.ly/launch-kargo-kubevirt-paas-in-github-codespaces) link directly or use the green `Code` button above to start a new Codespace.
    - Create a new Codespace with the following options:
-     - **Branch:** `main`
-     - **Dev Container Configuration:** `konductor`
-     - **Region:** Your choice
-     - **Machine Type:** 4 cores, 16 GB RAM, or better
+      - **Branch:** `main`
+      - **Dev Container Configuration:** `konductor`
+      - **Region:** Your choice
+      - **Machine Type:** 4 cores, 16 GB RAM, or better
 
 3. **Open the VSCode Integrated Terminal:**
 
@@ -69,13 +69,13 @@ Check out the video to see Kargo deploy for yourself, or try it in your browser 
 4. **Log in to Pulumi Cloud:**
 
 ```bash {"id":"01J5VC1KTJBR22WEDNSSGTNAX4","name":"login"}
-task pulumi-login
+task login
 ```
 
 5. **Configure the Pulumi Stack:**
 
 ```bash {"id":"01J5VC1KTJBR22WEDNSWYBKNQS","name":"configure"}
-task pulumi-configure
+task configure
 ```
 
 6. **Launch Talos-in-Docker Kubernetes:**
@@ -87,7 +87,7 @@ task kubernetes
 7. **Deploy Kargo Kubevirt PaaS IaC:**
 
 ```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNSZW7QADA","name":"deploy"}
-task pulumi-deploy
+task deploy
 ```
 
 8. **Deploy a New Kubevirt VM Instance:**
@@ -97,7 +97,7 @@ task pulumi-deploy
 pulumi config set --path vm.enabled true
 
 # Deploy the Kubevirt VM instance
-task pulumi-deploy
+task deploy
 ```
 
 9. **SSH into the New VM Instance:**
@@ -124,8 +124,8 @@ virtctl console ubuntu
 
 12. **Cleanup:**
 
-```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT7BDRMAV","name":"cleanup"}
-task clean
+```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT7BDRMAV","name":"clean"}
+task clean-all
 ```
 
 ## Contributing
