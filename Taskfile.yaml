@@ -3,18 +3,15 @@ version: "3"
 dotenv:
 - .env
 
-env:
-  HOME: "/home/vscode"
-
 vars:
   deployment: ci
   project: kargo
   organization: "{{.GITHUB_USER | default `containercraft`}}"
   cluster_name: "talos-kargo-docker"
-  pwd: "{{.CODESPACE_VSCODE_FOLDER | default `/workspaces/Kargo`}}"
-  pulumi_dir: "{{.pwd}}/.pulumi"
-  talos_dir: "{{.pwd}}/.talos"
-  kube_dir: "{{.pwd}}/.kube"
+  #pwd: "{{.CODESPACE_VSCODE_FOLDER | default `/workspaces/Kargo`}}"
+  pulumi_dir: "{{.PWD}}/.pulumi"
+  talos_dir: "{{.PWD}}/.talos"
+  kube_dir: "{{.PWD}}/.kube"
   kube_config_file: "{{.kube_dir}}/config"
   talos_config_file: "{{.talos_dir}}/manifest/talosconfig"
   pulumi_stack_identifier: "{{.organization}}/{{.project}}/{{.deployment}}"
@@ -44,7 +41,7 @@ tasks:
   printenv:
     desc: "Print environment variables."
     cmds:
-    - /usr/bin/printenv
+    - /usr/bin/echo "{{.kube_dir}}"
 
   init:
     desc: "Initialize directories and configuration files."
@@ -52,21 +49,20 @@ tasks:
     - mkdir -p .kube .pulumi .talos
     - touch {{.kube_config_file}} {{.talos_config_file}}
     - chmod 600 {{.kube_config_file}} {{.talos_config_file}}
-    - task: symlink
 
   # TODO: @RUNME resolve issue that requires symlinking dotfiles to root filesystem due to missing env
-  symlink:
-    desc: "Symlink dotfiles to root filesystem."
-    cwd: "/"
-    env:
-      KUBECONFIG: "{{.kube_config_file}}"
-    cmds:
-    - sudo ln -sf {{.pulumi_dir}} /.pulumi
-    - ln -sf {{.pulumi_dir}} {{.HOME}}/.pulumi
-    - sudo ln -sf {{.talos_dir}} /.talos
-    - ln -sf {{.talos_dir}} {{.HOME}}/.talos
-    - sudo ln -sf {{.kube_dir}} /.kube
-    - ln -sf {{.kube_dir}} {{.HOME}}/.kube
+  #symlink:
+  #  desc: "Symlink dotfiles to root filesystem."
+  #  cwd: "/"
+  #  env:
+  #    KUBECONFIG: "{{.kube_config_file}}"
+  #  cmds:
+  #  - sudo ln -sf {{.pulumi_dir}} /.pulumi
+  #  - ln -sf {{.pulumi_dir}} {{.HOME}}/.pulumi
+  #  - sudo ln -sf {{.talos_dir}} /.talos
+  #  - ln -sf {{.talos_dir}} {{.HOME}}/.talos
+  #  - sudo ln -sf {{.kube_dir}} /.kube
+  #  - ln -sf {{.kube_dir}} {{.HOME}}/.kube
 
   deploy:
     desc: "Deploy all resources."
@@ -100,7 +96,8 @@ tasks:
     - task: talos-clean
     - task: pulumi-clean
     - ssh-keygen -f "/home/vscode/.ssh/known_hosts" -R "[127.0.0.1]:30590" 2>/dev/null || true
-    - rm -rf .talos/manifest/* .kube/config
+    - rm -rf .talos/manifest/* .kube/config .ssh/known_hosts 2>/dev/null || true
+    - rm ${HOME}/.pulumi ${HOME}/.kube ${HOME}/.talos 2>/dev/null || true
 
   stop:
     desc: "Stop the GitHub Codespace."
@@ -170,7 +167,6 @@ tasks:
     cmds:
     - task: pulumi-cancel
     - pulumi down --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}} 2>/dev/null || true
-    - sudo rm /.pulumi /.kube /.talos 2>/dev/null || true
 
   pulumi:
     desc: "Pulumi Up - Deploy Kargo Kubevirt PaaS IaC"
