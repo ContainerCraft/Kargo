@@ -1,7 +1,7 @@
 version: "3"
 
 dotenv:
-  - .envrc
+  - .env
 
 vars:
   deployment: ci
@@ -12,8 +12,9 @@ vars:
   kube_config_file: "{{.PWD}}/.kube/config"
   talos_config_file: "{{.PWD}}/.talos/manifest/talosconfig"
   pulumi_stack_identifier: "{{.organization}}/{{.project}}/{{.deployment}}"
-  home:
-    sh: echo $HOME
+  talos_patch: "@.talos/patch/cluster.yaml"
+  exposed_ports: "30590:30590/tcp"
+  memory: "8192"
   arch:
     sh: |
       arch=$(uname -m)
@@ -24,47 +25,22 @@ vars:
       else
         echo "unknown"
       fi
-  talos_patch: "@.talos/patch/cluster.yaml"
-  exposed_ports: "30590:30590/tcp"
-  memory: "8192"
 
 tasks:
+  ##################################################################################
+  # Meta & Utility Tasks
+
+  default:
+    desc: "Run all tasks to set up and configure a Talos Kubernetes cluster."
+    cmds:
+      - task: deploy
+
   printenv:
     desc: "Print environment variables."
     cmds:
       - /usr/bin/printenv
 
-  default:
-    desc: "Run all tasks to set up and configure a Talos Kubernetes cluster."
-    cmds:
-      - task: talos
-
-  clean:
-    desc: "Clean up all local Kargo resources."
-    cmds:
-      - task: pulumi-cancel
-      - task: talos-clean
-      - task: pulumi-clean
-      - ssh-keygen -f "/home/vscode/.ssh/known_hosts" -R "[127.0.0.1]:30590" 2>/dev/null || true
-      - rm -rf .talos/manifest/* .kube/config
-
-  talos-clean:
-    desc: "Clean up all Talos resources."
-    cmds:
-      - talosctl cluster destroy --name {{.cluster_name}} 2>/dev/null || true
-      - docker rm --force {{.cluster_name}}-controlplane-1 2>/dev/null || true
-
-  pulumi-cancel:
-    desc: "Cancel the Pulumi update."
-    cmds:
-      - pulumi cancel --yes --stack {{.pulumi_stack_identifier}} 2>/dev/null || true
-
-  pulumi-clean:
-    desc: "Clean up all Pulumi resources."
-    cmds:
-      - task: pulumi-cancel
-      - pulumi down --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}} 2>/dev/null || true
-
+  # TODO: @RUNME resolve issue that requires symlinking dotfiles to root filesystem due to missing env
   init:
     desc: "Initialize directories and configuration files."
     cmds:
@@ -74,6 +50,64 @@ tasks:
       - sudo ln -sf ./.pulumi /.pulumi
       - sudo ln -sf ./.talos /.talos
       - sudo ln -sf ./.kube /.kube
+
+  deploy:
+    desc: "Deploy all resources."
+    deps:
+      - clean
+    cmds:
+      - task: talos
+      - task: pulumi
+
+  all-pods-ready:
+    desc: "Wait for all pods in the Talos cluster to be ready."
+    cmds:
+      - bash -c 'until [ "$(kubectl get pods --all-namespaces --no-headers | grep -v "Running\\|Completed\\|Succeeded" | wc -l)" -eq 0 ]; do echo "Waiting for pods..."; sleep 5; done'
+      - kubectl get pods --all-namespaces --show-labels --kubeconfig {{.kube_config_file}}
+
+  destroy:
+    desc: "Clean up and destroy all Pulumi and Talos resources."
+    cmds:
+      - task: pulumi-destroy
+
+  act:
+    desc: "Test GitHub Actions locally using 'act'."
+    cmds:
+      - act --container-options "--privileged" --rm --var GITHUB_TOKEN=${GITHUB_TOKEN} --var PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}
+
+  # TODO: @RUNME resolve issue that requires symlinking dotfiles to root filesystem due to missing env
+  clean:
+    desc: "Clean up all local Kargo resources."
+    cmds:
+      - task: pulumi-cancel
+      - task: talos-clean
+      - task: pulumi-clean
+      - ssh-keygen -f "/home/vscode/.ssh/known_hosts" -R "[127.0.0.1]:30590" 2>/dev/null || true
+      - rm -rf .talos/manifest/* .kube/config
+
+  stop:
+    desc: "Stop the GitHub Codespace."
+    cmds:
+      - task: clean
+      - gh codespace --codespace ${CODESPACE_NAME} stop
+
+  ##################################################################################
+  # Demo VM Tasks
+
+  vm-deploy:
+    desc: "Enable the built in pulumi Ubuntu vm iac feature"
+    cmds:
+      - pulumi config set --path vm.enabled true
+      - pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
+
+  vm-destroy:
+    desc: "Enable the built in pulumi Ubuntu vm iac feature"
+    cmds:
+      - pulumi config set --path vm.enabled false
+      - pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
+
+  ##################################################################################
+  # Pulumi Tasks
 
   pulumi-login:
     desc: "Authenticate with Pulumi."
@@ -109,6 +143,18 @@ tasks:
         pulumi down --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}} || true
         pulumi down --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
 
+  pulumi-cancel:
+    desc: "Cancel the Pulumi update."
+    cmds:
+      - pulumi cancel --yes --stack {{.pulumi_stack_identifier}} 2>/dev/null || true
+
+  pulumi-clean:
+    desc: "Clean up all Pulumi resources."
+    cmds:
+      - task: pulumi-cancel
+      - pulumi down --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}} 2>/dev/null || true
+      - sudo rm /.pulumi /.kube /.talos 2>/dev/null || true
+
   pulumi:
     desc: "Pulumi Up - Deploy Kargo Kubevirt PaaS IaC"
     cmds:
@@ -117,25 +163,8 @@ tasks:
       - task: pulumi-config
       - task: pulumi-deploy
 
-  vm-deploy:
-    desc: "Enable the built in pulumi Ubuntu vm iac feature"
-    cmds:
-      - pulumi config set --path vm.enabled true
-      - pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
-
-  vm-destroy:
-    desc: "Enable the built in pulumi Ubuntu vm iac feature"
-    cmds:
-      - pulumi config set --path vm.enabled false
-      - pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
-
-  deploy:
-    desc: "Deploy all resources."
-    deps:
-      - clean
-    cmds:
-      - task: talos
-      - task: pulumi
+  ##################################################################################
+  # Talos Tasks
 
   talos-gen-config:
     desc: "Generate Talos cluster configuration."
@@ -166,16 +195,11 @@ tasks:
       - bash -c 'until kubectl --kubeconfig {{.kube_config_file}} wait --for=condition=Ready pod -l k8s-app=kube-controller-manager --namespace=kube-system --timeout=180s; do echo "Waiting for kube-controller-manager..."; sleep 5; done' || true
       - bash -c 'until kubectl --kubeconfig {{.kube_config_file}} wait --for=condition=Ready pod -l k8s-app=kube-apiserver --namespace=kube-system --timeout=180s; do echo "Waiting for kube-apiserver..."; sleep 5; done' || true
 
-  all-pods-ready:
-    desc: "Wait for all pods in the Talos cluster to be ready."
+  talos-clean:
+    desc: "Clean up all Talos resources."
     cmds:
-      - bash -c 'until [ "$(kubectl get pods --all-namespaces --no-headers | grep -v "Running\\|Completed\\|Succeeded" | wc -l)" -eq 0 ]; do echo "Waiting for pods..."; sleep 5; done'
-      - kubectl get pods --all-namespaces --show-labels --kubeconfig {{.kube_config_file}}
-
-  destroy:
-    desc: "Clean up and destroy all Pulumi and Talos resources."
-    cmds:
-      - task: pulumi-destroy
+      - talosctl cluster destroy --name {{.cluster_name}} 2>/dev/null || true
+      - docker rm --force {{.cluster_name}}-controlplane-1 2>/dev/null || true
 
   talos:
     desc: "Complete setup and configuration of a Talos Kubernetes cluster."
@@ -187,14 +211,3 @@ tasks:
       - task: talos-deploy
       - task: talos-ready
       - task: all-pods-ready
-
-  act:
-    desc: "Test GitHub Actions locally using 'act'."
-    cmds:
-      - act --container-options "--privileged" --rm --var GITHUB_TOKEN=${GITHUB_TOKEN} --var PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}
-
-  stop:
-    desc: "Stop the GitHub Codespace."
-    cmds:
-      - task: clean
-      - gh codespace --codespace ${CODESPACE_NAME} stop

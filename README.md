@@ -47,13 +47,10 @@ Tools and Accounts:
 1. Login to Github
 2. Launch [Kargo in Github Codspaces](https://bit.ly/launch-kargo-kubevirt-paas-in-github-codespaces)
 
-   > 
-
-> 
 >
-> <details><summary> Click to expand: HOW TO LAUNCH IN GITHUB CODESPACES</summary>
+> <details><summary> > Click to expand < </summary>
 >
-> > **NOTE**: Find other ways to run the quickstart in the [Kargo Quickstart Guide](docs/QUICKSTART.md).
+> > *Find other ways to run the quickstart in the [Kargo Quickstart Guide](docs/QUICKSTART.md).*
 >
 > Using either [Google Chrome](https://www.google.com/chrome) or [Microsoft Edge](https://www.microsoft.com/en-us/edge), follow the steps below to launch the Kargo project in GitHub Codespaces from your browser.
 >
@@ -73,7 +70,7 @@ Tools and Accounts:
 >
 > </details>
 
-3. Open the [VSCode integrated terminal](https://code.visualstudio.com/docs/editor/integrated-terminal) by pressing '`Ctrl + ``'.
+3. Open the [VSCode integrated terminal](https://code.visualstudio.com/docs/editor/integrated-terminal) by pressing ```[ Ctrl + ` ]```.
 4. Login to Pulumi Cloud by running `pulumi login` in the terminal.
 
 ```sh {"cwd":"/workspaces/Kargo","id":"01J5S0W4CQ3XSZXR5N449SPNE9","interpreter":"/usr/bin/bash -x","name":"task0-printenv-test","terminalRows":"20"}
