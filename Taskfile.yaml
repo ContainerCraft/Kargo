@@ -34,7 +34,7 @@ tasks:
   # Meta & Utility Tasks
 
   default:
-    desc: "Run all tasks to set up and configure a Kubernetes cluster."
+    desc: "Run all tasks to set up and configure a Kargo Kubevirt Kubernetes Platform."
     cmds:
     - task: deploy
 
@@ -50,13 +50,22 @@ tasks:
     - touch {{.kube_config_file}} {{.talos_config_file}}
     - chmod 600 {{.kube_config_file}} {{.talos_config_file}}
 
+  login:
+    desc: "Authenticate with Pulumi."
+    cmds:
+    - task: init
+    - pulumi login
+    - pulumi install
+
   deploy:
-    desc: "Deploy all resources."
+    desc: "Deploy Kubernetes + Kargo Kubevirt PaaS IaC"
     deps:
     - clean
     cmds:
+    - task: login
+    - task: configure
     - task: kubernetes
-    - task: pulumi
+    - task: deploy
 
   all-pods-ready:
     desc: "Wait for all Kubernetes pods in the cluster to be ready."
@@ -67,7 +76,7 @@ tasks:
   destroy:
     desc: "Clean up and destroy all Pulumi and Kubernetes resources."
     cmds:
-    - task: pulumi-destroy
+    - task: destroy
 
   act:
     desc: "Test GitHub Actions locally using 'act'."
@@ -78,9 +87,9 @@ tasks:
   clean:
     desc: "Clean up all local Kargo resources."
     cmds:
-    - task: pulumi-cancel
+    - task: iac-cancel
     - task: kubernetes-clean
-    - task: pulumi-clean
+    - task: iac-clean
     - ssh-keygen -f "/home/vscode/.ssh/known_hosts" -R "[127.0.0.1]:30590" 2>/dev/null || true
     - rm -rf .talos/manifest/* .kube/config .ssh/known_hosts 2>/dev/null || true
     - rm ${HOME}/.pulumi ${HOME}/.kube ${HOME}/.talos 2>/dev/null || true
@@ -109,14 +118,7 @@ tasks:
   ##################################################################################
   # Pulumi Tasks
 
-  pulumi-login:
-    desc: "Authenticate with Pulumi."
-    cmds:
-    - task: init
-    - pulumi login
-    - pulumi install
-
-  pulumi-configure:
+  iac-configure:
     desc: "Configure Pulumi stack settings."
     cmds:
     - pulumi stack select --create {{.pulumi_stack_identifier}} || true
@@ -127,40 +129,33 @@ tasks:
     - pulumi config set --path multus.enabled false
     - pulumi config set --path vm.enabled false
 
-  pulumi-deploy:
+  iac-deploy:
     desc: "Deploy Pulumi infrastructure."
     cmds:
-    - task: pulumi-cancel
+    - task: iac-cancel
     - |
       pulumi up --yes --skip-preview --refresh --continue-on-error --stack {{.pulumi_stack_identifier}} || true
       pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
     - task: all-pods-ready
 
-  pulumi-destroy:
+  iac-destroy:
     desc: "Destroy Pulumi infrastructure."
     cmds:
-    - task: pulumi-cancel
+    - task: iac-cancel
     - |
       pulumi down --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}} || true
       pulumi down --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
 
-  pulumi-cancel:
+  iac-cancel:
     desc: "Cancel the Pulumi update."
     cmds:
     - pulumi cancel --yes --stack {{.pulumi_stack_identifier}} 2>/dev/null || true
 
-  pulumi-clean:
+  iac-clean:
     desc: "Clean up all Pulumi resources."
     cmds:
-    - task: pulumi-cancel
+    - task: iac-cancel
     - pulumi down --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}} 2>/dev/null || true
-
-  pulumi:
-    desc: "Pulumi Up - Deploy Kargo Kubevirt PaaS IaC"
-    cmds:
-    - task: pulumi-login
-    - task: pulumi-configure
-    - task: pulumi-deploy
 
   ##################################################################################
   # Talos Tasks
@@ -201,7 +196,7 @@ tasks:
     - talosctl cluster destroy --name {{.cluster_name}} 2>/dev/null || true
     - docker rm --force {{.cluster_name}}-controlplane-1 2>/dev/null || true
 
-  kubernetes:
+  cluster:
     desc: "Complete setup and configuration of a Kubernetes cluster."
     deps:
     - clean

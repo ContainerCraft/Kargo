@@ -34,10 +34,10 @@ Tested in Google Chrome & Microsoft Edge browsers.
 | 2           | Click the `Code` button and select the `Codespaces` tab.                                     |                                |
 | 3           | Click `Codespaces > New with options` in the 3-dot menu.                                     |                                |
 | 4           | Select the following options:                                                                |                                |
-|             | __Branch__                                                                                   | `main`                         |
-|             | __Dev container configuration__                                                              | `konductor`                    |
-|             | __Region__                                                                                   | `$USERS_CHOICE`                |
-|             | __Machine type__                                                                             | `4 cores, 16 GB RAM` or better |
+|             | **Branch**                                                                                   | `main`                         |
+|             | **Dev container configuration**                                                              | `konductor`                    |
+|             | **Region**                                                                                   | `$USERS_CHOICE`                |
+|             | **Machine type**                                                                             | `4 cores, 16 GB RAM` or better |
 | 5           | Click the `Create` button.                                                                   |                                |
 
 Wait for the Codespace to build, then continue with the [How To](#how-to) instructions.
@@ -73,13 +73,13 @@ Ensure you have the following installed:
 - [VSCode](https://code.visualstudio.com/download)
 - [VSCode Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
-| Step | Action                                       | Example / Suggestions                               |
-| ---- | -------------------------------------------- | --------------------------------------------------- |
-| 1    | Launch [VSCode command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette)              | Key combo: `Ctrl + Shift + P`                       |
-| 2    | Type/Select                                  | `Dev Containers: Clone Repository in Named Volume`. |
-| 3    | Type in fuzzy search for the git repository. | `ContainerCraft/Kargo`                              |
-| 4    | Enter a name for the container volume.       | `vsc-remote-containers-kargo`                       |
-| 5    | Enter the cloned destination folder name.    | `Kargo` (default recommended)                       |
+| Step | Action                                                                                                        | Example / Suggestions                               |
+| ---- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| 1    | Launch [VSCode command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) | Key combo: `Ctrl + Shift + P`                       |
+| 2    | Type/Select                                                                                                   | `Dev Containers: Clone Repository in Named Volume`. |
+| 3    | Type in fuzzy search for the git repository.                                                                  | `ContainerCraft/Kargo`                              |
+| 4    | Enter a name for the container volume.                                                                        | `vsc-remote-containers-kargo`                       |
+| 5    | Enter the cloned destination folder name.                                                                     | `Kargo` (default recommended)                       |
 
 Wait for the dev container to build and open in VSCode, then proceed with [How To](#how-to) instructions.
 
@@ -99,13 +99,13 @@ Ensure you have the following installed:
 - [VSCode](https://code.visualstudio.com/download)
 - [VSCode Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
-| Step | Action                                       | Example / Suggestions                               |
-| ---- | -------------------------------------------- | --------------------------------------------------- |
-| 1    | Launch [VSCode command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette)              | Key combo: `Ctrl + Shift + P`                       |
-| 2    | Type/Select                                  | `Dev Containers: Clone Repository in Named Volume`. |
-| 3    | Type in fuzzy search for the git repository. | `ContainerCraft/Kargo`                              |
-| 4    | Enter a name for the container volume.       | `vsc-remote-containers-kargo`                       |
-| 5    | Enter the cloned destination folder name.    | `Kargo` (default recommended)                       |
+| Step | Action                                                                                                        | Example / Suggestions                               |
+| ---- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| 1    | Launch [VSCode command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) | Key combo: `Ctrl + Shift + P`                       |
+| 2    | Type/Select                                                                                                   | `Dev Containers: Clone Repository in Named Volume`. |
+| 3    | Type in fuzzy search for the git repository.                                                                  | `ContainerCraft/Kargo`                              |
+| 4    | Enter a name for the container volume.                                                                        | `vsc-remote-containers-kargo`                       |
+| 5    | Enter the cloned destination folder name.                                                                     | `Kargo` (default recommended)                       |
 
 Wait for the dev container to build and open in VSCode, then proceed with [How To](#how-to) instructions.
 
@@ -120,19 +120,19 @@ Wait for the dev container to build and open in VSCode, then proceed with [How T
 1. Open the [VSCode integrated terminal](https://code.visualstudio.com/docs/editor/integrated-terminal) by pressing '`Ctrl + ``'.
 2. Login to Pulumi Cloud by running `pulumi login` in the terminal.
 
-```sh {"id":"01J5PTD6JZYE6F79ZEAEG8FY41","name":"step1-login-task"}
+```sh
 pulumi login
 ```
 
 3. Launch Talos-in-Docker Kubernetes + Deploy Kargo Kubevirt PaaS IaC.
 
-```sh {"id":"01J5PTD6JZYE6F79ZEAJ5XWTPG","name":"step2-deploy-task"}
+```sh
 task deploy
 ```
 
 4. Deploy a new Kubevirt VM instance
 
-```bash {"id":"01J5PTD6JZYE6F79ZEAKYKZ1D9","name":"step3-deploy-vm"}
+```bash
 # Enable the VM instance
 pulumi config set --path vm.enabled true
 
@@ -142,14 +142,14 @@ pulumi up
 
 5. SSH to the new Ubuntu VM instance
 
-```bash {"id":"01J5PTD6JZYE6F79ZEAN9XGXBQ","name":"step4-access-vm"}
+```bash
 # Access the VM instance via ssh
 ssh -p 30590 -i ~/.ssh/id_rsa kc2@localhost screenfetch
 ```
 
 6. Practice using the `virtctl` command to access the VM instance.
 
-```bash {"id":"01J5PZ5GDMMFDRGG3D5G0ZGDBV","name":"step5-virtctl"}
+```bash
 # Access the VM instance via ssh with virtctl
 # uname:passwd = kc2:kc2
 virtctl ssh kc2@ubuntu
@@ -162,7 +162,7 @@ virtctl console ubuntu
 
 6. Cleanup
 
-```bash {"id":"01J5PTD6JZYE6F79ZEANMY688P","name":"step6-cleanup"}
+```bash
 task clean
 ```
 
@@ -174,6 +174,6 @@ Additionally, Konductor and the Kargo repository are built with support for [act
 
 The following commands are useful for testing Kargo CI locally:
 
-```bash {"id":"01J5PTD6JZYE6F79ZEAP4QGVMA", "name":"test-kargo-github-actions-workflow-task"}
+```bash
 task act
 ```
