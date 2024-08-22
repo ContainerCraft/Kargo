@@ -81,7 +81,7 @@ export DEPLOYMENT=Enter the name of the deployment
 export ORGANIZATION=Enter your organization name
 export PROJECT="kargo"
 
-direnv allow
+source .envrc
 
 task configure
 ```
