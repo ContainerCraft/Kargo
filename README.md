@@ -3,6 +3,7 @@ runme:
   id: 01J5VCA15YC12P0ASQ3CHPQFSZ
   version: v3
 shell: /usr/bin/bash
+terminalRows: 20
 ---
 
 # Kargo - The Cloud-Native ESXi Replacement
@@ -75,6 +76,13 @@ task login
 5. **Configure the Pulumi Stack:**
 
 ```bash {"id":"01J5VC1KTJBR22WEDNSWYBKNQS","name":"configure"}
+# confirm Pulumi stack
+export DEPLOYMENT=Enter the name of the deployment
+export ORGANIZATION=Enter your organization name
+export PROJECT="kargo"
+
+source .envrc
+
 task configure
 ```
 

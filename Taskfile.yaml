@@ -4,9 +4,9 @@ dotenv:
 - .env
 
 vars:
-  deployment: ci
-  project: kargo
-  organization: "{{.GITHUB_USER | default `containercraft`}}"
+  deployment: "{{.DEPLOYMENT | default `ci`}}"
+  project: "{{.PROJECT | default `kargo`}}"
+  organization: "{{.ORGANIZATION | default .GITHUB_USER}}"
   #pwd: "{{.CODESPACE_VSCODE_FOLDER | default `/workspaces/Kargo`}}"
   pulumi_dir: "{{.PWD}}/.pulumi"
   kube_dir: "{{.PWD}}/.kube"
