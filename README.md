@@ -58,47 +58,54 @@ Check out the video to see Kargo deploy for yourself, or try it in your browser 
 
    - Use the [Launch Kargo](https://bit.ly/launch-kargo-kubevirt-paas-in-github-codespaces) link directly or use the green `Code` button above to start a new Codespace.
    - Create a new Codespace with the following options:
-     - **Branch:** `main`
-     - **Dev Container Configuration:** `konductor`
-     - **Region:** Your choice
-     - **Machine Type:** 4 cores, 16 GB RAM, or better
+      - **Branch:** `main`
+      - **Dev Container Configuration:** `konductor`
+      - **Region:** Your choice
+      - **Machine Type:** 4 cores, 16 GB RAM, or better
 
 3. **Open the VSCode Integrated Terminal:**
 
    - Use key combination `[ Ctrl + ` ]` to open the terminal.
 
-4. **Log in to Pulumi Cloud:**
+4. **Authenticate Credentials**
+
+Login to Pulumi Cloud and other services.
 
 ```bash {"id":"01J5VC1KTJBR22WEDNSSGTNAX4","name":"login"}
 task login
 ```
 
-5. **Configure the Pulumi Stack:**
+5. **Configure:**
+
+Configure the Pulumi IaC Stack parameters.
 
 ```bash {"id":"01J5VC1KTJBR22WEDNSWYBKNQS","name":"configure"}
 # confirm Pulumi stack
-export DEPLOYMENT=Enter the name of the deployment
-export ORGANIZATION=Enter your organization name
-export PROJECT="kargo"
-
-source .envrc
-
+export DEPLOYMENT="${RepositoryName:-Enter the name of the deployment}"
+export ORGANIZATION="${GITHUB_USER:-Enter your organization name}"
+export PROJECT="${RepositoryName:-talos-kargo-docker}"
 task configure
 ```
 
-6. **Launch Talos-in-Docker Kubernetes:**
+6. **Deploy Kubernetes:**
+
+Deploy Kubernetes using Talos.
 
 ```bash {"id":"01J5VC1KTJBR22WEDNSX4RHEG2","name":"kubernetes"}
 task kubernetes
 ```
 
-7. **Deploy Kargo Kubevirt PaaS IaC:**
+7. **Deploy Platform:**
 
-```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNSZW7QADA","name":"deploy"}
+Deploy the Kubevirt PaaS IaC to Kubernetes.
+
+```bash {"excludeFromRunAll":"false","id":"01J5VC1KTJBR22WEDNSZW7QADA","name":"deploy"}
 task deploy
 ```
 
-8. **Deploy a New Kubevirt VM Instance:**
+8. **Deploy a Virtual Machine:**
+
+Deploy an Ubuntu Virtual Machine on the platform using Kubevirt.
 
 ```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT2EWEW9Q","name":"vm"}
 # Enable the VM instance
@@ -108,20 +115,26 @@ pulumi config set --path vm.enabled true
 task deploy
 ```
 
-9. **SSH into the New VM Instance:**
+9. **SSH to the new VM Instance:**
+
+Access the VM via SSH using a Kubernetes NodePort service.
 
 ```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT3YSQGM0","name":"ssh"}
 ssh -p 30590 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no kc2@localhost screenfetch
 ```
 
-10. **Access the VM via `virtctl` SSH:**
+10. **Virtctl SSH:**
+
+Use `virtctl` to access the VM via SSH without a NodePort service.
 
 ```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT6VNC5EK","name":"virtctl-ssh"}
 # SSH using virtctl
 virtctl ssh kc2@ubuntu
 ```
 
-11. **Access the VM via `virtctl` Serial Console:**
+11. **Virtctl Serial Console:**
+
+Use `virtctl` to access the serial console of the VM.
 
 ```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT7BDRMAV","name":"virtctl-console"}
 # Serial console access
@@ -131,6 +144,8 @@ virtctl console ubuntu
 > **Tip:** To exit the serial console, press `Ctrl + ]` or close the terminal.
 
 12. **Cleanup:**
+
+Clean up all Kubernetes and Pulumi resources.
 
 ```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT7BDRMAV","name":"clean"}
 task clean-all

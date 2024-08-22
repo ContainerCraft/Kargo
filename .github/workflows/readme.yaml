@@ -1,0 +1,54 @@
+# This Github Workflow will run on every push to the repository
+# and will test and validate the Kargo codebase using Kind Kubernetes.
+name: CI Testing - Konductor on Talos
+
+on: push
+
+jobs:
+  readme:
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/containercraft/konductor:latest
+      options: --user vscode --security-opt seccomp=unconfined
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - id: list
+        run: |
+          runme -l
+
+      - id: login
+        run: |
+          runme run login
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: configure
+        run: |
+          runme run configure
+
+      - id: kubernetes
+        run: |
+          runme run kubernetes
+
+      - id: deploy
+        run: |
+          runme run deploy
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: clean
+        if: always()
+        run: |
+          runme run clean
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
