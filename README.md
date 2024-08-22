@@ -8,7 +8,7 @@ terminalRows: 20
 
 # Kargo - The Cloud-Native ESXi Replacement
 
-[![CI - Kargo on Kind](https://github.com/ContainerCraft/Kargo/actions/workflows/kind.yaml/badge.svg)](https://github.com/ContainerCraft/Kargo/actions/workflows/kind.yaml)
+[![CI - Kargo on Kind](https://github.com/ContainerCraft/Kargo/actions/workflows/readme.yaml/badge.svg)](https://github.com/ContainerCraft/Kargo/actions/workflows/readme.yaml)
 
 ## Overview
 

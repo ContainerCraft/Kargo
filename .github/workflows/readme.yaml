@@ -14,16 +14,19 @@ jobs:
 
     steps:
 
-      - name: Checkout
+      - id: checkout
+        name: Checkout Repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - id: list
+        name: List Runme Commands
         run: |
           runme -l
 
       - id: login
+        name: Login to Cloud Accounts
         run: |
           runme run login
         env:
@@ -31,14 +34,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - id: configure
+        name: Configure Kargo Deployment
         run: |
           runme run configure
 
       - id: kubernetes
+        name: Deploy Kubernetes
         run: |
           runme run kubernetes
 
       - id: deploy
+        name: Deploy Kargo Platform on Kubernetes
         run: |
           runme run deploy
         env:
@@ -46,6 +52,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - id: clean
+        name: Clean Up Kubernetes & Kargo Deployment
         if: always()
         run: |
           runme run clean
