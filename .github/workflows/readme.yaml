@@ -10,7 +10,7 @@ jobs:
 
     container:
       image: ghcr.io/containercraft/konductor:latest
-      options: --user vscode --security-opt seccomp=unconfined
+      options: --user runner --security-opt seccomp=unconfined
 
     steps:
 
