@@ -23,7 +23,7 @@ jobs:
       - id: list
         name: List Runme Commands
         run: |
-          runme -l
+          runme list
 
       - id: login
         name: Login to Cloud Accounts
