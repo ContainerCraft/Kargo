@@ -4,6 +4,7 @@ runme:
   version: v3
 shell: /usr/bin/bash
 terminalRows: 20
+skipPrompts: true
 ---
 
 # Kargo - The Cloud-Native ESXi Replacement
