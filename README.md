@@ -82,10 +82,9 @@ Configure the Pulumi IaC Stack parameters.
 
 ```bash {"id":"01J5VC1KTJBR22WEDNSWYBKNQS","name":"configure"}
 # confirm Pulumi stack
-export DEPLOYMENT="${RepositoryName:-Enter the name of the deployment}"
-export ORGANIZATION="${GITHUB_USER:-Enter your organization name}"
+export ORGANIZATION="${GITHUB_USER:-${GITHUB_REPOSITORY_OWNER:-}}"
+export DEPLOYMENT="${RepositoryName:-}"
 export PROJECT="${RepositoryName:-talos-kargo-docker}"
-printenv | grep -iE 'DEPLOYMENT|ORGANIZATION|PROJECT|containercraft|usrbinkat'
 task configure
 ```
 
