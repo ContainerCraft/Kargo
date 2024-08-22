@@ -84,7 +84,6 @@ Configure the Pulumi IaC Stack parameters.
 # confirm Pulumi stack
 export ORGANIZATION="${GITHUB_USER:-${GITHUB_REPOSITORY_OWNER:-}}"
 export DEPLOYMENT="${RepositoryName:-}"
-export PROJECT="${RepositoryName:-talos-kargo-docker}"
 task configure
 ```
 
