@@ -6,7 +6,6 @@
     "privileged": true,
     "overrideCommand": false,
     "updateRemoteUserUID": true,
-    //"workspaceFolder": "/workspaces/konductor",
     "shutdownAction": "stopContainer",
     "securityOpt": [
         "seccomp=unconfined"
@@ -23,8 +22,6 @@
         "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
     },
     "postCreateCommand": "devcontainer-links",
-    //"workspaceMount": "source=.,target=/home/vscode/konductor,type=bind,consistency=cached",
-    //"workspaceFolder": "/home/vscode/konductor",
     "forwardPorts": [
         1313,
         2222,
@@ -111,13 +108,9 @@
                     "formatOnSave": true,
                     "insertSpaces": true,
                     "tabScrolling": "auto",
-                    //"tabFocusMode": false,
-                    //"tabMovesFocus": false,
                     "tabCompletion": "on",
                     "tabDecoration": true,
                     "fontLigatures": true,
-                    "enablePreview": true,
-                    "startupEditor": "readme",
                     "tabCloseButton": "right",
                     "minimap.enabled": false,
                     "openPositioning": "right",
@@ -196,7 +189,6 @@
                 },
                 "terminal": {
                     "integrated": {
-                        //"cwd": "/home/vscode/Konductor",
                         "fontSize": 14,
                         "scrollback": 10000,
                         "cursorStyle": "outline",
@@ -260,7 +252,7 @@
                 },
                 "workbench": {
                     "colorTheme": "Cyberpunk",
-                    "startupEditor": "readme",
+                    //"startupEditor": "readme",
                     "action.terminal.focusNext": {
                         "key": "ctrl+shift+down",
                         "mac": "cmd+shift+down"
@@ -269,7 +261,6 @@
                       "*.md": "runme"
                     }
                 },
-                "autoOpenPreviewPanel.openPreviewToTheSide": false,
                 "explorer.openEditors.visible": 1,
                 "explorer": {
                     "openEditors": {
@@ -337,18 +328,14 @@
                 "oderwat.indent-rainbow",
                 "okteto.kubernetes-context",
                 "ms-vsliveshare.vsliveshare",
-                "chadonsom.auto-view-readme",
                 "ms-azuretools.vscode-docker",
                 "github.vscode-github-actions",
                 "ms-kubernetes-tools.kind-vscode",
                 "ms-vscode.vscode-typescript-next",
                 "github.vscode-pull-request-github",
-                "matt-rudge.auto-open-preview-panel",
                 "ms-vscode-remote.remote-containers",
                 "randomfractalsinc.vscode-data-table",
-                "bierner.markdown-preview-github-styles",
                 "visualstudioexptteam.vscodeintellicode",
-                "bierner.markdown-preview-github-styles",
                 "ms-kubernetes-tools.vscode-kubernetes-tools"
             ]
         }

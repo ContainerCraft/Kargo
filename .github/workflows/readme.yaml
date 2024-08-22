@@ -5,7 +5,7 @@ name: CI Testing - Konductor on Talos
 on: push
 
 jobs:
-  ci-kargo-talos:
+  readme:
     runs-on: ubuntu-latest
 
     container:
@@ -14,61 +14,54 @@ jobs:
 
     steps:
 
-      - name: Checkout
+      - id: checkout
+        name: Checkout Repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - id: help
+      - id: list
+        name: List Runme Commands
         run: |
-          make help
+          runme list
 
       - id: login
+        name: Login to Cloud Accounts
         run: |
-          PULUMI_ACCESS_TOKEN=${{ secrets.PULUMI_ACCESS_TOKEN }} make login
+          runme run login
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - id: talos-config
+      - id: configure
+        name: Configure Kargo Deployment
         run: |
-          make talos-config
+          export ORGANIZATION="${GITHUB_USER:-${GITHUB_REPOSITORY_OWNER:-}}"
+          runme run configure
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USER: ${{ github.actor }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
-      - id: talos-cluster
+      - id: kubernetes
+        name: Deploy Kubernetes
         run: |
-          make talos-cluster
+          runme run kubernetes
 
-      - id: talos-ready
+      - id: deploy
+        name: Deploy Kargo Platform on Kubernetes
         run: |
-          make talos-ready
-
-      - id: pulumi-up
-        run: |
-          PULUMI_ACCESS_TOKEN=${{ secrets.PULUMI_ACCESS_TOKEN }} make pulumi-up
+          runme run deploy
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - id: all-pods-ready
-        run: |
-          make all-pods-ready
-
-      - id: pulumi-down
-        run: |
-          PULUMI_ACCESS_TOKEN=${{ secrets.PULUMI_ACCESS_TOKEN }} make pulumi-down
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-      - name: clean
-        run: |
-          make clean
-
-      - name: clean-all
+      - id: clean
+        name: Clean Up Kubernetes & Kargo Deployment
         if: always()
         run: |
-          PULUMI_ACCESS_TOKEN=${{ secrets.PULUMI_ACCESS_TOKEN }} make clean-all
+          runme run clean
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
