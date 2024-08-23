@@ -48,13 +48,13 @@ jobs:
         run: |
           runme run kubernetes
 
-      - id: deploy
-        name: Deploy Kargo Platform on Kubernetes
-        run: |
-          runme run deploy
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     - id: deploy
+      #       name: Deploy Kargo Platform on Kubernetes
+      #       run: |
+      #         runme run deploy
+      #       env:
+      #         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       #     - name: Debug Build
       #       uses: stateful/vscode-server-action@v1

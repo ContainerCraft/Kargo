@@ -15,15 +15,11 @@ terminalRows: 20
 
 Kargo replaces traditional hypervisors with a cloud-native container and virtualization platform. Kargo works seamlessly in on-prem, cloud, and local environments, leveraging Kubernetes to create a robust and scalable platform for modern compute and platform as a service use cases.
 
-### Join the Community
-
 Join Kargo users and contributors in the [ContainerCraft Community Discord](https://discord.gg/Jb5jgDCksX)!
-
-For more information, explore the [Kargo Project FAQ](FAQ.md).
 
 ![Kargo in Konductor Github CodeSpaces Devcontainer](.github/images/kargo-in-codespaces.png?raw=false "Kargo Konductor Codespaces")
 
-> **Note:** Kargo is in the pre-alpha pathfinding stage. Checkout [@usrbinkat](https://twitter.com/usrbinkat)'s [inaugural Twitter/X Thread](https://x.com/usrbinkat/status/1749186949590794551) to learn more.
+> **Note:** Kargo is in early development. Checkout [@usrbinkat](https://twitter.com/usrbinkat)'s [inaugural Twitter/X Thread](https://x.com/usrbinkat/status/1749186949590794551) to see how it all started.
 
 ## Project Goals
 
@@ -64,7 +60,7 @@ Check out the video to see Kargo deploy for yourself, or try it in your browser 
 
 3. **Open the VSCode Integrated Terminal:**
 
-   - Use key combination `[ Ctrl + ` ]` to open the terminal.
+   - Use key combination `` [ Ctrl + ` ] `` to open the terminal.
 
 4. **Authenticate Credentials**
 
@@ -89,7 +85,7 @@ task configure
 
 Deploy Kubernetes using Talos.
 
-```bash {"id":"01J5VC1KTJBR22WEDNSX4RHEG2","name":"kubernetes"}
+```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNSX4RHEG2","name":"kubernetes"}
 task kubernetes
 ```
 
@@ -97,7 +93,7 @@ task kubernetes
 
 Deploy the Kubevirt PaaS IaC to Kubernetes.
 
-```bash {"excludeFromRunAll":"false","id":"01J5VC1KTJBR22WEDNSZW7QADA","name":"deploy"}
+```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNSZW7QADA","name":"deploy"}
 task deploy
 ```
 
@@ -163,6 +159,8 @@ To test Kargo CI locally:
 task act
 ```
 
-## Stay Connected
+## Join the Community + Learn More
 
 For more discussion, support, and contribution, join our [ContainerCraft Community Discord Kargo Channel](https://discord.gg/Jb5jgDCksX).
+
+For more information, explore the [Kargo Project FAQ](FAQ.md).
