@@ -3,8 +3,8 @@ runme:
   id: 01J5VCA15YC12P0ASQ3CHPQFSZ
   version: v3
 shell: /usr/bin/bash
-terminalRows: 20
 skipPrompts: true
+terminalRows: 20
 ---
 
 # Kargo - The Cloud-Native ESXi Replacement
@@ -21,7 +21,7 @@ Join Kargo users and contributors in the [ContainerCraft Community Discord](http
 
 For more information, explore the [Kargo Project FAQ](FAQ.md).
 
-![Kargo in Konductor Devcontainer](.github/images/konductor-docker-linux-devcontainer.png?raw=true "Kargo Konductor Codespaces")
+![Kargo in Konductor Github CodeSpaces Devcontainer](.github/images/kargo-in-codespaces.png?raw=false "Kargo Konductor Codespaces")
 
 > **Note:** Kargo is in the pre-alpha pathfinding stage. Checkout [@usrbinkat](https://twitter.com/usrbinkat)'s [inaugural Twitter/X Thread](https://x.com/usrbinkat/status/1749186949590794551) to learn more.
 
@@ -50,8 +50,6 @@ Ensure you have the following tools and accounts:
 
 Check out the video to see Kargo deploy for yourself, or try it in your browser with the steps below.
 
-[![Deploy Kargo Kubevirt PaaS IaC Quickstart](https://img.youtube.com/vi/qo7EfF-xdK0/0.jpg)](https://www.youtube.com/watch?v=qo7EfF-xdK0)
-
 #### Step-by-Step Instructions
 
 1. **Log in to GitHub.**
@@ -59,10 +57,10 @@ Check out the video to see Kargo deploy for yourself, or try it in your browser 
 
    - Use the [Launch Kargo](https://bit.ly/launch-kargo-kubevirt-paas-in-github-codespaces) link directly or use the green `Code` button above to start a new Codespace.
    - Create a new Codespace with the following options:
-      - **Branch:** `main`
-      - **Dev Container Configuration:** `konductor`
-      - **Region:** Your choice
-      - **Machine Type:** 4 cores, 16 GB RAM, or better
+     - **Branch:** `main`
+     - **Dev Container Configuration:** `konductor`
+     - **Region:** Your choice
+     - **Machine Type:** 4 cores, 16 GB RAM, or better
 
 3. **Open the VSCode Integrated Terminal:**
 
@@ -112,7 +110,7 @@ Deploy an Ubuntu Virtual Machine on the platform using Kubevirt.
 pulumi config set --path vm.enabled true
 
 # Deploy the Kubevirt VM instance
-task deploy
+pulumi up --skip-preview --refresh=false
 ```
 
 9. **SSH to the new VM Instance:**
