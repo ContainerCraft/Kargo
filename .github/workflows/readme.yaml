@@ -43,10 +43,10 @@ jobs:
           GITHUB_USER: ${{ github.actor }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
-      - id: kubernetes
-        name: Deploy Kubernetes
-        run: |
-          runme run kubernetes
+      #     - id: kubernetes
+      #       name: Deploy Kubernetes
+      #       run: |
+      #         runme run kubernetes
 
       #     - id: deploy
       #       name: Deploy Kargo Platform on Kubernetes
