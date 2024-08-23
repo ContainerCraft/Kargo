@@ -99,7 +99,7 @@ tasks:
   stop:
     desc: "Stop the GitHub Codespace."
     cmds:
-      - task: clean
+      - task: clean-all
       - gh codespace --codespace ${CODESPACE_NAME} stop
 
   ##################################################################################
