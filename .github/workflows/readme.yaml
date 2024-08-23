@@ -56,11 +56,11 @@ jobs:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Debug Build
-        uses: stateful/vscode-server-action@v1
-        if: failure()
-        with:
-          timeout: "300000"
+      #     - name: Debug Build
+      #       uses: stateful/vscode-server-action@v1
+      #       if: failure()
+      #       with:
+      #         timeout: "300000"
 
       - id: clean
         name: Clean Up Kubernetes & Kargo Deployment
