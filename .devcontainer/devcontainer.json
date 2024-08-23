@@ -261,15 +261,15 @@
                       "*.md": "runme"
                     }
                 },
-                "explorer.openEditors.visible": 1,
                 "explorer": {
                     "openEditors": {
-                        "visible": 1
+                        "visible": 0
                     },
                     "autoRevealExclude": {
                         "**/.git/objects/**": true,
                         "**/.git/subtree-cache/**": true,
-                        "**/node_modules/**": true
+                        "**/node_modules/**": true,
+                        "**/venv/**": true
                     },
                     "autoReveal": true,
                     "sortOrder": "filesFirst"

@@ -13,7 +13,6 @@ jobs:
       options: --user runner --security-opt seccomp=unconfined
 
     steps:
-
       - id: checkout
         name: Checkout Repository
         uses: actions/checkout@v3
@@ -57,9 +56,15 @@ jobs:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Debug Build
+        uses: stateful/vscode-server-action@v1
+        if: failure()
+        with:
+          timeout: "300000"
+
       - id: clean
         name: Clean Up Kubernetes & Kargo Deployment
-        if: always()
+        if: failure() || success()
         run: |
           runme run clean
         env:
