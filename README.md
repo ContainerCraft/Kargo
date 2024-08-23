@@ -50,8 +50,6 @@ Ensure you have the following tools and accounts:
 
 Check out the video to see Kargo deploy for yourself, or try it in your browser with the steps below.
 
-[![Deploy Kargo Kubevirt PaaS IaC Quickstart](https://img.youtube.com/vi/qo7EfF-xdK0/0.jpg)](https://www.youtube.com/watch?v=qo7EfF-xdK0)
-
 #### Step-by-Step Instructions
 
 1. **Log in to GitHub.**
