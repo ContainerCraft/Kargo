@@ -1,1 +1,1 @@
-FROM ghcr.io/containercraft/konductor:latest
+FROM ghcr.io/containercraft/devcontainer:latest
