@@ -1,12 +1,3 @@
----
-runme:
-  id: 01J5VCA15YC12P0ASQ3CHPQFSZ
-  version: v3
-shell: /usr/bin/bash
-skipPrompts: true
-terminalRows: 20
----
-
 # Kargo - The Cloud-Native ESXi Replacement
 
 [![Quickstart Test](https://github.com/ContainerCraft/Kargo/actions/workflows/readme.yaml/badge.svg)](https://github.com/ContainerCraft/Kargo/actions/workflows/readme.yaml)
