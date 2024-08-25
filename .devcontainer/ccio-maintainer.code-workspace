@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"name": "konductor",
+			"path": "../"
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.git": true,
+			"**/.svn": true,
+			"**/venv": true,
+			"**/.kube": true,
+			"**/.talos": true,
+			"**/.pulumi": true,
+			"**/.DS_Store": true,
+			"**/Thumbs.db": true,
+			"**/.gitignore": true,
+			"**/node_modules": true
+		}
+	},
+	"extensions": {
+		"recommendations": []
+	}
+}
