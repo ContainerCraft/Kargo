@@ -101,6 +101,8 @@ task deploy
 
 Deploy an Ubuntu Virtual Machine on the platform using Kubevirt.
 
+> **Note:** Run this step manually via integrated terminal.
+
 ```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT2EWEW9Q","name":"vm"}
 # Enable the VM instance
 pulumi config set --path vm.enabled true
