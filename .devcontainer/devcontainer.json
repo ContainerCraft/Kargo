@@ -21,7 +21,7 @@
     "features": {
         "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
     },
-    "postCreateCommand": "devcontainer-links",
+    "postCreateCommand": "devcontainer-links; direnv allow",
     "forwardPorts": [
         1313,
         2222,
