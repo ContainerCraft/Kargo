@@ -2,9 +2,6 @@ version: v1alpha1
 debug: false
 machine:
   kubelet:
-    disableManifestsDirectory: true
-    extraArgs:
-      feature-gates: ServerSideApply=false
     extraMounts:
       - destination: /etc/cni/net.d
         type: bind

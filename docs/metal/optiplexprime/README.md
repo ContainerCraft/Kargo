@@ -48,13 +48,13 @@ a. Apply cluster template with omnictl
 
 ```bash
 # Validate Cluster Template
-omnictl cluster template validate -f metal/optiplexprime/cluster.yaml
+omnictl cluster template validate -f docs/metal/optiplexprime/cluster.yaml
 
 # Apply Omni CR to create cluster
-omnictl cluster template sync -f metal/optiplexprime/cluster.yaml
+omnictl cluster template sync -f docs/metal/optiplexprime/cluster.yaml
 
 # Monitor progress
-omnictl cluster template status -f metal/optiplexprime/omni-cluster.yaml
+omnictl cluster template status -f docs/metal/optiplexprime/cluster.yaml
 ```
 
 ![](.assets/image-4.png)
@@ -79,14 +79,18 @@ pulumi config set --path kubernetes.context usrbinkat-optiplexprime
 pulumi up --skip-preview --refresh=true; pulumi up --skip-preview --refresh=true; pulumi up --skip-preview --refresh=true
 ```
 
-### 7. Deploy an Ubuntu VM
+### 7. **Deploy a Virtual Machine:**
 
-```bash
-# Create SSH Public Key secret
-kubectl create secret generic user-kc2-sshpubkey --from-file=key1=.ssh/id_rsa.pub --dry-run=client -oyaml | kubectl apply -f -
+Deploy an Ubuntu Virtual Machine on the platform using Kubevirt.
 
-# Apply the Ubuntu VM CR
-kubectl apply -f hack/ubuntu-br0.yaml
+> **Note:** Run this step manually via integrated terminal.
+
+```bash {"excludeFromRunAll":"true","id":"","name":"vm"}
+# Enable the VM instance
+pulumi config set --path vm.enabled true
+
+# Deploy the Kubevirt VM instance
+pulumi up --skip-preview --refresh=false
 ```
 
 ### 8. Deploy a tenant talos cluster
