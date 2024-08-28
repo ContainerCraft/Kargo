@@ -64,7 +64,6 @@ omnictl cluster template status -f docs/metal/optiplexprime/cluster.yaml
   * Download and add the `--skip-open-browser` flag to the kubeconfig oidc-login command arguments
   * I added this Kubeconfig to my Pulumi ESC environment so it loads from the `eval $(pulumi env open --format=shell kargo)` command.
     ```yaml
-    🐋 ❯ cat $KUBECONFIG
     apiVersion: v1
     kind: Config
     clusters:
@@ -93,7 +92,21 @@ omnictl cluster template status -f docs/metal/optiplexprime/cluster.yaml
           command: kubectl
           env: null
           provideClusterInfo: false
-    ````
+    ```
+
+  * Also add TalosConfig to Pulumi ESC Environment
+
+    ```yaml
+    context: usrbinkat-optiplexprime
+    contexts:
+        usrbinkat-optiplexprime:
+            endpoints:
+                - https://usrbinkat.omni.siderolabs.io
+            auth:
+                siderov1:
+                    identity: kathryn.morgan@braincraft.io
+            cluster: optiplexprime
+    ```
 
 ```bash
 # Get Pods
