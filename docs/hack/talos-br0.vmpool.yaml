@@ -1,0 +1,61 @@
+---
+apiVersion: pool.kubevirt.io/v1alpha1
+kind: VirtualMachinePool
+metadata:
+  name: talos
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      kubevirt.io/vmpool: talos
+  virtualMachineTemplate:
+    metadata:
+      creationTimestamp: null
+      labels:
+        kubevirt.io/vmpool: talos
+    spec:
+      running: true
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            kubevirt.io/vmpool: talos
+        spec:
+          architecture: amd64
+          domain:
+            devices:
+              disks:
+                - disk:
+                    bus: virtio
+                  bootOrder: 1
+                  name: talosdisk
+              interfaces:
+                - name: eth0
+                  bridge: {}
+            resources:
+              cpu:
+                cores: 2
+              requests:
+                memory: 4Gi
+          networks:
+            - name: eth0
+              multus:
+                networkName: br0
+          terminationGracePeriodSeconds: 0
+          volumes:
+            - dataVolume:
+                name: talosdisk
+              name: talosdisk
+      dataVolumeTemplates:
+        - metadata:
+            name: talosdisk
+          spec:
+            storage:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 20Gi
+            source:
+              http:
+                url: "https://factory.talos.dev/image/79c3d43dd90861d1ffdd379da3e5a6e7fccdb36be434d4b3749ecae8882b08a9/v1.7.6/nocloud-amd64.raw.xz"
