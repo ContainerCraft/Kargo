@@ -32,7 +32,7 @@ d. Verify connection to Omni Console > Machines
 pulumi login
 
 # Init Pulumi ESC Emvironment for local config and env
-eval (pulumi env open --format=shell kargo)
+eval $(pulumi env open --format=shell kargo)
 ```
 
 ### 4. Omnictl Login & Prep
@@ -60,6 +60,40 @@ omnictl cluster template status -f docs/metal/optiplexprime/cluster.yaml
 ![](.assets/image-4.png)
 
 2. Test Kubectl Access
+
+  * Download and add the `--skip-open-browser` flag to the kubeconfig oidc-login command arguments
+  * I added this Kubeconfig to my Pulumi ESC environment so it loads from the `eval $(pulumi env open --format=shell kargo)` command.
+    ```yaml
+    🐋 ❯ cat $KUBECONFIG
+    apiVersion: v1
+    kind: Config
+    clusters:
+      - cluster:
+          server: https://usrbinkat.kubernetes.omni.siderolabs.io
+        name: usrbinkat-optiplexprime
+    contexts:
+      - context:
+          cluster: usrbinkat-optiplexprime
+          namespace: default
+          user: usrbinkat-optiplexprime-kathryn.morgan@braincraft.io
+        name: usrbinkat-optiplexprime
+    current-context: usrbinkat-optiplexprime
+    users:
+    - name: usrbinkat-optiplexprime-kathryn.morgan@braincraft.io
+      user:
+        exec:
+          apiVersion: client.authentication.k8s.io/v1beta1
+          args:
+            - oidc-login
+            - get-token
+            - --oidc-issuer-url=https://usrbinkat.omni.siderolabs.io/oidc
+            - --oidc-client-id=native
+            - --oidc-extra-scope=cluster:optiplexprime
+            - --skip-open-browser
+          command: kubectl
+          env: null
+          provideClusterInfo: false
+    ````
 
 ```bash
 # Get Pods

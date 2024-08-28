@@ -36,12 +36,12 @@ config:
   hostpath_provisioner:
     value:
       enabled: true
-      version: 0.19.0
+      version: 0.20.0
       default_storage_class: true
   cdi:
     value:
       enabled: true
-      version: 1.59.0
+      version: 1.60.2
   multus:
     value:
       enabled: true

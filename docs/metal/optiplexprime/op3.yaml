@@ -17,6 +17,10 @@ machine:
           - bind
           - rshared
           - rw
+  disks:
+    - device: /dev/sdb
+      partitions:
+        - mountpoint: /var/mnt/hostpath-provisioner
   time:
     disabled: true
   network:

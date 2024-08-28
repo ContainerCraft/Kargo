@@ -1,14 +1,28 @@
 cluster:
     allowSchedulingOnControlPlanes: true
     apiServer:
+        # Disable PodSecurityPolicy in the API server and default manifests.
         disablePodSecurityPolicy: true
+        # Configure the API server admission plugins.
         admissionControl:
             - name: PodSecurity
               configuration:
-                  apiVersion: pod-security.admission.config.k8s.io/v1alpha1
-                  kind: PodSecurityConfiguration
-                  defaults: {}
-                  exemptions: {}
+                apiVersion: pod-security.admission.config.k8s.io/v1alpha1
+                kind: PodSecurityConfiguration
+                defaults:
+                    audit: restricted
+                    audit-version: latest
+                    enforce: baseline
+                    enforce-version: latest
+                    warn: restricted
+                    warn-version: latest
+                exemptions:
+                    namespaces:
+                        - kube-system
+                        - hostpath-provisioner
+                        - cdi
+                    runtimeClasses: []
+                    usernames: []
         auditPolicy:
             apiVersion: audit.k8s.io/v1
             kind: Policy

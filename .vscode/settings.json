@@ -195,7 +195,7 @@
     "editor.lineNumbers": "relative",
     "editor.renderWhitespace": "all",
     "editor.autoSave": "onFocusChange",
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "editor.insertSpaces": true,
     "editor.tabSize": 4,
     "editor.minimap.enabled": true,
