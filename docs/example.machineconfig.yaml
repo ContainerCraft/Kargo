@@ -18,10 +18,10 @@ machine:
 
     # Used to provide additional options to the kubelet.
     kubelet:
-        image: ghcr.io/siderolabs/kubelet:v1.30.3 # The `image` field is an optional reference to an alternative kubelet image.
+        image: ghcr.io/siderolabs/kubelet:v1.30.4 # The `image` field is an optional reference to an alternative kubelet image.
         defaultRuntimeSeccompProfileEnabled: true # Enable container runtime default Seccomp profile.
         disableManifestsDirectory: true # The `disableManifestsDirectory` field configures the kubelet to get static pod manifests from the /etc/kubernetes/manifests directory.
-        
+
         # # The `ClusterDNS` field is an optional reference to an alternative kubelet clusterDNS ip list.
         # clusterDNS:
         #     - 10.96.0.10
@@ -82,7 +82,7 @@ machine:
     #           gateway: 192.168.2.1 # The route's gateway (if empty, creates link scope route).
     #           metric: 1024 # The optional metric for the route.
     #       mtu: 1500 # The interface's MTU.
-    #       
+    #
     #       # # Picks a network device using the selector.
 
     #       # # select a device with bus prefix 00:*.
@@ -182,7 +182,7 @@ machine:
         disk: /dev/sda # The disk used for installations.
         image: ghcr.io/siderolabs/installer:v1.7.6 # Allows for supplying the image used to perform the installation.
         wipe: false # Indicates if the installation disk should be wiped at installation time.
-        
+
         # # Look up disk using disk attributes like model, size, serial and others.
         # diskSelector:
         #     size: 4GB # Disk size.
@@ -213,12 +213,12 @@ machine:
     #         # The TLS configuration for the registry.
     #         tls:
     #             insecureSkipVerify: true # Skip TLS server certificate verification (not recommended).
-    #             
+    #
     #             # # Enable mutual TLS authentication with the registry.
     #             # clientIdentity:
     #             #     crt: LS0tIEVYQU1QTEUgQ0VSVElGSUNBVEUgLS0t
     #             #     key: LS0tIEVYQU1QTEUgS0VZIC0tLQ==
-    #         
+    #
     #         # # The auth configuration for this registry.
     #         # auth:
     #         #     username: username # Optional registry authentication.
@@ -237,7 +237,7 @@ machine:
         # Configures host DNS caching resolver.
         hostDNS:
             enabled: true # Enable host DNS caching resolver.
-        
+
         # # Configure Talos API access from Kubernetes pods.
         # kubernetesTalosAPIAccess:
         #     enabled: true # Enable Talos API access from Kubernetes pods.
@@ -247,7 +247,7 @@ machine:
         #     # The list of Kubernetes namespaces Talos API access is available from.
         #     allowedKubernetesNamespaces:
         #         - kube-system
-    
+
     # # Provides machine specific control plane configuration options.
 
     # # ControlPlane definition example.
@@ -280,7 +280,7 @@ machine:
     #       # A list of partitions to create on the disk.
     #       partitions:
     #         - mountpoint: /var/mnt/extra # Where to mount the partition.
-    #           
+    #
     #           # # The size of partition: either bytes or human readable representation. If `size:` is omitted, the partition is sized to occupy the full disk.
 
     #           # # Human readable representation.
@@ -344,11 +344,11 @@ machine:
     #             - # Deterministically generated key from the node UUID and PartitionLabel.
     #               nodeID: {}
     #               slot: 0 # Key slot number for LUKS2 encryption.
-    #               
+    #
     #               # # KMS managed encryption key.
     #               # kms:
     #               #     endpoint: https://192.168.88.21:4443 # KMS endpoint to Seal/Unseal the key.
-    #         
+    #
     #         # # Cipher kind to use for the encryption. Depends on the encryption provider.
     #         # cipher: aes-xts-plain64
 
@@ -414,7 +414,7 @@ cluster:
         # The service subnet CIDR.
         serviceSubnets:
             - 10.96.0.0/12
-        
+
         # # The CNI used.
         # cni:
         #     name: custom # Name of CNI to use.
@@ -436,7 +436,7 @@ cluster:
         key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlKS2dJQkFBS0NBZ0VBMjdlaEc2M0hubHJkakpWWFdlUXdxTE9PN2duVmpEaVByd1orMVd5QTBHZ0t0TXhHClZYNk5NKzJhYzNHZkQrWW1uU3pHM0NWU3lDMXp1RGpuaE1DSFZTZWtDM3Fyck5pWVBEbk5WcEY1NDBVeERYVEUKNGNyUzNvUUMycitiQnU1M2VDYk80cm9XbHFuV0wybmxNay9Ka2xrUDcvaisxSnRwUlVNUkpVMVZwcFhFcDRjRApsVW9KeU5SSmFVM2FlQXhFbUxwQUdkSndTNWJGalZwSVU1TmM4Qml0MUJaWVlZaml1SmJsc3JENXBDeEFUczQxCm1mUEg2cm9SbVNZZFVETkYrM0JaVzNYRkw5blNZT25vcUxtWTVsN283V1JCVk9EemtxbDhHYVF6L3hxRGNEMjYKeTE1VWFjc0tvYnJXWGhITzlRK2tsWStlRHZQaytqYStRZGljN1hneDgzV2FlTWIzTjI4WmVjc1RwMWhFcGNnVgpIaVZNV0k1MU5UVWRjSEpQQ2lqQUlYZ1pyS2tSSEwxWW01YU04Q0duRXIvMjFLK3pGd3ljZFlKY0p6dzlNd3ZmCk1QQXNibW9rZHJSc0lZYjhKYWNPa1VUU0NmSGlVRVBKRkpnR0d3Z25oZUFLTzR1bWhSY08wRm1OYnM2bDA0UTEKNGU0aWNKRjV1WHdQbkpmT3k3WVN0TTlIdXNEdndyaTlGREJUaHFYb2t4aDZBR3hqaVpESEtBeVJ4ZGdWQVFEZwp3NzVKc0VhOGtBZng4TWJNSHF3emRBMldMeE8vVi9kc2VnRE4valBLTWV4dDF6V0NVYmdZR3lST0dNWG5lWHdtCkR1USswa1VnaEpWeVZFcFA5aWFHNjJuOGhaYVVJQnhKYWZiY1cvWDlDZU5nV0Rwc25JM1ZMQ3Z6cVBzQ0F3RUEKQVFLQ0FnQmthb2czSGpVZEttb1cxaW9WNnpSUjViNXREQkdOQkV5bXNWRkdPVkNsN3ViMXVtWnFyR3ZjVDd0SApCNmFxbllVSVVHNlNMbnluQUI3akV4NjhqVUZNcWRGUGJjRUlQZlZWa1JWSGV6VTVxV1hCd0p3NmxYZktPb3NUCmJuNXJySkR0V004MHo5ZURCQnZmajRZd2VFYW5uQXlzb0IvWEN6QVJkNVZlZHZtdUtNUzN5L3pYUGY4NnljckQKVmRHRERCaE50TkdXKzVaVzlaRlVDTzhGUTFRMlp4RUszU3VIYUFnMlZNQ2w2and0ekF1WCtLYUd0ZU9vWTJHbgpuTVBJNDZZWVJFQ1NqRUNTbmZxSVVGOEV2YzRqZXp6NVFkaVo4alZmMGhYbG9pWWhjUHloVDVVUFhRMDNUSlNQClZkU2pLWUJzZjdtNG9PcWI2dHU3ZjBsMHpvcnBKQXEwRllPRCtjMGJnT3J3SVE3Z0J3eSs2bUhFVGJyOEd1aSsKT1Z3NmJ5WEVwa09GNHZFWUlkMFo1a1JVYU5YVC9lMHRSTUtPcUJLT3BoNWFOODlBY3RXTkVQbytUd0dZVjJjMApSRjdDZ2xtNjVPNkJBMFJXVnhZazdKaW1YanlCZENiaFFRMktWKytuTzUwbDk4alAyR1NTNTBTVzVYZ1pPTFRmClJPaStCWkE2dWJnSkxNak15UG5uWUNPT05Zbkd4bXVEWGk4Vlg3bnNGY2RQS3NXTDZjTG5MQWFYTzhvcEY0TlEKVy9PWWlRdGhOZEI0NFR6QjB0MFZMQmI0MWI4dStxb01HOWM0cFJxdXZmUjFPL1NjTjdiWHlnVjFzUEsyaFBxRApBNkV4aE5wZ0VmVlI0MmRLcUJpVUQ5WWFXMXFvVllodVBNUCtxVGg1Z0xCWEovbVFBUUtDQVFFQTQwclZ1WEFrCm1lQ3lRWHVKdmNPN1NFdEIrbFB3SGdnYzBEMHlZb09xTktKWEZNYkJpeUJubGRIQVBFdEROZlNwQTFpUEU5ME8KeFNjRisrMENVb292anZpbnZVVXh1eGlGV3RwejN1RDlCcTJybkZSK2RwdkpybDJSMU1mVXE4blFUU2luNHdDdgpQbFA0dkloSG5RRHlMLy9GVlEvZ3NpU2ZaVUprNGdkSHhxNEFMQm9MZ1gwWFFwOEhwVlk4ZU9oUmdDb1VUcUpKCk1CREQ1OGYwKzBra0N6aUhiRkx4UUQzVzRiTnNDanlXNEJPY0R1K2RNeUN1SEZLeEdKamdBODJDakJNbGd0c0QKVVdhMDZQR205K1F2QTB2Q3lzWE5QKzE2WENBaW5oTEFoR25zdnpOdjl0N2hNYVFJVUVVYjV6NmtvQndvVVNBcQp5SXBnK0ozajFnOWhLUUtDQVFFQTkzZmVBYlVORm9POVpuTm1HbkxyNEFCek1oLzEwOXFUbjlHQmIrbTk4RVZyClVTdFNkLzJ3SUhlOVM3dmk3blMvMXFONmZrcEtlWlJaNFVJTG5ONFJYazk4TldCdUs4ZUtOcTEzaFlTRkNlbE4KdnVMR1dJOHh6cUFnM3ltUTlUeVJiUG5DMS96ZWxId2d4U2VkV0F2ZjVEZThsQ1R0THJ3djcyQ3l2WVVHTXV1Nwpselp5MWRmU1lseGFDRjQ5eXVmMUFrNUdYUnFPb1dPZzRGbzc4RWxDTjJhNUxkOU1kSFl6WFArQUt4T0krUU1XCjErclRKWHpjdXYxRVZKcGxvK2hmejI3SkZIdzVxb0c3eHpEMDJvMURGenRPd1AxQUZUUUR2ZXB2SEVLdHRFcnEKOEhGQzVYKzF4Rno3QWM5dWRYUWNxc3VEL1FqMy82SjdwQ3l2Z3lhSmd3S0NBUUVBcUs4Yld0cHRiMzRoRFJRZwpMNk9aMUpkMXlkQ052ZHdMZGtoVW9tUlE1MnNyOFpGb2hsWndTZkkzRndoTVF6am1Ua05sUERxdEFZaHFtb05WClcraU9UeThmWGdxQ1UvWm8wZnFhVCtqdUlBeTM5ZmVITzROMjlGOGhJYWVFb0ZIUXM5TGVka3hGd3A0VFZlaFcKTGFGTUhHOVlCajhZWlYxa3BvUFYxeUhNRlJtQnF6bFJITEszbG92cjRyclRlbkFBUEh2K1FqV1MxNGM1dlVUYQovYnRVY3JkcldldGNmRzdva096VjIrc0hsaGsza3FZbUpwRzBaZlRBMWg1dThxT01wV1I0VEZzNlpTa3lUa2M1CndYT3BxR3FMa0cyb1hDOWt4Z1piYXJGRUM0R0pZSVZPTFF0UVdjVUJIb0dMcWQwRjFJWFJMaFFQYkhHMmNnekwKMEV2dHNRS0NBUUVBemprUHd2Qnp4YTFuS25kRVFRby8wbDNOb1puTXJBMWNORFRNM3N3MHdvTzNHTjgzVEZNVwpjUmdYb1lNamEzL1RWalRKb1hDYmU1SExETktUQnRod05OMmNMb2I3aUhReWs3b2UvaDhmRnRGYlBwV1FvTUJECnkyTFp3ZDdMcy9JVFpuTUVraVZoL3U4cUIrSXBWdlFlVWZxNHBlUFgyN2hyWWRwOVdUMy9tbk9qMGpGSHBUakQKVThDT0xxY0thNHE5UEh5cVduQUZLQ3owSmNKTWJNTS84UmNqZmp5MVkrQVVrWTFCNjZQTjQyVlZwZjFFazlybgp2dFBNRzR6RzRyNkZDVUhUUThUNThVTkhqb2tYb3dGUlJZemc1aWFsUG9Zb0VCM0xGZ3ZpNFhvRkt2WFh2NVNiCmp0WEZQdzd6aCtHSStqTzYvQ1I3Tm9iYTdrZG13NjViclFLQ0FRRUFqbDFML1dIQmpCUGYwM2FweFkzT3Q5ZWkKLzE1UEtYQVVnc3JpaFNOd3UxSERuNUcrT1VtUldWTWlncTlzWWNGWWdhSm4zNTliczJpL1RheDE4ZWdTZVhBagozSDhQQWRIRGVGSEI0K1ZmdVF5aCtxTXAxYWJQU2ZwWnV3dXY5VzNvSkpNcUhkQUo2bmtCMG9QNkN2TDlGeldCCkRzZ0dnZlFGTE9Ud1pucXVHZ1J1NGxuVmZabGliQzZlSnlBelZydXFDd2JqOHBFKzEwSFd1eUV1d1BqRURKVnoKVHFEa3B2UHRxMUdLK2lpeWk4emcvOXgzdzNyaGpOZENFRmhNZ3RtdHM4MXdHdVpxY1RqczB6eXd0cm1vYzJBSQpaWHllaUMvdk5vSW5pSzVRMWlqSHNVcnAzWVNPSCtEdmo3Skc0djM5ZWwyRm9WVjFlaS8ybFV0TUdwZ2hudz09Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
     # API server specific configuration options.
     apiServer:
-        image: registry.k8s.io/kube-apiserver:v1.30.3 # The container image used in the API server manifest.
+        image: registry.k8s.io/kube-apiserver:v1.30.4 # The container image used in the API server manifest.
         # Extra certificate subject alternative names for the API server's certificate.
         certSANs:
             - 127.0.0.1
@@ -468,16 +468,16 @@ cluster:
                 - level: Metadata
     # Controller manager server specific configuration options.
     controllerManager:
-        image: registry.k8s.io/kube-controller-manager:v1.30.3 # The container image used in the controller manager manifest.
+        image: registry.k8s.io/kube-controller-manager:v1.30.4 # The container image used in the controller manager manifest.
     # Kube-proxy server-specific configuration options
     proxy:
-        image: registry.k8s.io/kube-proxy:v1.30.3 # The container image used in the kube-proxy manifest.
-        
+        image: registry.k8s.io/kube-proxy:v1.30.4 # The container image used in the kube-proxy manifest.
+
         # # Disable kube-proxy deployment on cluster bootstrap.
         # disabled: false
     # Scheduler server specific configuration options.
     scheduler:
-        image: registry.k8s.io/kube-scheduler:v1.30.3 # The container image used in the scheduler manifest.
+        image: registry.k8s.io/kube-scheduler:v1.30.4 # The container image used in the scheduler manifest.
     # Configures cluster member discovery.
     discovery:
         enabled: true # Enable the cluster membership discovery feature.
@@ -496,7 +496,7 @@ cluster:
         ca:
             crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJmakNDQVNTZ0F3SUJBZ0lSQUkrSVdIeTk2bUIrdTh4cXhubmNnZ2t3Q2dZSUtvWkl6ajBFQXdJd0R6RU4KTUFzR0ExVUVDaE1FWlhSalpEQWVGdzB5TkRBNE1qZ3lNRFExTXpKYUZ3MHpOREE0TWpZeU1EUTFNekphTUE4eApEVEFMQmdOVkJBb1RCR1YwWTJRd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DQUFUVHdUVFVFcytiCm9tNi9VZlFTZ1dyYzBiOEV1SkJxYy95dk9LcjlsczlSMW9kdUtacHliTzM2UGMyelBaZWk2L0RNeVRHR09VL0wKSC9mc0pqTUJncFZ5bzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSApBd0VHQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkZ6Z24yN3h5eStICm4ySEZUYzBEM09nVjNXcy9NQW9HQ0NxR1NNNDlCQU1DQTBnQU1FVUNJRllpUkZheUpCUUF1eGw5VVhrTE9GRmEKcVhIUHlORllrYk9oaU00ZVdhd2RBaUVBN2RVWkVieGIyZDlCd0g0cE4zNm1sZHY1V2dRVXhGaXZPSERaNjhRQgoyYkU9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
             key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSU9UYmRPczlXV2Z4UUw1OXZKSExoSnFDcnpmVGpOQkpUclhlSkFSYlZXNUNvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFMDhFMDFCTFBtNkp1djFIMEVvRnEzTkcvQkxpUWFuUDhyemlxL1piUFVkYUhiaW1hY216dAorajNOc3oyWG91dnd6TWt4aGpsUHl4LzM3Q1l6QVlLVmNnPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
-        
+
         # # The container image used to create the etcd service.
         # image: gcr.io/etcd-development/etcd:v3.5.13
 
@@ -517,7 +517,7 @@ cluster:
     #       metadata:
     #       	name: ci
 
-    
+
     # # A key used for the [encryption of secret data at rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/).
 
     # # Decryption secret example (do not use in production!).

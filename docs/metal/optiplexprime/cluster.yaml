@@ -18,18 +18,18 @@ name: 4c4c4544-0036-3110-8047-c2c04f394e32
 install:
   disk: /dev/nvme1n1
 patches:
-  - file: docs/metal/optiplexprime/op1.yaml
+  - file: docs/metal/optiplexprime/machine.yaml
 ---
 kind: Machine
 name: 4c4c4544-0035-5210-804b-c2c04f394e32
 install:
   disk: /dev/nvme1n1
 patches:
-  - file: docs/metal/optiplexprime/op2.yaml
+  - file: docs/metal/optiplexprime/machine.yaml
 ---
 kind: Machine
 name: 4c4c4544-0056-3210-804c-b5c04f525032
 install:
   disk: /dev/nvme1n1
 patches:
-  - file: docs/metal/optiplexprime/op3.yaml
+  - file: docs/metal/optiplexprime/machine.yaml

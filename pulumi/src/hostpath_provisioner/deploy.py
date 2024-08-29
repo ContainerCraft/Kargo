@@ -33,6 +33,7 @@ def deploy(
     ns_labels = {
         "kubevirt.io": "",
         "kubernetes.io/metadata.name": ns_name,
+        "pod-security.kubernetes.io/enforce": "privileged"
     }
     namespace = create_namespace(
         depends,

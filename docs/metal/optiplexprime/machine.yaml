@@ -1,0 +1,28 @@
+machine:
+  network:
+    interfaces:
+      - interface: br0
+        dhcp: true
+        bridge:
+          interfaces:
+            - enp3s0
+  disks:
+    - device: /dev/sda
+      partitions:
+        - mountpoint: /var/mnt/hostpath-provisioner
+  kubelet:
+    extraMounts:
+      - destination: /etc/cni/net.d
+        type: bind
+        source: /etc/cni/net.d
+        options:
+          - bind
+          - rshared
+          - rw
+      - destination: /opt/cni/bin
+        type: bind
+        source: /opt/cni/bin
+        options:
+          - bind
+          - rshared
+          - rw

@@ -11,21 +11,25 @@ spec:
       storage: 1Gi
   storageClassName: ssd
   volumeMode: Filesystem
-  volumeName: nginx-pv
 ---
 apiVersion: v1
 kind: Pod
 metadata:
   name: nginx-pod
-  annotations:
-    kubernetes.io/psp: restricted
-    seccomp.security.alpha.kubernetes.io/pod: 'runtime/default'
-    apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
-    apparmor.security.beta.kubernetes.io/defaultProfileName: 'runtime/default'
 spec:
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
   containers:
   - name: nginx-container
     image: nginx
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      runAsNonRoot: false
+      seccompProfile:
+        type: RuntimeDefault
     resources:
       limits:
         cpu: "0.5"
