@@ -1,7 +1,7 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: ubuntu
+  name: ubuntu-br0
   namespace: default
   labels:
     app: kc2
@@ -22,7 +22,7 @@ spec:
         cpu:
           cores: 1
           sockets: 1
-          threads: 6
+          threads: 4
           model: host-passthrough
           dedicatedCpuPlacement: false
         memory:
@@ -52,13 +52,13 @@ spec:
         firmware:
           bootloader:
             efi:
-              secureBoot: true
+              secureBoot: false
         machine:
           type: q35
         resources:
           requests:
             memory: 8192M
-      hostname: ccio
+      hostname: ubuntu-br0
       networks:
         - name: eth0
           multus:
@@ -68,7 +68,7 @@ spec:
         - sshPublicKey:
             source:
               secret:
-                secretName: user-kc2-sshpubkey
+                secretName: kc2-pubkey
             propagationMethod:
               qemuGuestAgent:
                 users:

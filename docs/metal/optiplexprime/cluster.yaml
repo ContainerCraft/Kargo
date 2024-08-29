@@ -1,35 +1,35 @@
 kind: Cluster
 name: optiplexprime
 talos:
-  version: v1.7.5
+  version: v1.7.6
 kubernetes:
-  version: v1.30.3
+  version: v1.30.4
 ---
 kind: ControlPlane
 machines:
-  - 4c4c4544-0056-3210-804c-b5c04f525032
   - 4c4c4544-0036-3110-8047-c2c04f394e32
   - 4c4c4544-0035-5210-804b-c2c04f394e32
+  - 4c4c4544-0056-3210-804c-b5c04f525032
 patches:
-  - file: metal/optiplexprime/patch.yaml
----
-kind: Machine
-name: 4c4c4544-0056-3210-804c-b5c04f525032
-install:
-  disk: /dev/nvme0n1
-patches:
-  - file: metal/optiplexprime/op1.yaml
+  - file: docs/metal/optiplexprime/patch.yaml
 ---
 kind: Machine
 name: 4c4c4544-0036-3110-8047-c2c04f394e32
 install:
-  disk: /dev/nvme0n1
+  disk: /dev/nvme1n1
 patches:
-  - file: metal/optiplexprime/op2.yaml
+  - file: docs/metal/optiplexprime/machine.yaml
 ---
 kind: Machine
 name: 4c4c4544-0035-5210-804b-c2c04f394e32
 install:
-  disk: /dev/nvme0n1
+  disk: /dev/nvme1n1
 patches:
-  - file: metal/optiplexprime/op3.yaml
+  - file: docs/metal/optiplexprime/machine.yaml
+---
+kind: Machine
+name: 4c4c4544-0056-3210-804c-b5c04f525032
+install:
+  disk: /dev/nvme1n1
+patches:
+  - file: docs/metal/optiplexprime/machine.yaml

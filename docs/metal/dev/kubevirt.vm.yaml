@@ -15,40 +15,40 @@ spec:
         storage: 32Gi
     storageClassName: "ssd"
     volumeMode: Filesystem
----
-apiVersion: cdi.kubevirt.io/v1beta1
-kind: DataVolume
-metadata:
-  name: vdc
-  namespace: default
-spec:
-  source:
-    blank: {}
-  pvc:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 48Gi
-    storageClassName: "ssd"
-    volumeMode: Filesystem
----
-apiVersion: cdi.kubevirt.io/v1beta1
-kind: DataVolume
-metadata:
-  name: vdd
-  namespace: default
-spec:
-  source:
-    blank: {}
-  pvc:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 64Gi
-    storageClassName: "ssd"
-    volumeMode: Filesystem
+      #---
+      #apiVersion: cdi.kubevirt.io/v1beta1
+      #kind: DataVolume
+      #metadata:
+      #  name: vdc
+      #  namespace: default
+      #spec:
+      #  source:
+      #    blank: {}
+      #  pvc:
+      #    accessModes:
+      #      - ReadWriteOnce
+      #    resources:
+      #      requests:
+      #        storage: 48Gi
+      #    storageClassName: "ssd"
+      #    volumeMode: Filesystem
+      #---
+      #apiVersion: cdi.kubevirt.io/v1beta1
+      #kind: DataVolume
+      #metadata:
+      #  name: vdd
+      #  namespace: default
+      #spec:
+      #  source:
+      #    blank: {}
+      #  pvc:
+      #    accessModes:
+      #      - ReadWriteOnce
+      #    resources:
+      #      requests:
+      #        storage: 64Gi
+      #    storageClassName: "ssd"
+      #    volumeMode: Filesystem
 ---
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
@@ -75,12 +75,12 @@ spec:
         cpu:
           cores: 1
           sockets: 1
-          threads: 8
+          threads: 4
           dedicatedCpuPlacement: false
         machine:
           type: q35
         memory:
-          guest: 32768M
+          guest: 8192Mi
         features:
           acpi:
             enabled: true
@@ -104,12 +104,12 @@ spec:
               bootOrder: 1
               disk:
                 bus: virtio
-            - name: vdc
-              disk:
-                bus: virtio
-            - name: vdd
-              disk:
-                bus: virtio
+#           - name: vdc
+#             disk:
+#               bus: virtio
+#           - name: vdd
+#             disk:
+#               bus: virtio
           interfaces:
             - name: eth0
               model: virtio
@@ -128,9 +128,9 @@ spec:
         - name: vdb
           dataVolume:
             name: vdb
-        - name: vdc
-          dataVolume:
-            name: vdc
-        - name: vdd
-          dataVolume:
-            name: vdd
+#       - name: vdc
+#         dataVolume:
+#           name: vdc
+#       - name: vdd
+#         dataVolume:
+#           name: vdd

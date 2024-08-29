@@ -1,33 +1,4 @@
 cluster:
-    allowSchedulingOnControlPlanes: true
-    apiServer:
-        disablePodSecurityPolicy: true
-        admissionControl:
-            - name: PodSecurity
-              configuration:
-                  apiVersion: pod-security.admission.config.k8s.io/v1alpha1
-                  kind: PodSecurityConfiguration
-                  defaults: {}
-                  #   audit: restricted
-                  #   audit-version: latest
-                  #   enforce: baseline
-                  #   enforce-version: latest
-                  #   warn: restricted
-                  #   warn-version: latest
-                  exemptions: {}
-                  #   namespaces:
-                  #       - cdi
-                  #       - default
-                  #       - kubevirt
-                  #       - kube-public
-                  #       - kube-system
-                  #       - cert-manager
-                  #       - kube-node-lease
-                  #       - hostpath-provisioner
-                  #   runtimeClasses: []
-                  #   usernames: []
-        auditPolicy:
-            apiVersion: audit.k8s.io/v1
-            kind: Policy
-            rules:
-                - level: Metadata
+  allowSchedulingOnControlPlanes: true
+  apiServer:
+    disablePodSecurityPolicy: true

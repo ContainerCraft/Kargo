@@ -9,48 +9,26 @@ spec:
     registry:
       url: "docker://docker.io/containercraft/ubuntu:22.04"
   pvc:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 256G
     storageClassName: "ssd"
     volumeMode: Filesystem
+    resources:
+      requests:
+        storage: 64G
+    accessModes:
+      - ReadWriteOnce
 ---
-# ssh-keygen: kubectl create secret generic user-kc2-sshpubkey --from-file=key1=.ssh/id_rsa.pub --dry-run=client -oyaml | kubectl apply -f -
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: ubuntu
+  name: ubuntu-br0-persistent
   namespace: default
   labels:
-    app: kc2
+    app: ubuntu
+    feature: xrdp
 spec:
   running: true
   template:
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: "mordor"
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values:
-                      - "mordor"
-      #nodeSelector:
-      #  kubernetes.io/hostname: "op1"
-      #affinity:
-      #  nodeAffinity:
-      #    requiredDuringSchedulingIgnoredDuringExecution:
-      #      nodeSelectorTerms:
-      #        - matchExpressions:
-      #            - key: kubernetes.io/hostname
-      #              operator: In
-      #              values:
-      #                - "op1"
       domain:
         clock:
           utc: {}
@@ -68,7 +46,12 @@ spec:
           model: host-passthrough
           dedicatedCpuPlacement: false
         memory:
-          guest: 8192M
+          guest: 8G
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 8G
         devices:
           rng: {}
           autoattachPodInterface: false
@@ -95,17 +78,9 @@ spec:
           bootloader:
             efi:
               secureBoot: true
-        machine:
-          type: q35
-        resources:
-          requests:
-            memory: 8192M
       hostname: ccio
       networks:
         - name: enp1s0
-          multus:
-            networkName: lan
-        - name: enp2s0
           multus:
             networkName: br0
       terminationGracePeriodSeconds: 0
@@ -113,7 +88,7 @@ spec:
         - sshPublicKey:
             source:
               secret:
-                secretName: user-kc2-sshpubkey
+                secretName: kc2-pubkey
             propagationMethod:
               qemuGuestAgent:
                 users:

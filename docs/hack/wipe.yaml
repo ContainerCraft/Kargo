@@ -2,38 +2,43 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: disk-erase-pod-cp1
+  name: disk-erase-pod-op1
   labels:
     app: disk-erase
 spec:
-  # Uncomment and specify the specific node you want to debug
-  nodeName: cp1
+  nodeName: talos-3l6-kgu
   containers:
-  - image: ghcr.io/containercraft/konductor
-    command: ["/bin/sh"]
-    args:
-      - "-c"
-      - >
-        sleep 10; # Wait a bit for system to be ready
-        # Replace /dev/nvmeXn1 with your nvme device identifier
-        sfdisk --delete /dev/sda;
-        wipefs -a /dev/sda;
-        # Your additional commands here
-    imagePullPolicy: IfNotPresent
-    name: disk-erase-container
-    securityContext:
-      capabilities:
-        add: ["NET_ADMIN", "SYS_ADMIN"]
-      runAsUser: 0 # run as root (or any other user)
-    volumeMounts:
-      - name: dev
-        mountPath: /dev
-      - name: sys
-        mountPath: /sys
-  restartPolicy: Never # we want to be intentional about running this pod
-  hostIPC: true # Use the host's ipc namespace
-  hostNetwork: true # Use the host's network namespace
-  hostPID: true # Use the host's pid namespace
+    - image: ghcr.io/containercraft/konductor
+      name: disk-erase-container
+      command: ["/bin/bash", "-c", "sleep infinity"]
+      #command: [
+      #  "/bin/bash",
+      #  "-c",
+      #  "sudo apt update && sudo apt install -y fdisk && sudo fdisk --delete /mnt/root/dev/sda; sudo wipefs --all /mnt/root/dev/sda; sync; echo 'done'"
+      #]
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["SYS_ADMIN", "NET_ADMIN"]
+        runAsUser: 0
+      volumeMounts:
+        - name: dev
+          mountPath: /mnt/root/dev
+        - name: sys
+          mountPath: /mnt/root/sys
+        - name: proc
+          mountPath: /mnt/root/proc
+        - name: root
+          mountPath: /mnt/root
+      resources:
+        limits:
+          cpu: "1"
+          memory: "1Gi"
+  hostPID: true
+  hostIPC: true
+  hostNetwork: true
+  restartPolicy: Never
   volumes:
     - name: dev
       hostPath:
@@ -41,43 +46,54 @@ spec:
     - name: sys
       hostPath:
         path: /sys
-
+    - name: proc
+      hostPath:
+        path: /proc
+    - name: root
+      hostPath:
+        path: /
+        type: Directory
 ---
 apiVersion: v1
 kind: Pod
 metadata:
-  name: disk-erase-pod-cp2
+  name: disk-erase-pod-op2
   labels:
     app: disk-erase
 spec:
-  # Uncomment and specify the specific node you want to debug
-  nodeName: cp2
+  nodeName: talos-5um-rqo
   containers:
-  - image: ghcr.io/containercraft/konductor
-    command: ["/bin/sh"]
-    args:
-      - "-c"
-      - >
-        sleep 10; # Wait a bit for system to be ready
-        # Replace /dev/nvmeXn1 with your nvme device identifier
-        sfdisk --delete /dev/sda;
-        wipefs -a /dev/sda;
-        # Your additional commands here
-    imagePullPolicy: IfNotPresent
-    name: disk-erase-container
-    securityContext:
-      capabilities:
-        add: ["NET_ADMIN", "SYS_ADMIN"]
-      runAsUser: 0 # run as root (or any other user)
-    volumeMounts:
-      - name: dev
-        mountPath: /dev
-      - name: sys
-        mountPath: /sys
-  restartPolicy: Never # we want to be intentional about running this pod
-  hostIPC: true # Use the host's ipc namespace
-  hostNetwork: true # Use the host's network namespace
-  hostPID: true # Use the host's pid namespace
+    - image: ghcr.io/containercraft/konductor
+      name: disk-erase-container
+      command: ["/bin/bash", "-c", "sleep infinity"]
+      #command: [
+      #  "/bin/bash",
+      #  "-c",
+      #  "sudo apt update && sudo apt install -y fdisk && sudo fdisk --delete /mnt/root/dev/sda; sudo wipefs --all /mnt/root/dev/sda; sync; echo 'done'"
+      #]
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["SYS_ADMIN", "NET_ADMIN"]
+        runAsUser: 0
+      volumeMounts:
+        - name: dev
+          mountPath: /mnt/root/dev
+        - name: sys
+          mountPath: /mnt/root/sys
+        - name: proc
+          mountPath: /mnt/root/proc
+        - name: root
+          mountPath: /mnt/root
+      resources:
+        limits:
+          cpu: "1"
+          memory: "1Gi"
+  hostPID: true
+  hostIPC: true
+  hostNetwork: true
+  restartPolicy: Never
   volumes:
     - name: dev
       hostPath:
@@ -85,43 +101,54 @@ spec:
     - name: sys
       hostPath:
         path: /sys
-
+    - name: proc
+      hostPath:
+        path: /proc
+    - name: root
+      hostPath:
+        path: /
+        type: Directory
 ---
 apiVersion: v1
 kind: Pod
 metadata:
-  name: disk-erase-pod-cp3
+  name: disk-erase-pod-op3
   labels:
     app: disk-erase
 spec:
-  # Uncomment and specify the specific node you want to debug
-  nodeName: cp3
+  nodeName: talos-s1t-lsd
   containers:
-  - image: ghcr.io/containercraft/konductor
-    command: ["/bin/sh"]
-    args:
-      - "-c"
-      - >
-        sleep 10; # Wait a bit for system to be ready
-        # Replace /dev/nvmeXn1 with your nvme device identifier
-        sfdisk --delete /dev/sda;
-        wipefs -a /dev/sda;
-        # Your additional commands here
-    imagePullPolicy: IfNotPresent
-    name: disk-erase-container
-    securityContext:
-      capabilities:
-        add: ["NET_ADMIN", "SYS_ADMIN"]
-      runAsUser: 0 # run as root (or any other user)
-    volumeMounts:
-      - name: dev
-        mountPath: /dev
-      - name: sys
-        mountPath: /sys
-  restartPolicy: Never # we want to be intentional about running this pod
-  hostIPC: true # Use the host's ipc namespace
-  hostNetwork: true # Use the host's network namespace
-  hostPID: true # Use the host's pid namespace
+    - image: ghcr.io/containercraft/konductor
+      name: disk-erase-container
+      command: ["/bin/bash", "-c", "sleep infinity"]
+      #command: [
+      #  "/bin/bash",
+      #  "-c",
+      #  "sudo apt update && sudo apt install -y fdisk && sudo fdisk --delete /mnt/root/dev/sda; sudo wipefs --all /mnt/root/dev/sda; sync; echo 'done'"
+      #]
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["SYS_ADMIN", "NET_ADMIN"]
+        runAsUser: 0
+      volumeMounts:
+        - name: dev
+          mountPath: /mnt/root/dev
+        - name: sys
+          mountPath: /mnt/root/sys
+        - name: proc
+          mountPath: /mnt/root/proc
+        - name: root
+          mountPath: /mnt/root
+      resources:
+        limits:
+          cpu: "1"
+          memory: "1Gi"
+  hostPID: true
+  hostIPC: true
+  hostNetwork: true
+  restartPolicy: Never
   volumes:
     - name: dev
       hostPath:
@@ -129,4 +156,10 @@ spec:
     - name: sys
       hostPath:
         path: /sys
-
+    - name: proc
+      hostPath:
+        path: /proc
+    - name: root
+      hostPath:
+        path: /
+        type: Directory

@@ -32,7 +32,7 @@ d. Verify connection to Omni Console > Machines
 pulumi login
 
 # Init Pulumi ESC Emvironment for local config and env
-eval (pulumi env open --format=shell kargo)
+eval $(pulumi env open --format=shell kargo)
 ```
 
 ### 4. Omnictl Login & Prep
@@ -48,18 +48,65 @@ a. Apply cluster template with omnictl
 
 ```bash
 # Validate Cluster Template
-omnictl cluster template validate -f metal/optiplexprime/cluster.yaml
+omnictl cluster template validate -f docs/metal/optiplexprime/cluster.yaml
 
 # Apply Omni CR to create cluster
-omnictl cluster template sync -f metal/optiplexprime/cluster.yaml
+omnictl cluster template sync -f docs/metal/optiplexprime/cluster.yaml
 
 # Monitor progress
-omnictl cluster template status -f metal/optiplexprime/omni-cluster.yaml
+omnictl cluster template status -f docs/metal/optiplexprime/cluster.yaml
 ```
 
 ![](.assets/image-4.png)
 
 2. Test Kubectl Access
+
+  * Download and add the `--skip-open-browser` flag to the kubeconfig oidc-login command arguments
+  * I added this Kubeconfig to my Pulumi ESC environment so it loads from the `eval $(pulumi env open --format=shell kargo)` command.
+    ```yaml
+    apiVersion: v1
+    kind: Config
+    clusters:
+      - cluster:
+          server: https://usrbinkat.kubernetes.omni.siderolabs.io
+        name: usrbinkat-optiplexprime
+    contexts:
+      - context:
+          cluster: usrbinkat-optiplexprime
+          namespace: default
+          user: usrbinkat-optiplexprime-kathryn.morgan@braincraft.io
+        name: usrbinkat-optiplexprime
+    current-context: usrbinkat-optiplexprime
+    users:
+    - name: usrbinkat-optiplexprime-kathryn.morgan@braincraft.io
+      user:
+        exec:
+          apiVersion: client.authentication.k8s.io/v1beta1
+          args:
+            - oidc-login
+            - get-token
+            - --oidc-issuer-url=https://usrbinkat.omni.siderolabs.io/oidc
+            - --oidc-client-id=native
+            - --oidc-extra-scope=cluster:optiplexprime
+            - --skip-open-browser
+          command: kubectl
+          env: null
+          provideClusterInfo: false
+    ```
+
+  * Also add TalosConfig to Pulumi ESC Environment
+
+    ```yaml
+    context: usrbinkat-optiplexprime
+    contexts:
+        usrbinkat-optiplexprime:
+            endpoints:
+                - https://usrbinkat.omni.siderolabs.io
+            auth:
+                siderov1:
+                    identity: kathryn.morgan@braincraft.io
+            cluster: optiplexprime
+    ```
 
 ```bash
 # Get Pods
@@ -79,14 +126,18 @@ pulumi config set --path kubernetes.context usrbinkat-optiplexprime
 pulumi up --skip-preview --refresh=true; pulumi up --skip-preview --refresh=true; pulumi up --skip-preview --refresh=true
 ```
 
-### 7. Deploy an Ubuntu VM
+### 7. **Deploy a Virtual Machine:**
 
-```bash
-# Create SSH Public Key secret
-kubectl create secret generic user-kc2-sshpubkey --from-file=key1=.ssh/id_rsa.pub --dry-run=client -oyaml | kubectl apply -f -
+Deploy an Ubuntu Virtual Machine on the platform using Kubevirt.
 
-# Apply the Ubuntu VM CR
-kubectl apply -f hack/ubuntu-br0.yaml
+> **Note:** Run this step manually via integrated terminal.
+
+```bash {"excludeFromRunAll":"true","id":"","name":"vm"}
+# Enable the VM instance
+pulumi config set --path vm.enabled true
+
+# Deploy the Kubevirt VM instance
+pulumi up --skip-preview --refresh=false
 ```
 
 ### 8. Deploy a tenant talos cluster
