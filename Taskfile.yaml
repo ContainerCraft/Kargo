@@ -86,13 +86,20 @@ tasks:
       - task: iac-cancel
       - task: iac-clean
 
+  ssh-clean:
+    desc: "Clean up all local SSH known hosts."
+    cmds:
+      - ssh-keygen -f "/home/vscode/.ssh/known_hosts" -R "[127.0.0.1]:30590" 2>/dev/null || true
+      - ssh-keygen -f "/home/vscode/.ssh/known_hosts" -R "[localhost]:30590" 2>/dev/null || true
+      - ssh-keygen -f "/home/vscode/.ssh/kubevirt_known_hosts" -R "vmi/ubuntu.default" 2>/dev/null || true
+
   clean-all:
     desc: "Clean up all local Kargo resources."
     deps:
       - kubernetes-clean
+      - ssh-clean
       - clean
     cmds:
-      - ssh-keygen -f "/home/vscode/.ssh/known_hosts" -R "[127.0.0.1]:30590" 2>/dev/null || true
       - rm -rf .talos/manifest/* .kube/config .ssh/known_hosts 2>/dev/null || true
       - rm ${HOME}/.pulumi ${HOME}/.kube ${HOME}/.talos 2>/dev/null || true
 
