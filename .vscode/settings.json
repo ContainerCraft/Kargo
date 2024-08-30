@@ -219,5 +219,6 @@
   "zoma.vscode-auto-open-workspace": {
     "enableAutoOpenIfSingleWorkspace": false,
     "enableAutoOpenAlwaysFirst": false
-  }
+  },
+  "runme.terminal.rows": 20
 }
