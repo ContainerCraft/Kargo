@@ -135,7 +135,6 @@
   "terminal.integrated.fontFamily": "FiraMono Nerd Font Mono",
   "terminal.integrated.commandsToSkipShell": [],
   "terminal.integrated.scrollbar.alwaysConsumeMouseWheel": true,
-  "terminal.integrated.shell.linux": "/usr/bin/fish",
   "vs-kubernetes.vs-kubernetes.namespace": "*",
   "vs-kubernetes.vs-kubernetes.outputFormat": "yaml",
   "vs-kubernetes.vs-kubernetes.helm-path": "/usr/local/bin/helm",
