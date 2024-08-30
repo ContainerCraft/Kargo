@@ -117,7 +117,7 @@ ssh -p 30590 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no kc2@localhost screenfe
 
 Use `virtctl` to access the VM via SSH without a NodePort service.
 
-```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT6VNC5EK","name":"virtctl-ssh"}
+```bash {"background":"true","excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT6VNC5EK","name":"virtctl-ssh"}
 # SSH using virtctl
 virtctl ssh kc2@ubuntu
 ```
@@ -126,7 +126,7 @@ virtctl ssh kc2@ubuntu
 
 Use `virtctl` to access the serial console of the VM.
 
-```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT7BDRMAV","name":"virtctl-console"}
+```bash {"background":"true","excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT7BDRMAV","name":"virtctl-console"}
 # Serial console access
 virtctl console ubuntu
 ```
