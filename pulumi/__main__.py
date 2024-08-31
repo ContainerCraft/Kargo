@@ -18,6 +18,7 @@ from src.kubernetes_dashboard.deploy import deploy_kubernetes_dashboard
 from src.kv_manager.deploy import deploy_ui_for_kubevirt
 from src.ceph.deploy import deploy_rook_operator
 from src.vm.ubuntu import deploy_ubuntu_vm
+from src.vm.talos import deploy_talos_controlplane
 
 ##################################################################################
 # Load the Pulumi Config
@@ -74,6 +75,7 @@ config_cnao, cnao_enabled = get_module_config('cnao')
 config_kubernetes_dashboard, kubernetes_dashboard_enabled = get_module_config('kubernetes_dashboard')
 config_kubevirt_manager, kubevirt_manager_enabled = get_module_config('kubevirt_manager')
 config_vm, vm_enabled = get_module_config('vm')
+config_talos_controlplane, talos_controlplane_enabled = get_module_config('talos_controlplane')
 
 ##################################################################################
 ## Get the Kubernetes API endpoint IP
@@ -512,6 +514,57 @@ def run_ubuntu_vm():
     return None, None
 
 ubuntu_vm, ubuntu_ssh_service = run_ubuntu_vm()
+
+##################################################################################
+# Deploy Talos Controlplane
+def run_talos_controlplane():
+    if talos_controlplane_enabled:
+
+        # Set the number of replicas based on Pulumi config values either "ha" or "single"
+        if config_talos_controlplane.get('replicas') == "ha":
+            config_talos_controlplane_replicas = 3
+        elif config_talos_controlplane.get('replicas') == "single":
+            config_talos_controlplane_replicas = 1
+        else:
+            config_talos_controlplane_replicas = 1
+
+        # Define default values for the Talos controlplane
+        default_talos_config = {
+            "namespace": "default",
+            "replicas": config_talos_controlplane_replicas,
+            "cpu_cores": 1,
+            "memory_size": "2Gi",
+            "root_disk_size": "32Gi",
+            "empty_disk_size": "4Gi",
+            "image_name": "docker.io/containercraft/talos:1.7.6",
+            "network_name": "br0",
+            "vm_pool_name": "talos-controlplane",
+        }
+
+        # Merge the default values with the existing config_talos_controlplane values
+        config_talos_merged = {**default_talos_config, **{k: v for k, v in config_talos_controlplane.items() if v is not None}}
+
+        # Deploy the Talos controlplane VM pool
+        talos_vm_pool = deploy_talos_controlplane(
+            config_vm=config_talos_merged,
+            k8s_provider=k8s_provider,
+            depends_on=depends
+        )
+
+        # Append the Talos controlplane VM pool to the dependency list
+        safe_append(depends, talos_vm_pool)
+
+        # Return the Talos controlplane VM pool resource in versions dict
+        versions["talos_controlplane"] = {
+            "enabled": talos_controlplane_enabled,
+            "replicas": config_talos_merged["replicas"]
+        }
+
+        return talos_vm_pool
+    return None
+
+# Run the Talos Controlplane deployment
+talos_controlplane_vm_pool = run_talos_controlplane()
 
 # Export the component versions
 pulumi.export("versions", versions)

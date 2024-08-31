@@ -1,6 +1,6 @@
 # This Github Workflow will run on every push to the repository
 # and will test and validate the Kargo codebase using Kind Kubernetes.
-name: CI Testing - Konductor on Talos
+name: Runme Kargo Quickstart CI
 
 on: push
 

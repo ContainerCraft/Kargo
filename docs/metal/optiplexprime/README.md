@@ -27,6 +27,8 @@ d. Verify connection to Omni Console > Machines
 
 ### 3. Pulumi Login & Prep
 
+1. Pulumi Login
+
 ```bash
 # Login
 pulumi login
@@ -35,11 +37,23 @@ pulumi login
 eval $(pulumi env open --format=shell kargo)
 ```
 
-### 4. Omnictl Login & Prep
+2. Omni CLI Login
 
 ```bash
 # Run command to login by following along with the prompts
 omnictl get machines
+```
+
+3. Kubectl Login
+
+```bash
+kubectl get nodes -owide
+```
+
+4. Talosctl Login
+
+```bash
+talosctl --nodes $(kubectl get nodes | awk '/talos-/{print $1}' | head -n1) ls /
 ```
 
 ### 5. Create Cluster Omni Talos Cluster
