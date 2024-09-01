@@ -1,0 +1,5 @@
+config:
+  kargo:kubernetes:
+    context: usrbinkat-optiplexprime
+  kargo:vm:
+    enabled: true
