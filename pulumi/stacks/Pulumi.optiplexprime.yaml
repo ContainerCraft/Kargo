@@ -1,5 +1,11 @@
 config:
   kargo:kubernetes:
     context: usrbinkat-optiplexprime
-  kargo:vm:
+  kargo:talos:
+    controlplane: ha
     enabled: true
+    image: docker.io/containercraft/omni
+    running: true
+    workers: 1
+  kargo:vm:
+    enabled: false

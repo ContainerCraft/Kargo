@@ -34,11 +34,14 @@ d. Verify connection to Omni Console > Machines
 # Login
 pulumi login
 
-# Select the correct organization and project stack
-pulumi stack select --create usrbinkat/kargo/optiplexprime
-
 # Init Pulumi ESC Emvironment for local config and env
 eval $(pulumi env open --format=shell optiplexprime)
+
+# create the organization and project stack
+pulumi stack select --create usrbinkat/kargo/optiplexprime
+
+# or select the stack
+pulumi stack select usrbinkat/kargo/optiplexprime
 ```
 
 2. Omni CLI Login

@@ -6,7 +6,6 @@ def deploy_talos_controlplane(
         k8s_provider: k8s.Provider,
         depends_on: list = []
     ):
-
     # Generate the VirtualMachinePool spec using the provided config
     vm_pool_spec = generate_talos_vm_pool_spec(
         vm_pool_name=config_vm["vm_pool_name"],
@@ -17,16 +16,56 @@ def deploy_talos_controlplane(
         root_disk_size=config_vm["root_disk_size"],
         empty_disk_size=config_vm["empty_disk_size"],
         image_name=config_vm["image_name"],
-        network_name=config_vm["network_name"]
+        network_name=config_vm["network_name"],
+        running=config_vm["running"]
     )
 
     # Create the VirtualMachinePool resource
+    vm_pool_name=f"""{config_vm["vm_pool_name"]}-controlplane"""
     vm_pool = k8s.apiextensions.CustomResource(
-        config_vm["vm_pool_name"],
+        vm_pool_name,
         api_version="pool.kubevirt.io/v1alpha1",
         kind="VirtualMachinePool",
         metadata=k8s.meta.v1.ObjectMetaArgs(
-            name=config_vm["vm_pool_name"],
+            name=vm_pool_name,
+            namespace=config_vm["namespace"],
+        ),
+        spec=vm_pool_spec,
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
+            depends_on=depends_on
+        )
+    )
+
+    return vm_pool
+
+def deploy_talos_workers(
+        config_vm,
+        k8s_provider: k8s.Provider,
+        depends_on: list = []
+    ):
+    # Generate the VirtualMachinePool spec using the provided config
+    vm_pool_spec = generate_talos_vm_pool_spec(
+        vm_pool_name=config_vm["vm_pool_name"],
+        namespace=config_vm["namespace"],
+        replicas=config_vm["replicas"],
+        cpu_cores=config_vm["cpu_cores"],
+        memory_size=config_vm["memory_size"],
+        root_disk_size=config_vm["root_disk_size"],
+        empty_disk_size=config_vm["empty_disk_size"],
+        image_name=config_vm["image_name"],
+        network_name=config_vm["network_name"],
+        running=config_vm["running"]
+    )
+
+    # Create the VirtualMachinePool resource
+    vm_pool_name=f"""{config_vm["vm_pool_name"]}-workers"""
+    vm_pool = k8s.apiextensions.CustomResource(
+        vm_pool_name,
+        api_version="pool.kubevirt.io/v1alpha1",
+        kind="VirtualMachinePool",
+        metadata=k8s.meta.v1.ObjectMetaArgs(
+            name=vm_pool_name,
             namespace=config_vm["namespace"],
         ),
         spec=vm_pool_spec,
@@ -47,12 +86,14 @@ def generate_talos_vm_pool_spec(
         root_disk_size: str,
         empty_disk_size: str,
         image_name: str,
-        network_name: str
+        network_name: str,
+        running: bool
     ) -> dict:
     """
     Generate the VirtualMachinePool spec for Talos VMs.
     This function can be used for both control plane and worker node VM pools.
     """
+    docker_image_address = f"docker://{image_name}"
     return {
         "replicas": replicas,
         "selector": {
@@ -67,7 +108,7 @@ def generate_talos_vm_pool_spec(
                 }
             },
             "spec": {
-                "running": True,
+                "running": running,
                 "template": {
                     "metadata": {
                         "labels": {
@@ -148,7 +189,7 @@ def generate_talos_vm_pool_spec(
                             },
                             "source": {
                                 "registry": {
-                                    "url": image_name
+                                    "url": docker_image_address,
                                 }
                             }
                         }

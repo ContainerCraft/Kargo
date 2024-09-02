@@ -75,7 +75,7 @@ config_cnao, cnao_enabled = get_module_config('cnao')
 config_kubernetes_dashboard, kubernetes_dashboard_enabled = get_module_config('kubernetes_dashboard')
 config_kubevirt_manager, kubevirt_manager_enabled = get_module_config('kubevirt_manager')
 config_vm, vm_enabled = get_module_config('vm')
-config_talos_controlplane, talos_controlplane_enabled = get_module_config('talos_controlplane')
+config_talos_controlplane, talos_controlplane_enabled = get_module_config('talos')
 
 ##################################################################################
 ## Get the Kubernetes API endpoint IP
@@ -521,9 +521,9 @@ def run_talos_controlplane():
     if talos_controlplane_enabled:
 
         # Set the number of replicas based on Pulumi config values either "ha" or "single"
-        if config_talos_controlplane.get('replicas') == "ha":
+        if config_talos_controlplane.get('controlplane') == "ha":
             config_talos_controlplane_replicas = 3
-        elif config_talos_controlplane.get('replicas') == "single":
+        elif config_talos_controlplane.get('controlplane') == "single":
             config_talos_controlplane_replicas = 1
         else:
             config_talos_controlplane_replicas = 1
@@ -538,7 +538,8 @@ def run_talos_controlplane():
             "empty_disk_size": "4Gi",
             "image_name": "docker.io/containercraft/talos:1.7.6",
             "network_name": "br0",
-            "vm_pool_name": "talos-controlplane",
+            "vm_pool_name": "kargo-dev",
+            "workers": 0,
         }
 
         # Merge the default values with the existing config_talos_controlplane values
