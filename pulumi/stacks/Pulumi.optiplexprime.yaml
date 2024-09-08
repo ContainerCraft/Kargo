@@ -1,11 +1,24 @@
 config:
   kargo:kubernetes:
-    context: usrbinkat-optiplexprime
+    context: usrbinkat-optiplexprime # Kubernetes context for the stack
   kargo:talos:
-    controlplane: ha
-    enabled: true
-    image: docker.io/containercraft/omni
-    running: true
-    workers: 1
-  kargo:vm:
-    enabled: false
+    controlplane:
+      cpu_cores: 1 # Controlplane CPU cores
+      empty_disk_size: "0" # Controlplane empty disk size (0 for no empty disk)
+      image: docker.io/containercraft/omni:1.7.6 # Image to use for workers
+      memory_size: "2" # Controlplane memory in GiB
+      network_name: "br0" # Multus network name for controlplane
+      replicas: ha # Specifies 'single' (1) or 'ha' (3) for controlplane replicas
+      root_disk_size: "32" # Controlplane root disk size in GiB
+    enabled: true # Disable Talos deployment (set to true if needed)
+    running: true # Disable Talos deployment (set to true if needed)
+    workers:
+      cpu_cores: 3 # Worker CPU cores
+      empty_disk_size: "16" # Worker empty disk size in GiB
+      image: docker.io/containercraft/omni:1.7.6 # Image to use for workers
+      memory_size: "6" # Worker memory in GiB
+      network_name: "br0" # Multus network name for workers
+      replicas: 2 # Number of worker replicas
+      root_disk_size: "64" # Worker root disk size in GiB
+  kargo:vm: # Ubuntu VM deployment configuration
+    enabled: false # Disable VM deployment (set to true if needed)
