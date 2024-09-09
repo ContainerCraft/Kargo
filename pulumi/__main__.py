@@ -18,6 +18,7 @@ from src.kubernetes_dashboard.deploy import deploy_kubernetes_dashboard
 from src.kv_manager.deploy import deploy_ui_for_kubevirt
 from src.ceph.deploy import deploy_rook_operator
 from src.vm.ubuntu import deploy_ubuntu_vm
+from src.vm.talos import deploy_talos_cluster
 
 ##################################################################################
 # Load the Pulumi Config
@@ -74,29 +75,7 @@ config_cnao, cnao_enabled = get_module_config('cnao')
 config_kubernetes_dashboard, kubernetes_dashboard_enabled = get_module_config('kubernetes_dashboard')
 config_kubevirt_manager, kubevirt_manager_enabled = get_module_config('kubevirt_manager')
 config_vm, vm_enabled = get_module_config('vm')
-
-##################################################################################
-## Get the Kubernetes API endpoint IP
-##################################################################################
-
-# check if kubernetes distribution is "kind" and if so execute get the kubernetes api endpoint ip
-if kubernetes_distribution == "kind":
-    # Get the Kubernetes API endpoint IP
-    k8s_endpoint_ip = KubernetesApiEndpointIp(
-        "kubernetes-endpoint-service-address",
-        k8s_provider
-    )
-
-    # Extract the Kubernetes Endpoint clusterIP
-    kubernetes_endpoint_service = pulumi.Output.from_input(k8s_endpoint_ip)
-    kubernetes_endpoint_service_address = kubernetes_endpoint_service.endpoint.subsets[0].addresses[0].ip
-    pulumi.export(
-        "kubernetes-endpoint-service-address",
-        kubernetes_endpoint_service_address
-    )
-else:
-    # default to talos k8s endpoint "localhost" when not kind k8s
-    kubernetes_endpoint_service_address = "localhost"
+config_talos, talos_cluster_enabled = get_module_config('talos')
 
 ##################################################################################
 ## Core Kargo Kubevirt PaaS Infrastructure
@@ -107,8 +86,6 @@ depends = []
 def safe_append(depends, resource):
     if resource:
         depends.append(resource)
-    #else:
-    #    pulumi.log.warn("Attempted to append a None resource to depends list.")
 
 ##################################################################################
 # Fetch the Cilium Version
@@ -136,12 +113,13 @@ def run_cilium():
 
         safe_append(depends, cilium_release)
 
+        versions["cilium"] = {"enabled": cilium_enabled, "version": cilium_version}
+
         return cilium_version, cilium_release
+
     return None, None
 
 cilium_version, cilium_release = run_cilium()
-
-versions["cilium"] = {"enabled": cilium_enabled, "version": cilium_version}
 
 ##################################################################################
 # Fetch the Cert Manager Version
@@ -470,12 +448,10 @@ kubevirt_manager = run_kubevirt_manager()
 # Deploy Ubuntu VM
 def run_ubuntu_vm():
     if vm_enabled:
-
         # Get the SSH Public Key string from Pulumi Config if it exists
-        # Otherwise, read the SSH Public Key from the local filesystem
         ssh_pub_key = config.get("ssh_pub_key")
         if not ssh_pub_key:
-            # Get the SSH public key
+            # Get the SSH public key from the local filesystem
             with open(f"{os.environ['HOME']}/.ssh/id_rsa.pub", "r") as f:
                 ssh_pub_key = f.read().strip()
 
@@ -508,10 +484,46 @@ def run_ubuntu_vm():
         safe_append(depends, ubuntu_ssh_service)
 
         return ubuntu_vm, ubuntu_ssh_service
-
-    return None, None
+    else:
+        return None, None
 
 ubuntu_vm, ubuntu_ssh_service = run_ubuntu_vm()
+
+##################################################################################
+# Deploy Kargo-on-Kargo Development Cluster (Controlplane + Worker VirtualMachinePools)
+def run_talos_cluster():
+    if talos_cluster_enabled:
+        # Append the resources to the `depends` list
+        custom_depends = []
+
+        # depends on cert manager, multus
+        safe_append(custom_depends, cert_manager_release)
+        safe_append(custom_depends, multus_release)
+        if cdi_enabled:
+            safe_append(custom_depends, cdi_release)
+
+        # Deploy the Talos cluster (controlplane and workers)
+        controlplane_vm_pool, worker_vm_pool = deploy_talos_cluster(
+            config_talos=config_talos,
+            k8s_provider=k8s_provider,
+            depends_on=custom_depends,
+            parent=kubevirt_operator,
+        )
+
+        # Export the Talos configuration and versions
+        versions["talos_cluster"] = {
+            "enabled": talos_cluster_enabled,
+            "running": config_talos.get("running", True),
+            "controlplane": config_talos.get("controlplane", {}),
+            "workers": config_talos.get("workers", {})
+        }
+
+        return controlplane_vm_pool, worker_vm_pool
+    else:
+        return None, None
+
+# Run the Talos cluster deployment
+talos_controlplane_vm_pool, talos_worker_vm_pool = run_talos_cluster()
 
 # Export the component versions
 pulumi.export("versions", versions)

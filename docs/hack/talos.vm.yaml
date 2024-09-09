@@ -1,0 +1,124 @@
+#---
+#apiVersion: kubevirt.io/v1
+#kind: VirtualMachine
+#metadata:
+#  name: talos
+#  namespace: default
+#spec:
+#  running: true
+#  template:
+#    spec:
+#      domain:
+#        clock:
+#          utc: {}
+#          timer:
+#            hpet:
+#              present: false
+#            pit:
+#              tickPolicy: delay
+#            rtc:
+#              tickPolicy: catchup
+#        cpu:
+#          cores: 1
+#          sockets: 1
+#          threads: 4
+#          dedicatedCpuPlacement: false
+#        machine:
+#          type: q35
+#        memory:
+#          guest: 8Gi
+#        features:
+#          acpi:
+#            enabled: true
+#          smm:
+#            enabled: true
+#        firmware:
+#          bootloader:
+#            efi:
+#              secureBoot: false
+#        devices:
+#          rng: {}
+#          autoattachSerialConsole: true
+#          autoattachGraphicsDevice: true
+#          networkInterfaceMultiqueue: false
+#          autoattachPodInterface: false
+#          disks:
+#            - name: vda
+#              bootOrder: 1
+#              disk:
+#                bus: virtio
+#          interfaces:
+#            - name: eth0
+#              model: virtio
+#              macAddress: 6a:7d:62:36:fc:a0
+#              bridge: {}
+#      networks:
+#        - name: eth0
+#          multus:
+#            networkName: br0
+#      volumes:
+#        - name: vda
+#          dataVolume:
+#            name: talos-disk-image-1.7.6
+#      terminationGracePeriodSeconds: 0
+---
+apiVersion: pool.kubevirt.io/v1alpha1
+kind: VirtualMachinePool
+metadata:
+  name: talos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      kubevirt.io/vmpool: talos
+  virtualMachineTemplate:
+    metadata:
+      creationTimestamp: null
+      labels:
+        kubevirt.io/vmpool: talos
+    spec:
+      running: true
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            kubevirt.io/vmpool: talos
+        spec:
+          architecture: amd64
+          domain:
+            cpu:
+              cores: 2
+            devices:
+              disks:
+                - disk:
+                    bus: virtio
+                  bootOrder: 1
+                  name: talosdisk
+              interfaces:
+                - name: eth0
+                  bridge: {}
+            resources:
+              requests:
+                memory: 4Gi
+          networks:
+            - name: eth0
+              multus:
+                networkName: br0
+          terminationGracePeriodSeconds: 0
+          volumes:
+            - name: talosdisk
+              dataVolume:
+                name: talosrootdisk
+      dataVolumeTemplates:
+        - metadata:
+            name: talosrootdisk
+          spec:
+            storage:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 20Gi
+            source:
+              registry:
+                url: "ghcr.io/containercraft/talos:latest"

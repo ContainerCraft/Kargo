@@ -1,0 +1,42 @@
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: talos-disk-image-1.7.6
+  namespace: default
+spec:
+  source:
+    http:
+      url: "https://github.com/siderolabs/talos/releases/download/v1.7.6/nocloud-amd64.raw.xz"
+    #registry:
+    #  url: "docker://docker.io/containercraft/talos:latest"
+  pvc:
+    storageClassName: "ssd"
+    volumeMode: Filesystem
+    resources:
+      requests:
+        storage: 16Gi
+    accessModes:
+      - ReadWriteOnce
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: ubuntu-dv
+  namespace: default
+  annotations:
+    cdi.kubevirt.io/storage.usePopulator: "true"
+spec:
+  pvc:
+    storageClassName: ssd
+    volumeMode: Filesystem
+    resources:
+      requests:
+        storage: 16Gi
+    accessModes:
+    - ReadWriteOnce
+  source:
+    registry:
+      url: docker://docker.io/containercraft/ubuntu:22.04
+#   http:
+#     url: "https://github.com/siderolabs/talos/releases/download/v1.7.6/nocloud-amd64.raw.xz"
