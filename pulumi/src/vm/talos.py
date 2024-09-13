@@ -4,8 +4,8 @@ import pulumi_kubernetes as k8s
 def deploy_talos_cluster(
         config_talos: dict,
         k8s_provider: k8s.Provider,
+        parent,
         depends_on: pulumi.Output[list],
-        parent
     ):
     """
     Deploy the Talos controlplane and worker VirtualMachinePools based on the provided configuration.
