@@ -1,6 +1,6 @@
 # Kargo Modules Development Guide
 
-Welcome to the Kargo modules development guide! This document provides an overview of the design principles, code structure, and best practices for developing and maintaining modules within the Kargo codebase. It is intended for developers and AI language models (like ChatGPT) to quickly understand and contribute to the project.
+Welcome to the Kargo Kubevirt PaaS IaC module developer guide. This document provides an overview of the design principles, code structure, and best practices for developing and maintaining modules within the Kargo IaC codebase. It is intended for developers and AI language models (like ChatGPT) to quickly understand and contribute to the project.
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ Welcome to the Kargo modules development guide! This document provides an overvi
 
 ## Introduction
 
-Kargo is a Kubernetes deployment framework that leverages Pulumi for infrastructure as code (IaC). This guide aims to standardize module development by centralizing version handling, simplifying module code, and promoting consistency across the codebase.
+Kargo is a Kubernetes & Kubevirt based Platform Engineering IaC development & deployment framework that leverages Pulumi for infrastructure as code (IaC). This guide aims to standardize module development by centralizing version handling, simplifying module code, and promoting consistency across the codebase.
 
 ---
 
@@ -35,12 +35,15 @@ Kargo is a Kubernetes deployment framework that leverages Pulumi for infrastruct
 
 ---
 
-## Code Structure
+## IaC Module Structure
 
 - **`__main__.py`**: The entry point of the Pulumi program. Handles global configurations, Kubernetes provider setup, version loading, and module deployments.
 - **`src/lib/`**: Contains shared utilities and libraries, such as version management (`versions.py`) and shared types (`types.py`).
 - **`src/<module_name>/`**: Each module resides in its own directory under `src/`, containing its specific types (`types.py`) and deployment logic (`deploy.py`).
-- **`default_versions.json`**: A JSON file containing default versions for modules. Can be overridden by user configurations.
+- **`src/<module_name>/types.py`**: Defines data classes for module configurations with default values and merging logic.
+- **`src/<module_name>/deploy.py`**: Contains the module-specific deployment logic, taking in the merged configuration and returning relevant outputs.
+- **`src/<module_name>/README.md`**: Module-specific documentation with configuration options, features, and usage instructions.
+- **`src/<module_name>/*.py`**: Additional utility files or scripts specific to the module.
 
 ---
 
