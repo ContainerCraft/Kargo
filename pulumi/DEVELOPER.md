@@ -6,6 +6,8 @@ Kargo Kubevirt Kubernetes PaaS - Pulumi Python Infrastructure as Code (IaC)
 >
 > Quality is not just about the product or code. Enjoyable developer experience is imperative to the survival of FOSS.
 
+ContainerCraft is a Developer Experience (DX) and User Experience (UX) obsessed project. As part of the CCIO Open Source education and skill development ecosystem, Kargo project's survival is dependent on the happiness of community developers and users.
+
 #### **Developer Directives**
 - **Improve Code Maintainability:** Enhance structure and organization. Prioritize readable, reusable, and extensible code.
 - **Optimize Performance:** Code execution performance. honor configuration. Do not execute inactive code.
@@ -14,8 +16,6 @@ Kargo Kubevirt Kubernetes PaaS - Pulumi Python Infrastructure as Code (IaC)
 ---
 
 ### **Developer Imperatives**
-
-ContainerCraft is a Developer Experience (DX) and User Experience (UX) obsessed project. As part of the CCIO Open Source education and skill development ecosystem, Kargo project's survival is dependent on the happiness of community developers and users.
 
 The following guidelines promote happiness as a means of promoting growth and sustainability.
 
