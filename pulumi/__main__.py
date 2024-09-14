@@ -1,3 +1,5 @@
+# __main__.py
+
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -5,20 +7,28 @@ import pulumi
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes import Provider
 
+from src.lib.versions import load_default_versions
+
 ##########################################
 # Load Pulumi Config
 config = pulumi.Config()
 stack_name = pulumi.get_stack()
 project_name = pulumi.get_project()
 
+# Load Default Versions
+default_versions = load_default_versions(config)
+
+# Initialize versions dictionary to track deployed component versions
+versions: Dict[str, str] = {}
+
 ##########################################
 # Kubernetes Configuration
 kubernetes_config = config.get_object("kubernetes") or {}
-kubeconfig = kubernetes_config.get("kubeconfig")
+kubeconfig = kubernetes_config.get("kubeconfig") or os.getenv('KUBECONFIG')
 kubernetes_context = kubernetes_config.get("context")
 
-# Assume Talos Kubernetes distribution
-kubernetes_distribution = "talos"
+pulumi.log.info(f"kubeconfig: {kubeconfig}")
+pulumi.log.info(f"kubernetes_context: {kubernetes_context}")
 
 # Create a Kubernetes provider instance
 k8s_provider = Provider(
@@ -27,31 +37,46 @@ k8s_provider = Provider(
     context=kubernetes_context,
 )
 
-# Initialize versions dictionary to track deployed component versions
-versions: Dict[str, Dict[str, Any]] = {}
+# Initialize configurations dictionary to track module configurations
+configurations: Dict[str, Dict[str, Any]] = {}
 
 ##########################################
 # Module Configuration and Enable Flags
-def get_module_config(module_name: str) -> Tuple[Dict[str, Any], bool]:
+def get_module_config(
+    module_name: str,
+    config: pulumi.Config,
+    default_versions: Dict[str, Any]
+) -> Tuple[Dict[str, Any], bool]:
     module_config = config.get_object(module_name) or {"enabled": "false"}
     module_enabled = str(module_config.get('enabled', 'false')).lower() == "true"
 
     # Remove 'enabled' key from module_config dictionary as modules do not need this key
     module_config.pop('enabled', None)
 
+    # Handle version injection
+    module_version = module_config.get('version')
+    if not module_version:
+        # No version specified in module config, use default
+        module_version = default_versions.get(module_name)
+        if module_version:
+            module_config['version'] = module_version
+        else:
+            # No default version, set to None (will be handled in module)
+            module_config['version'] = None
+    else:
+        # Version specified in module config; keep as is (could be 'latest')
+        pass
+
     return module_config, module_enabled
-
-##########################################
-# Dependency Management
-
-# Initialize a list to keep track of dependencies between resources
-global_depends_on: List[pulumi.Resource] = []
 
 ##########################################
 # Deploy Modules
 
+# Initialize a list to keep track of dependencies between resources
+global_depends_on: List[pulumi.Resource] = []
+
 # Cert Manager Module
-config_cert_manager_dict, cert_manager_enabled = get_module_config('cert_manager')
+config_cert_manager_dict, cert_manager_enabled = get_module_config('cert_manager', config, default_versions)
 
 if cert_manager_enabled:
     from src.cert_manager.types import CertManagerConfig
@@ -60,12 +85,19 @@ if cert_manager_enabled:
     from src.cert_manager.deploy import deploy_cert_manager_module
 
     cert_manager_version, cert_manager_release, cert_manager_selfsigned_cert = deploy_cert_manager_module(
-        cert_manager_enabled=cert_manager_enabled,
         config_cert_manager=config_cert_manager,
         global_depends_on=global_depends_on,
         k8s_provider=k8s_provider,
-        versions=versions,
     )
+
+    # Add Cert Manager version to versions dictionary
+    versions["cert_manager"] = cert_manager_version
+
+    # Add Cert Manager configuration to configurations dictionary
+    configurations["cert_manager"] = {
+        "enabled": cert_manager_enabled,
+    }
+
     pulumi.export("cert_manager_selfsigned_cert", cert_manager_selfsigned_cert)
 else:
     cert_manager_selfsigned_cert = None
@@ -74,6 +106,8 @@ else:
 # Export Component Versions
 
 pulumi.export("versions", versions)
+pulumi.export("configuration", configurations)
+
 
 #import os
 #from typing import Any, Dict, List, Optional, Tuple
