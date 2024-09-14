@@ -6,17 +6,44 @@ import pulumi
 import requests
 
 def load_default_versions(config: pulumi.Config) -> dict:
-    # Get stack name
+    """
+    Loads the default versions for modules based on the specified configuration settings.
+
+    This function attempts to load version information from multiple sources in order of precedence:
+    1. User-specified source via Pulumi config (`default_versions.source`).
+    2. Stack-specific versions file (`./versions/$STACK_NAME.json`) if `versions.stack_name` is set to true.
+    3. Local default versions file (`./default_versions.json`).
+    4. Remote versions based on the specified channel (`versions.channel`).
+
+    Args:
+        config: The Pulumi configuration object.
+
+    Returns:
+        A dictionary containing the default versions for modules.
+
+    Raises:
+        Exception: If default versions cannot be loaded from any source.
+    """
+    # Get the current stack name (e.g., 'dev', 'prod')
     stack_name = pulumi.get_stack()
 
-    # Get configuration settings
-    default_versions_source = config.get('default_versions.source')
-    versions_channel = config.get('versions.channel') or 'stable'
-    versions_stack_name = config.get_bool('versions.stack_name') or False
+    # Retrieve configuration settings from Pulumi config
+    default_versions_source = config.get('default_versions.source')        # User-specified source for versions
+    versions_channel = config.get('versions.channel') or 'stable'          # Channel to use ('stable' by default)
+    versions_stack_name = config.get_bool('versions.stack_name') or False  # Use stack-specific versions if true
 
-    default_versions = {}
+    default_versions = {}  # Initialize the default versions dictionary
 
     def load_versions_from_file(file_path):
+        """
+        Loads versions from a local JSON file.
+
+        Args:
+            file_path: The path to the JSON file containing versions.
+
+        Returns:
+            A dictionary of versions if successful, otherwise None.
+        """
         try:
             with open(file_path, 'r') as f:
                 versions = json.load(f)
@@ -29,6 +56,15 @@ def load_default_versions(config: pulumi.Config) -> dict:
         return None
 
     def load_versions_from_url(url):
+        """
+        Loads versions from a remote URL.
+
+        Args:
+            url: The URL pointing to the JSON file containing versions.
+
+        Returns:
+            A dictionary of versions if successful, otherwise None.
+        """
         try:
             response = requests.get(url)
             response.raise_for_status()
@@ -43,22 +79,24 @@ def load_default_versions(config: pulumi.Config) -> dict:
 
     # Determine the precedence of version sources
     if default_versions_source:
-        # User-specified source via Pulumi config
+        # User has specified a source for default versions via Pulumi config
         if default_versions_source.startswith(('http://', 'https://')):
-            # It's a URL
+            # The source is a URL
             default_versions = load_versions_from_url(default_versions_source)
         else:
-            # It's a file path
+            # The source is assumed to be a file path
             default_versions = load_versions_from_file(default_versions_source)
 
         if not default_versions:
+            # Failed to load versions from the specified source
             pulumi.log.error(f"Failed to load default versions from specified source: {default_versions_source}")
             raise Exception("Cannot proceed without default versions.")
 
     else:
-        # Check if versions.stack_name is set to true
+        # No user-specified source; proceed with other options in order of precedence
+
         if versions_stack_name:
-            # Attempt to load versions from ./versions/$STACK_NAME.json
+            # Attempt to load versions from a stack-specific file (e.g., ./versions/dev.json)
             current_dir = os.path.dirname(os.path.abspath(__file__))
             versions_dir = os.path.join(current_dir, '..', '..', 'versions')
             stack_versions_path = os.path.join(versions_dir, f'{stack_name}.json')
@@ -70,15 +108,15 @@ def load_default_versions(config: pulumi.Config) -> dict:
             default_versions_path = os.path.join(current_dir, '..', '..', 'default_versions.json')
             default_versions = load_versions_from_file(default_versions_path)
 
-        # If still not loaded, attempt to fetch from remote URL based on channel
+        # If still not loaded, attempt to fetch from a remote URL based on the specified channel
         if not default_versions:
-            # Construct the URL based on the channel
+            # Construct the URL based on the channel (e.g., 'stable' or 'latest')
             base_url = 'https://github.com/containercraft/kargo/releases/latest/download/'
             versions_filename = f'{versions_channel}_versions.json'
             versions_url = f'{base_url}{versions_filename}'
             default_versions = load_versions_from_url(versions_url)
 
-        # If versions are still not loaded, log an error and raise an exception
+        # If versions are still not loaded after all attempts, log an error and raise an exception
         if not default_versions:
             pulumi.log.error("Could not load default versions from any source. Cannot proceed.")
             raise Exception("Cannot proceed without default versions.")

@@ -1,5 +1,13 @@
 # src/lib/namespace.py
 
+"""
+Utility functions for managing Kubernetes namespaces within the Kargo PaaS platform.
+
+This module provides functions to create and manage Kubernetes namespaces
+using Pulumi and the Kubernetes provider. It leverages the NamespaceConfig
+data class to standardize configurations and ensure consistency across deployments.
+"""
+
 import pulumi
 import pulumi_kubernetes as k8s
 from typing import List, Optional
@@ -13,20 +21,41 @@ def create_namespace(
     """
     Creates a Kubernetes Namespace based on the provided configuration.
 
+    This function simplifies the creation of a Kubernetes namespace by applying
+    settings specified in a NamespaceConfig object. It ensures namespaces are
+    created consistently and according to best practices within the Kargo PaaS platform.
+
     Args:
-        config: NamespaceConfig object containing namespace configurations.
-        k8s_provider: The Kubernetes provider.
-        depends_on: Optional list of resources to depend on.
+        config (NamespaceConfig): An object containing namespace configuration settings.
+        k8s_provider (k8s.Provider): The Kubernetes provider instance to interact with the cluster.
+        depends_on (Optional[List[pulumi.Resource]]): An optional list of resources that
+            this namespace depends on, ensuring proper resource creation order.
 
     Returns:
-        The created Namespace resource.
-    """
+        k8s.core.v1.Namespace: The created Namespace resource.
 
-    # Ensure depends_on is a list
+    Example:
+        ```python
+        # Define namespace configuration
+        namespace_config = NamespaceConfig(
+            name="my-namespace",
+            labels={"app": "my-app"},
+            protect=True
+        )
+
+        # Create the namespace
+        namespace_resource = create_namespace(
+            config=namespace_config,
+            k8s_provider=k8s_provider,
+            depends_on=[other_resource],
+        )
+        ```
+    """
+    # Ensure depends_on is initialized as a list if not provided
     if depends_on is None:
         depends_on = []
 
-    # Create the namespace
+    # Create the Kubernetes Namespace resource with the specified configuration
     namespace_resource = k8s.core.v1.Namespace(
         config.name,
         metadata=k8s.meta.v1.ObjectMetaArgs(

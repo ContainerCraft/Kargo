@@ -1,5 +1,8 @@
 # __main__.py
 
+# Main entry point for the Kargo Pulumi IaC program.
+# This script is responsible for deploying the Kargo platform components located in the respective src/<module_name> directories.
+
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -10,61 +13,81 @@ from pulumi_kubernetes import Provider
 from src.lib.versions import load_default_versions
 
 ##########################################
-# Load Pulumi Config
+# Load Pulumi Config and Initialize Variables
+
+# Load the Pulumi configuration settings
 config = pulumi.Config()
 stack_name = pulumi.get_stack()
 project_name = pulumi.get_project()
 
-# Load Default Versions
+# Load default versions for modules
 default_versions = load_default_versions(config)
 
-# Initialize versions dictionary to track deployed component versions
+# Initialize a dictionary to keep track of deployed component versions
 versions: Dict[str, str] = {}
 
 ##########################################
 # Kubernetes Configuration
+
+# Retrieve Kubernetes settings from Pulumi config or environment variables
 kubernetes_config = config.get_object("kubernetes") or {}
 kubeconfig = kubernetes_config.get("kubeconfig") or os.getenv('KUBECONFIG')
 kubernetes_context = kubernetes_config.get("context")
 
-pulumi.log.info(f"kubeconfig: {kubeconfig}")
-pulumi.log.info(f"kubernetes_context: {kubernetes_context}")
-
-# Create a Kubernetes provider instance
+# Create a Kubernetes provider instance to interact with the cluster
 k8s_provider = Provider(
     "k8sProvider",
     kubeconfig=kubeconfig,
     context=kubernetes_context,
 )
 
-# Initialize configurations dictionary to track module configurations
+# Initialize a dictionary to keep track of module configurations
 configurations: Dict[str, Dict[str, Any]] = {}
+
+# Log the Kubernetes configuration details
+pulumi.log.info(f"kubeconfig: {kubeconfig}")
+pulumi.log.info(f"kubernetes_context: {kubernetes_context}")
+
+# TODO: log the git repository URL and branch/commit hash using standard python libraries and pulumi logging functions
 
 ##########################################
 # Module Configuration and Enable Flags
+
 def get_module_config(
     module_name: str,
     config: pulumi.Config,
     default_versions: Dict[str, Any]
 ) -> Tuple[Dict[str, Any], bool]:
+    """
+    Retrieves and prepares the configuration for a module.
+
+    Args:
+        module_name: The name of the module to configure.
+        config: The Pulumi configuration object.
+        default_versions: A dictionary of default versions for modules.
+
+    Returns:
+        A tuple containing the module's configuration dictionary and a boolean indicating if the module is enabled.
+    """
+    # Get the module's configuration from Pulumi config, default to {"enabled": "false"} if not set
     module_config = config.get_object(module_name) or {"enabled": "false"}
     module_enabled = str(module_config.get('enabled', 'false')).lower() == "true"
 
-    # Remove 'enabled' key from module_config dictionary as modules do not need this key
+    # Remove 'enabled' key from the module configuration as modules do not need this key beyond this point
     module_config.pop('enabled', None)
 
-    # Handle version injection
+    # Handle version injection into the module configuration
     module_version = module_config.get('version')
     if not module_version:
-        # No version specified in module config, use default
+        # No version specified in module config; use default version
         module_version = default_versions.get(module_name)
         if module_version:
             module_config['version'] = module_version
         else:
-            # No default version, set to None (will be handled in module)
+            # No default version available; set to None (module will handle this case)
             module_config['version'] = None
     else:
-        # Version specified in module config; keep as is (could be 'latest')
+        # Version is specified in module config; keep as is (could be 'latest' or a specific version)
         pass
 
     return module_config, module_enabled
@@ -72,40 +95,48 @@ def get_module_config(
 ##########################################
 # Deploy Modules
 
-# Initialize a list to keep track of dependencies between resources
+# Initialize a list to manage dependencies between resources globally
 global_depends_on: List[pulumi.Resource] = []
 
 # Cert Manager Module
+# Retrieve configuration and enable flag for the cert_manager module
 config_cert_manager_dict, cert_manager_enabled = get_module_config('cert_manager', config, default_versions)
 
 if cert_manager_enabled:
+    # Import the CertManagerConfig data class and merge the user config with defaults
     from src.cert_manager.types import CertManagerConfig
     config_cert_manager = CertManagerConfig.merge(config_cert_manager_dict)
 
+    # Import the deployment function for the cert_manager module
     from src.cert_manager.deploy import deploy_cert_manager_module
 
+    # Deploy the cert_manager module
     cert_manager_version, cert_manager_release, cert_manager_selfsigned_cert = deploy_cert_manager_module(
         config_cert_manager=config_cert_manager,
         global_depends_on=global_depends_on,
         k8s_provider=k8s_provider,
     )
 
-    # Add Cert Manager version to versions dictionary
+    # Record the deployed version of cert_manager
     versions["cert_manager"] = cert_manager_version
 
-    # Add Cert Manager configuration to configurations dictionary
+    # Record the configuration state of cert_manager
     configurations["cert_manager"] = {
         "enabled": cert_manager_enabled,
     }
 
+    # Export the self-signed certificate data from cert_manager
     pulumi.export("cert_manager_selfsigned_cert", cert_manager_selfsigned_cert)
 else:
     cert_manager_selfsigned_cert = None
 
 ##########################################
-# Export Component Versions
+# Export Component Versions and Configurations
 
+# Export the versions of deployed components
 pulumi.export("versions", versions)
+
+# Export the configurations of deployed modules
 pulumi.export("configuration", configurations)
 
 
