@@ -56,15 +56,6 @@ def load_default_versions(config: pulumi.Config) -> dict:
         return None
 
     def load_versions_from_url(url):
-        """
-        Loads versions from a remote URL.
-
-        Args:
-            url: The URL pointing to the JSON file containing versions.
-
-        Returns:
-            A dictionary of versions if successful, otherwise None.
-        """
         try:
             response = requests.get(url)
             response.raise_for_status()

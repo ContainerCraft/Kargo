@@ -1,107 +1,45 @@
 # __main__.py
-
 # Main entry point for the Kargo Pulumi IaC program.
-# This script is responsible for deploying the Kargo platform components located in the respective src/<module_name> directories.
+# This script is responsible for deploying the Kargo platform components.
+# Components are located in their respective src/<module_name> directories.
 
+# Generic Python library imports
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
+# Pulumi imports
 import pulumi
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes import Provider
 
-from src.lib.versions import load_default_versions
+# Local imports
+from src.lib.init import initialize_pulumi
+from src.lib.config import get_module_config, export_results
+
+# Execute Pulumi & Custom Initialization
+init = initialize_pulumi()
+
+# Pulumi Configuration
+config = init["config"]
+
+# Kubernetes Provider
+k8s_provider = init["k8s_provider"]
+
+# Default Module Versions
+versions = init["versions"]
+
+# Initialize empty version and configuration dictionaries
+configurations = init["configurations"]
+default_versions = init["default_versions"]
+global_depends_on = init["global_depends_on"]
 
 ##########################################
-# Load Pulumi Config and Initialize Variables
+# Deploy Cert Manager Module
 
-# Load the Pulumi configuration settings
-config = pulumi.Config()
-stack_name = pulumi.get_stack()
-project_name = pulumi.get_project()
-
-# Load default versions for modules
-default_versions = load_default_versions(config)
-
-# Initialize a dictionary to keep track of deployed component versions
-versions: Dict[str, str] = {}
-
-##########################################
-# Kubernetes Configuration
-
-# Retrieve Kubernetes settings from Pulumi config or environment variables
-kubernetes_config = config.get_object("kubernetes") or {}
-kubeconfig = kubernetes_config.get("kubeconfig") or os.getenv('KUBECONFIG')
-kubernetes_context = kubernetes_config.get("context")
-
-# Create a Kubernetes provider instance to interact with the cluster
-k8s_provider = Provider(
-    "k8sProvider",
-    kubeconfig=kubeconfig,
-    context=kubernetes_context,
-)
-
-# Initialize a dictionary to keep track of module configurations
-configurations: Dict[str, Dict[str, Any]] = {}
-
-# Log the Kubernetes configuration details
-pulumi.log.info(f"kubeconfig: {kubeconfig}")
-pulumi.log.info(f"kubernetes_context: {kubernetes_context}")
-
-# TODO: log the git repository URL and branch/commit hash using standard python libraries and pulumi logging functions
-
-##########################################
-# Module Configuration and Enable Flags
-
-def get_module_config(
-    module_name: str,
-    config: pulumi.Config,
-    default_versions: Dict[str, Any]
-) -> Tuple[Dict[str, Any], bool]:
-    """
-    Retrieves and prepares the configuration for a module.
-
-    Args:
-        module_name: The name of the module to configure.
-        config: The Pulumi configuration object.
-        default_versions: A dictionary of default versions for modules.
-
-    Returns:
-        A tuple containing the module's configuration dictionary and a boolean indicating if the module is enabled.
-    """
-    # Get the module's configuration from Pulumi config, default to {"enabled": "false"} if not set
-    module_config = config.get_object(module_name) or {"enabled": "false"}
-    module_enabled = str(module_config.get('enabled', 'false')).lower() == "true"
-
-    # Remove 'enabled' key from the module configuration as modules do not need this key beyond this point
-    module_config.pop('enabled', None)
-
-    # Handle version injection into the module configuration
-    module_version = module_config.get('version')
-    if not module_version:
-        # No version specified in module config; use default version
-        module_version = default_versions.get(module_name)
-        if module_version:
-            module_config['version'] = module_version
-        else:
-            # No default version available; set to None (module will handle this case)
-            module_config['version'] = None
-    else:
-        # Version is specified in module config; keep as is (could be 'latest' or a specific version)
-        pass
-
-    return module_config, module_enabled
-
-##########################################
-# Deploy Modules
-
-# Initialize a list to manage dependencies between resources globally
-global_depends_on: List[pulumi.Resource] = []
-
-# Cert Manager Module
 # Retrieve configuration and enable flag for the cert_manager module
 config_cert_manager_dict, cert_manager_enabled = get_module_config('cert_manager', config, default_versions)
 
+# Check if the cert_manager module is enabled & execute deployment logic if true
 if cert_manager_enabled:
     # Import the CertManagerConfig data class and merge the user config with defaults
     from src.cert_manager.types import CertManagerConfig
@@ -132,23 +70,9 @@ else:
 
 ##########################################
 # Export Component Versions and Configurations
-
-# Export the versions of deployed components
-pulumi.export("versions", versions)
-
-# Export the configurations of deployed modules
-pulumi.export("configuration", configurations)
+export_results(versions, configurations)
 
 
-#import os
-#from typing import Any, Dict, List, Optional, Tuple
-#
-#import pulumi
-#import pulumi_kubernetes as k8s
-#from pulumi_kubernetes import Provider
-#
-#from src.cilium.deploy import deploy_cilium
-#from src.cert_manager.deploy import deploy_cert_manager
 #from src.kubevirt.deploy import deploy_kubevirt
 #from src.containerized_data_importer.deploy import deploy_cdi
 #from src.cluster_network_addons.deploy import deploy_cnao
@@ -161,12 +85,7 @@ pulumi.export("configuration", configurations)
 #from src.ceph.deploy import deploy_rook_operator
 #from src.vm.ubuntu import deploy_ubuntu_vm
 #from src.vm.talos import deploy_talos_cluster
-#
-###########################################
-## Load Pulumi Config
-#config = pulumi.Config()
-#stack_name = pulumi.get_stack()
-#project_name = pulumi.get_project()
+#from src.cilium.deploy import deploy_cilium
 #
 ###########################################
 ## Kubernetes Configuration
@@ -186,19 +105,6 @@ pulumi.export("configuration", configurations)
 #
 ###########################################
 ## Module Configuration and Enable Flags
-#def get_module_config(module_name: str) -> Tuple[Dict[str, Any], bool]:
-#    """
-#    Retrieves the configuration for a module and determines if it is enabled.
-#
-#    Args:
-#        module_name: The name of the module.
-#
-#    Returns:
-#        A tuple containing the module configuration dictionary and a boolean indicating if the module is enabled.
-#    """
-#    module_config = config.get_object(module_name) or {"enabled": "false"}
-#    module_enabled = str(module_config.get('enabled', 'false')).lower() == "true"
-#    return module_config, module_enabled
 #
 ## Retrieve configurations and enable flags for all modules
 #config_cilium, cilium_enabled = get_module_config('cilium')
@@ -220,42 +126,6 @@ pulumi.export("configuration", configurations)
 #
 ## Initialize a list to keep track of dependencies between resources
 #global_depends_on: List[pulumi.Resource] = []
-#
-###########################################
-## Module Deployment Functions
-#
-#def deploy_cert_manager_module() -> Tuple[Optional[str], Optional[pulumi.Resource], Optional[str]]:
-#    """
-#    Deploys the Cert Manager module if enabled.
-#
-#    Returns:
-#        A tuple containing the version, Helm release, and CA certificate data.
-#    """
-#    if not cert_manager_enabled:
-#        pulumi.log.info("Cert Manager module is disabled. Skipping deployment.")
-#        return None, None, None
-#
-#    namespace = "cert-manager"
-#    cert_manager_version = config_cert_manager.get('version')
-#
-#    cert_manager_version, release, ca_cert_b64, _ = deploy_cert_manager(
-#        namespace=namespace,
-#        version=cert_manager_version,
-#        depends_on=global_depends_on,
-#        k8s_provider=k8s_provider,
-#    )
-#
-#    versions["cert_manager"] = {"enabled": cert_manager_enabled, "version": cert_manager_version}
-#
-#    if release:
-#        global_depends_on.append(release)
-#
-#    # Export the CA certificate
-#    pulumi.export("cert_manager_selfsigned_cert", ca_cert_b64)
-#
-#    return cert_manager_version, release, ca_cert_b64
-#
-#cert_manager_version, cert_manager_release, cert_manager_selfsigned_cert = deploy_cert_manager_module()
 #
 ###########################################
 ## Export Component Versions

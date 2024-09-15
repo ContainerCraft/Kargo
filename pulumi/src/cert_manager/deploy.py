@@ -1,13 +1,4 @@
 # src/cert_manager/deploy.py
-
-"""
-Deployment logic for the Cert Manager module in Kubernetes.
-
-This module defines functions that deploy cert-manager into a Kubernetes cluster using Pulumi
-and Helm. It handles the setup of necessary resources including namespaces, Helm releases,
-and ClusterIssuers, and it manages the issuance of certificates via cert-manager.
-"""
-
 import pulumi
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes.apiextensions.CustomResource import CustomResource
