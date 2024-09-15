@@ -23,6 +23,18 @@ delete_namespace() {
   echo "Namespace $namespace has been deleted."
 }
 
+# Delete CustomResourceDefinitions (CRDs) associated with cert-manager and kubevirt
+delete_crds() {
+  local crds=("certificaterequests.cert-manager.io" "certificates.cert-manager.io" "challenges.acme.cert-manager.io" \
+              "orders.acme.cert-manager.io" "clusterissuers.cert-manager.io" "issuers.cert-manager.io" \
+              "kubevirts.kubevirt.io")
+
+  for crd in "${crds[@]}"; do
+    echo "Deleting CRD: $crd"
+    kubectl delete crd "$crd" --ignore-not-found --wait
+  done
+}
+
 # Check for at least one namespace provided as argument
 if [ $# -eq 0 ]; then
   echo "Usage: $0 <namespace1> <namespace2> ... <namespaceN>"
@@ -34,3 +46,6 @@ for namespace in "$@"; do
   delete_resources_in_namespace "$namespace"
   delete_namespace "$namespace"
 done
+
+# Delete CRDs
+delete_crds

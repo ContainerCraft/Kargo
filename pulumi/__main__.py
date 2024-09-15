@@ -55,10 +55,8 @@ if cert_manager_enabled:
         k8s_provider=k8s_provider,
     )
 
-    # Record the deployed version of cert_manager
+    # Record the deployed version of cert_manager and configuration
     versions["cert_manager"] = cert_manager_version
-
-    # Record the configuration state of cert_manager
     configurations["cert_manager"] = {
         "enabled": cert_manager_enabled,
     }
@@ -67,6 +65,37 @@ if cert_manager_enabled:
     pulumi.export("cert_manager_selfsigned_cert", cert_manager_selfsigned_cert)
 else:
     cert_manager_selfsigned_cert = None
+
+
+##########################################
+# Deploy Cert Manager Module
+
+# KubeVirt Module Configuration and Deployment
+config_kubevirt_dict, kubevirt_enabled = get_module_config('kubevirt', config, default_versions)
+
+if kubevirt_enabled:
+    # Import the KubeVirtConfig data class and merge the user config with defaults
+    from src.kubevirt.types import KubeVirtConfig
+    config_kubevirt = KubeVirtConfig.merge(config_kubevirt_dict)
+
+    # Import the deployment function for the KubeVirt module
+    from src.kubevirt.deploy import deploy_kubevirt_module
+
+    # Deploy the KubeVirt module
+    kubevirt_version, kubevirt_operator = deploy_kubevirt_module(
+        config_kubevirt=config_kubevirt,
+        global_depends_on=global_depends_on,
+        k8s_provider=k8s_provider,
+    )
+
+    # Record the deployed version & configuration
+    versions["kubevirt"] = kubevirt_version
+    configurations["kubevirt"] = {
+        "enabled": kubevirt_enabled
+    }
+else:
+    kubevirt_operator = None
+
 
 ##########################################
 # Export Component Versions and Configurations
