@@ -26,6 +26,54 @@ global_depends_on = init["global_depends_on"]
 compliance_config = init["compliance_config"]
 
 ##########################################
+# Deploy Moudles from ./src/<module_name>
+
+def deploy_module(
+    module_name: str,
+    config: pulumi.Config,
+    default_versions: Dict[str, Any],
+    global_depends_on: List[pulumi.Resource],
+    k8s_provider: Any,
+    deploy_function: Any,
+    export_name: str
+) -> None:
+    """
+    Helper function to deploy a module based on configuration.
+
+    Args:
+        module_name (str): Name of the module.
+        config (pulumi.Config): Pulumi configuration object.
+        default_versions (Dict[str, Any]): Default versions for modules.
+        global_depends_on (List[pulumi.Resource]): Global dependencies.
+        k8s_provider (Any): Kubernetes provider.
+        deploy_function (Callable): Function to deploy the module.
+        export_name (str): Name of the export variable.
+    """
+    module_config_dict, module_enabled = get_module_config(module_name, config, default_versions)
+
+    if module_enabled:
+        # Dynamically import the module's types and deploy function
+        module_types = __import__(f"src.{module_name}.types", fromlist=[''])
+        ModuleConfigClass = getattr(module_types, f"{module_name.capitalize()}Config")
+        config_obj = ModuleConfigClass.merge(module_config_dict)
+
+        module_deploy = __import__(f"src.{module_name}.deploy", fromlist=[''])
+        deploy_func = getattr(module_deploy, f"deploy_{module_name}_module")
+
+        version, release, exported_value = deploy_func(
+            config_obj=config_obj,
+            global_depends_on=global_depends_on,
+            k8s_provider=k8s_provider,
+        )
+
+        versions[module_name] = version
+        configurations[module_name] = {
+            "enabled": module_enabled,
+        }
+
+        pulumi.export(export_name, exported_value)
+
+##########################################
 # Deploy Cert Manager Module
 
 # Retrieve configuration and enable flag for the cert_manager module
@@ -38,9 +86,8 @@ config_cert_manager_dict, cert_manager_enabled = get_module_config(
 # Check if the cert_manager module is enabled & execute deployment logic if true
 if cert_manager_enabled:
     from src.cert_manager.types import CertManagerConfig
-    config_cert_manager = CertManagerConfig.merge(config_cert_manager_dict)
-
     from src.cert_manager.deploy import deploy_cert_manager_module
+    config_cert_manager = CertManagerConfig.merge(config_cert_manager_dict)
 
     cert_manager_version, cert_manager_release, cert_manager_selfsigned_cert = deploy_cert_manager_module(
         config_cert_manager=config_cert_manager,
@@ -53,6 +100,9 @@ if cert_manager_enabled:
     configurations["cert_manager"] = {
         "enabled": cert_manager_enabled,
     }
+
+    # append cert_manager_release to global_depends_on
+    global_depends_on.append(cert_manager_release)
 
     pulumi.export("cert_manager_selfsigned_cert", cert_manager_selfsigned_cert)
 else:
@@ -71,16 +121,14 @@ config_kubevirt_dict, kubevirt_enabled = get_module_config(
 # Check if the kubevirt module is enabled & execute deployment logic if true
 if kubevirt_enabled:
     from src.kubevirt.types import KubeVirtConfig
-    config_kubevirt = KubeVirtConfig.merge(config_kubevirt_dict)
-
     from src.kubevirt.deploy import deploy_kubevirt_module
+    config_kubevirt = KubeVirtConfig.merge(config_kubevirt_dict)
 
     # Pass cert_manager_release as a dependency if cert_manager is enabled
     kubevirt_version, kubevirt_operator = deploy_kubevirt_module(
         config_kubevirt=config_kubevirt,
         global_depends_on=global_depends_on,
         k8s_provider=k8s_provider,
-        cert_manager_release=cert_manager_release if cert_manager_enabled else None
     )
 
     # Record the deployed version and configuration

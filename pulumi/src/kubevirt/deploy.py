@@ -20,7 +20,6 @@ def deploy_kubevirt_module(
         config_kubevirt: KubeVirtConfig,
         global_depends_on: List[pulumi.Resource],
         k8s_provider: k8s.Provider,
-        cert_manager_release: Optional[pulumi.Resource] = None
     ) -> Tuple[Optional[str], Optional[pulumi.Resource]]:
     """
     Deploys the KubeVirt module with labels and annotations.
@@ -29,7 +28,6 @@ def deploy_kubevirt_module(
         config_kubevirt (KubeVirtConfig): Configuration object for KubeVirt deployment.
         global_depends_on (List[pulumi.Resource]): A list of resources that the deployment depends on.
         k8s_provider (k8s.Provider): The Kubernetes provider for this deployment.
-        cert_manager_release (Optional[pulumi.Resource]): The cert-manager resource, if deployed.
 
     Returns:
         Tuple[Optional[str], Optional[pulumi.Resource]]:
