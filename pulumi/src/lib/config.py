@@ -46,6 +46,7 @@ def get_module_config(
 
     return module_config, module_enabled
 
-def export_results(versions: Dict[str, str], configurations: Dict[str, Dict[str, Any]]):
+def export_results(versions: Dict[str, str], configurations: Dict[str, Dict[str, Any]], compliance: Dict[str, Any]):
     pulumi.export("versions", versions)
     pulumi.export("configuration", configurations)
+    pulumi.export("compliance", compliance)

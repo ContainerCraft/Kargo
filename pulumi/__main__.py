@@ -23,6 +23,7 @@ versions = init["versions"]
 configurations = init["configurations"]
 default_versions = init["default_versions"]
 global_depends_on = init["global_depends_on"]
+compliance_config = init["compliance_config"]
 
 ##########################################
 # Deploy Cert Manager Module
@@ -96,7 +97,7 @@ else:
 # Export Component Metadata Outputs:
 # - Versions
 # - Configurations
-export_results(versions, configurations)
+export_results(versions, configurations, compliance_config)
 
 
 
