@@ -1,4 +1,5 @@
 # src/lib/init.py
+# Description: Initializes Pulumi configuration, Kubernetes provider, and global resources.
 
 import os
 import pulumi
@@ -7,21 +8,20 @@ from pulumi_kubernetes import Provider
 from typing import Dict, List, Any
 
 from src.lib.versions import load_default_versions
-from src.lib.metadata import collect_git_info
+from src.lib.metadata import (
+    collect_git_info,
+    generate_git_labels,
+    generate_git_annotations,
+    set_global_labels,
+    set_global_annotations
+)
+from src.lib.compliance import generate_compliance_labels, generate_compliance_annotations
+from src.lib.types import ComplianceConfig
+from src.lib.utils import generate_global_transformations
 
 def initialize_pulumi() -> Dict[str, Any]:
     """
     Initializes the Pulumi configuration, Kubernetes provider, and global resources.
-
-    Returns:
-        A dictionary containing initialized resources like:
-        - config: Pulumi Config object
-        - stack_name: The Pulumi stack name
-        - project_name: The Pulumi project name
-        - versions: Dictionary to track deployed component versions
-        - configurations: Dictionary to track module configurations
-        - global_depends_on: List to manage dependencies globally
-        - k8s_provider: Kubernetes provider instance
     """
     # Load Pulumi config
     config = pulumi.Config()
@@ -58,12 +58,34 @@ def initialize_pulumi() -> Dict[str, Any]:
     git_info = collect_git_info()
 
     # Append Git metadata to the configurations dictionary under 'source_repository'
-    # TODO: populate global resource tags / labels / annotations with Git metadata
     configurations["source_repository"] = {
         "remote": git_info["remote"],
         "branch": git_info["branch"],
         "commit": git_info["commit"]
     }
+
+    # Collect compliance configuration
+    compliance_config_dict = config.get_object('compliance') or {}
+    compliance_config = ComplianceConfig.merge(compliance_config_dict)
+
+    # Generate compliance labels and annotations
+    compliance_labels = generate_compliance_labels(compliance_config)
+    compliance_annotations = generate_compliance_annotations(compliance_config)
+
+    # Generate Git labels and annotations
+    git_labels = generate_git_labels(git_info)
+    git_annotations = generate_git_annotations(git_info)
+
+    # Combine labels and annotations
+    global_labels = {**compliance_labels, **git_labels}
+    global_annotations = {**compliance_annotations, **git_annotations}
+
+    # Store global labels and annotations for access in other modules
+    set_global_labels(global_labels)
+    set_global_annotations(global_annotations)
+
+    # Apply global transformations to all resources
+    generate_global_transformations(global_labels, global_annotations)
 
     # Return all initialized resources
     return {
@@ -75,5 +97,8 @@ def initialize_pulumi() -> Dict[str, Any]:
         "configurations": configurations,
         "global_depends_on": global_depends_on,
         "k8s_provider": k8s_provider,
-        "git_info": git_info
+        "git_info": git_info,
+        "compliance_config": compliance_config,
+        "global_labels": global_labels,
+        "global_annotations": global_annotations,
     }

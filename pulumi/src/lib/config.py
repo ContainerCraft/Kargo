@@ -1,4 +1,5 @@
-# pulumi/src/lib/config.py
+# src/lib/config.py
+# Description: Module Configuration Parsing & Loading
 
 """
 Configuration Management Module
@@ -14,7 +15,7 @@ import pulumi
 def get_module_config(
     module_name: str,
     config: pulumi.Config,
-    default_versions: Dict[str, Any]
+    default_versions: Dict[str, Any],
 ) -> Tuple[Dict[str, Any], bool]:
     """
     Retrieves and prepares the configuration for a module.
@@ -26,15 +27,14 @@ def get_module_config(
 
     Returns:
         Tuple[Dict[str, Any], bool]:
-
-        A tuple containing the module's configuration dictionary
-        and a boolean indicating if the module is enabled.
+            A tuple containing the module's configuration dictionary
+            and a boolean indicating if the module is enabled.
     """
-    # Get the module's configuration from Pulumi config, default to {"enabled": "false"} if not set
-    module_config = config.get_object(module_name) or {"enabled": "false"}
+    # Get the module's configuration from Pulumi config, default to an empty dict
+    module_config = config.get_object(module_name) or {}
     module_enabled = str(module_config.get('enabled', 'false')).lower() == "true"
 
-    # Remove 'enabled' key from the module configuration as modules do not need this key beyond this point
+    # Remove 'enabled' key from the module configuration
     module_config.pop('enabled', None)
 
     # Handle version injection into the module configuration
@@ -42,14 +42,7 @@ def get_module_config(
     if not module_version:
         # No version specified in module config; use default version
         module_version = default_versions.get(module_name)
-        if module_version:
-            module_config['version'] = module_version
-        else:
-            # No default version available; set to None (module will handle this case)
-            module_config['version'] = None
-    else:
-        # Version is specified in module config; keep as is (could be 'latest' or a specific version)
-        pass
+        module_config['version'] = module_version
 
     return module_config, module_enabled
 

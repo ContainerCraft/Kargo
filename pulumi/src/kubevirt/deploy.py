@@ -14,6 +14,7 @@ from pulumi_kubernetes.meta.v1 import ObjectMetaArgs
 from src.lib.namespace import create_namespace
 from src.lib.types import NamespaceConfig
 from .types import KubeVirtConfig
+from src.lib.metadata import get_global_labels, get_global_annotations
 
 def deploy_kubevirt_module(
         config_kubevirt: KubeVirtConfig,
@@ -22,7 +23,7 @@ def deploy_kubevirt_module(
         cert_manager_release: Optional[pulumi.Resource] = None
     ) -> Tuple[Optional[str], Optional[pulumi.Resource]]:
     """
-    Deploys the KubeVirt module using YAML and custom resources.
+    Deploys the KubeVirt module with labels and annotations.
 
     Args:
         config_kubevirt (KubeVirtConfig): Configuration object for KubeVirt deployment.
@@ -40,19 +41,19 @@ def deploy_kubevirt_module(
     namespace_resource = create_namespace(
         config=namespace_config,
         k8s_provider=k8s_provider,
-        depends_on=global_depends_on  # Ensure it waits for any global dependencies like cert-manager
+        depends_on=global_depends_on
     )
 
     # Now deploy KubeVirt, ensuring it depends on the namespace creation
     kubevirt_version, kubevirt_operator = deploy_kubevirt(
         config_kubevirt=config_kubevirt,
-        depends_on=[namespace_resource] + global_depends_on,
-        k8s_provider=k8s_provider
+        depends_on=namespace_resource,
+        k8s_provider=k8s_provider,
+        namespace_resource=namespace_resource
     )
 
-    if kubevirt_operator:
-        # Optionally add KubeVirt to global dependencies
-        global_depends_on.append(kubevirt_operator)
+    # Optionally add KubeVirt to global dependencies
+    global_depends_on.append(kubevirt_operator)
 
     return kubevirt_version, kubevirt_operator
 
@@ -60,30 +61,26 @@ def deploy_kubevirt_module(
 def deploy_kubevirt(
         config_kubevirt: KubeVirtConfig,
         depends_on: List[pulumi.Resource],
-        k8s_provider: k8s.Provider
+        k8s_provider: k8s.Provider,
+        namespace_resource: pulumi.Resource
     ) -> Tuple[str, k8s.yaml.ConfigFile]:
     """
-    Deploys KubeVirt into the Kubernetes cluster using its YAML manifests.
-
-    Args:
-        config_kubevirt (KubeVirtConfig): Configuration settings for KubeVirt.
-        depends_on (List[pulumi.Resource]): Resources that the deployment should depend on.
-        k8s_provider (k8s.Provider): The Kubernetes provider instance.
-
-    Returns:
-        Tuple[str, k8s.yaml.ConfigFile]:
-            - The version of KubeVirt deployed.
-            - The KubeVirt operator resource.
+    Deploys KubeVirt into the Kubernetes cluster using its YAML manifests and applies labels and annotations.
     """
     # Extract configuration details from the KubeVirtConfig object
     namespace = config_kubevirt.namespace
     version = config_kubevirt.version
     use_emulation = config_kubevirt.use_emulation
+    labels = config_kubevirt.labels
+    annotations = config_kubevirt.annotations
 
     # Fetch or use the specified KubeVirt version
     if version == 'latest' or version is None:
         kubevirt_stable_version_url = 'https://storage.googleapis.com/kubevirt-prow/release/kubevirt/kubevirt/stable.txt'
-        version = requests.get(kubevirt_stable_version_url).text.strip().lstrip("v")
+        response = requests.get(kubevirt_stable_version_url)
+        if response.status_code != 200:
+            raise Exception(f"Failed to fetch latest KubeVirt version from {kubevirt_stable_version_url}")
+        version = response.text.strip().lstrip("v")
         pulumi.log.info(f"Setting KubeVirt release version to latest: {version}")
     else:
         pulumi.log.info(f"Using KubeVirt version: {version}")
@@ -91,34 +88,65 @@ def deploy_kubevirt(
     # Download the KubeVirt operator YAML
     kubevirt_operator_url = f'https://github.com/kubevirt/kubevirt/releases/download/v{version}/kubevirt-operator.yaml'
     response = requests.get(kubevirt_operator_url)
+    if response.status_code != 200:
+        raise Exception(f"Failed to download KubeVirt operator YAML from {kubevirt_operator_url}")
     kubevirt_yaml = yaml.safe_load_all(response.text)
 
     # Transform the YAML and set the correct namespace
     transformed_yaml = _transform_yaml(kubevirt_yaml, namespace)
+
+    def kubevirt_transform(obj: dict, opts: pulumi.ResourceOptions):
+        """
+        Transformation function to add labels and annotations to Kubernetes objects
+        in the KubeVirt operator YAML manifests.
+        """
+        # Ensure the 'metadata' field exists in the object
+        obj.setdefault("metadata", {})
+
+        # Apply labels
+        obj["metadata"].setdefault("labels", {})
+        obj["metadata"]["labels"].update(labels)
+
+        # Apply annotations
+        obj["metadata"].setdefault("annotations", {})
+        obj["metadata"]["annotations"].update(annotations)
+
+        # If this is a Pod or a Deployment, ensure the template also has metadata
+        if "spec" in obj and "template" in obj["spec"]:
+            obj["spec"]["template"].setdefault("metadata", {})
+            obj["spec"]["template"]["metadata"].setdefault("labels", {})
+            obj["spec"]["template"]["metadata"]["labels"].update(labels)
+            obj["spec"]["template"]["metadata"].setdefault("annotations", {})
+            obj["spec"]["template"]["metadata"]["annotations"].update(annotations)
+
+        # Debugging: print the transformed object
+        #print(f"Transformed object: {obj['metadata']}")
 
     # Write the transformed YAML to a temporary file
     with tempfile.NamedTemporaryFile(delete=False, mode='w') as temp_file:
         yaml.dump_all(transformed_yaml, temp_file)
         temp_file_path = temp_file.name
 
-    # Deploy the KubeVirt operator
-    operator = k8s.yaml.ConfigFile(
-        'kubevirt-operator',
-        file=temp_file_path,
-        opts=pulumi.ResourceOptions(
-            provider=k8s_provider,
-            parent=None,
-            depends_on=depends_on,
-            custom_timeouts=pulumi.CustomTimeouts(
-                create="10m",
-                update="5m",
-                delete="5m"
+    try:
+        # Deploy the KubeVirt operator with transformation
+        operator = k8s.yaml.ConfigFile(
+            'kubevirt-operator',
+            file=temp_file_path,
+            transformations=[kubevirt_transform],
+            opts=pulumi.ResourceOptions(
+                provider=k8s_provider,
+                parent=None,
+                depends_on=depends_on,
+                custom_timeouts=pulumi.CustomTimeouts(
+                    create="10m",
+                    update="5m",
+                    delete="5m"
+                )
             )
         )
-    )
-
-    # Clean up the temporary file after Pulumi has used it
-    pulumi.Output.all().apply(lambda _: os.unlink(temp_file_path))
+    finally:
+        # Clean up the temporary file after Pulumi has used it
+        pulumi.Output.all().apply(lambda _: os.unlink(temp_file_path))
 
     # Deploy the KubeVirt custom resource
     if use_emulation:
@@ -145,19 +173,20 @@ def deploy_kubevirt(
         }
     }
 
-    # Create the KubeVirt custom resource
     kubevirt = CustomResource(
         "kubevirt",
         api_version="kubevirt.io/v1",
         kind="KubeVirt",
         metadata=ObjectMetaArgs(
             name="kubevirt",
+            labels=labels,
             namespace=namespace,
+            annotations=annotations
         ),
         spec=kubevirt_custom_resource_spec,
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
-            parent=None,
+            parent=namespace_resource,
             depends_on=[operator],
         )
     )
@@ -179,7 +208,7 @@ def _transform_yaml(yaml_data, namespace: str) -> List[Dict]:
     transformed = []
     for resource in yaml_data:
         if resource.get('kind') == 'Namespace':
-            continue  # Skip the Namespace resource
+            continue
         if 'metadata' in resource:
             resource['metadata']['namespace'] = namespace
         transformed.append(resource)
