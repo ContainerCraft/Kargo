@@ -32,21 +32,25 @@ def get_module_config(
     """
     # Get the module's configuration from Pulumi config, default to an empty dict
     module_config = config.get_object(module_name) or {}
-    module_enabled = str(module_config.get('enabled', 'false')).lower() == "true"
 
-    # Remove 'enabled' key from the module configuration
-    module_config.pop('enabled', None)
+    # Check if the module is enabled
+    module_enabled = str(module_config.pop('enabled', 'false')).lower() == "true"
 
-    # Handle version injection into the module configuration
-    module_version = module_config.get('version')
-    if not module_version:
-        # No version specified in module config; use default version
-        module_version = default_versions.get(module_name)
-        module_config['version'] = module_version
+    # Use specified version or fall back to the default version if not specified
+    module_config['version'] = module_config.get('version', default_versions.get(module_name))
 
     return module_config, module_enabled
 
 def export_results(versions: Dict[str, str], configurations: Dict[str, Dict[str, Any]], compliance: Dict[str, Any]):
+    """
+    Exports the results of the deployment processes including versions,
+    configurations, and compliance information.
+
+    Args:
+        versions (Dict[str, str]): A dictionary containing the versions of the deployed modules.
+        configurations (Dict[str, Dict[str, Any]]): A dictionary containing the configurations of the deployed modules.
+        compliance (Dict[str, Any]): A dictionary containing the compliance information.
+    """
     pulumi.export("versions", versions)
     pulumi.export("configuration", configurations)
     pulumi.export("compliance", compliance)
