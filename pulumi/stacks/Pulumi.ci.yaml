@@ -49,7 +49,7 @@ config:
   kargo:kubernetes:
     context: admin@talos-kargo-docker
     distribution: talos
-    kubeconfig: /workspaces/Kargo/.kube/config
+    kubeconfig: /Users/usrbinkat/drive/Git/ccio/kargo/.kube/config
   kargo:multus:
     enabled: false
   kargo:vm:

@@ -1,5 +1,8 @@
 # core/metadata.py
 
+# TODO: enhance with support for propagation of labels/annotations on AWS resources
+# TODO: enhance with
+
 import subprocess
 from typing import Dict
 from .utils import sanitize_label_value, extract_repo_name
