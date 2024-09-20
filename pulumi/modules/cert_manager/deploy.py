@@ -1,15 +1,15 @@
-# src/cert_manager/deploy.py
+# modules/cert_manager/deploy.py
 
 import pulumi
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes.apiextensions.CustomResource import CustomResource
 from typing import Optional, List, Dict, Any, Tuple
 
-from src.lib.namespace import create_namespace
-from src.lib.helm_chart_versions import get_latest_helm_chart_version
-from src.cert_manager.types import CertManagerConfig
-from src.lib.types import NamespaceConfig
-from src.lib.metadata import get_global_annotations, get_global_labels
+from core.namespace import create_namespace
+from core.helm_chart_versions import get_latest_helm_chart_version
+from core.types import NamespaceConfig
+from core.metadata import get_global_annotations, get_global_labels
+from .types import CertManagerConfig
 
 def deploy_cert_manager_module(
         config_cert_manager: CertManagerConfig,

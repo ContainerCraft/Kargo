@@ -1,9 +1,9 @@
-# src/kubevirt/types.py
+# modules/kubevirt/types.py
 
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Any
 import pulumi
-from src.lib.metadata import get_global_labels, get_global_annotations
+from core.metadata import get_global_labels, get_global_annotations
 
 @dataclass
 class KubeVirtConfig:

@@ -1,17 +1,18 @@
-# src/lib/deploy_module.py
+# core/deploy_module.py
 
 import inspect
 import pulumi
+import pulumi_kubernetes as k8s
 from typing import Any, Dict, List
-from src.lib.introspection import discover_config_class, discover_deploy_function
-from src.lib.config import get_module_config
+from .introspection import discover_config_class, discover_deploy_function
+from .config import get_module_config
 
 def deploy_module(
     module_name: str,
     config: pulumi.Config,
     default_versions: Dict[str, Any],
     global_depends_on: List[pulumi.Resource],
-    k8s_provider: Any,
+    k8s_provider: k8s.Provider,
     versions: Dict[str, str],
     configurations: Dict[str, Dict[str, Any]]
 ) -> None:

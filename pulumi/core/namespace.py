@@ -1,4 +1,4 @@
-# src/lib/namespace.py
+# core/namespace.py
 
 """
 Utility functions for managing Kubernetes namespaces within the Kargo PaaS platform.

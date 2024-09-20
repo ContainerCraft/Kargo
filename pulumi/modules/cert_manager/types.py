@@ -1,4 +1,4 @@
-# src/cert_manager/types.py
+# modules/cert_manager/types.py
 
 from dataclasses import dataclass
 from typing import Optional, Dict, Any

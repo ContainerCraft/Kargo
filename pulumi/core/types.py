@@ -1,4 +1,4 @@
-# src/lib/types.py
+# core/types.py
 
 """
 Types and data structures used across Kargo modules.

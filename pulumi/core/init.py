@@ -1,4 +1,4 @@
-# src/lib/init.py
+# core/init.py
 # Description: Initializes Pulumi configuration, Kubernetes provider, and global resources.
 
 import os
@@ -7,17 +7,17 @@ import pulumi_kubernetes as k8s
 from pulumi_kubernetes import Provider
 from typing import Dict, List, Any
 
-from src.lib.versions import load_default_versions
-from src.lib.metadata import (
+from .versions import load_default_versions
+from .metadata import (
     collect_git_info,
     generate_git_labels,
     generate_git_annotations,
     set_global_labels,
     set_global_annotations
 )
-from src.lib.compliance import generate_compliance_labels, generate_compliance_annotations
-from src.lib.types import ComplianceConfig
-from src.lib.utils import generate_global_transformations
+from .compliance import generate_compliance_labels, generate_compliance_annotations
+from .types import ComplianceConfig
+from .utils import generate_global_transformations
 
 def initialize_pulumi() -> Dict[str, Any]:
     """

@@ -1,11 +1,4 @@
-# src/lib/compliance.py
-
-import json
-from typing import Dict
-from .types import ComplianceConfig
-from .utils import sanitize_label_value
-
-# src/lib/compliance.py
+# core/compliance.py
 
 import json
 from typing import Dict

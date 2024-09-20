@@ -1,4 +1,4 @@
-# src/lib/config.py
+# core/config.py
 # Description: Module Configuration Parsing & Loading
 
 """

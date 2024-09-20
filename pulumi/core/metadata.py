@@ -1,4 +1,4 @@
-# src/lib/metadata.py
+# core/metadata.py
 
 import subprocess
 from typing import Dict

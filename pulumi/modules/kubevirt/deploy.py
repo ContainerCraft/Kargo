@@ -4,17 +4,18 @@ import requests
 import yaml
 import tempfile
 import os
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, List, Tuple, Dict, Any
 
 import pulumi
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes.apiextensions.CustomResource import CustomResource
 from pulumi_kubernetes.meta.v1 import ObjectMetaArgs
 
-from src.lib.namespace import create_namespace
-from src.lib.types import NamespaceConfig
+from core.types import NamespaceConfig
+from core.namespace import create_namespace
+from core.metadata import get_global_labels, get_global_annotations
+
 from .types import KubeVirtConfig
-from src.lib.metadata import get_global_labels, get_global_annotations
 
 def deploy_kubevirt_module(
         config_kubevirt: KubeVirtConfig,
@@ -45,7 +46,7 @@ def deploy_kubevirt_module(
     # Now deploy KubeVirt, ensuring it depends on the namespace creation
     kubevirt_version, kubevirt_operator = deploy_kubevirt(
         config_kubevirt=config_kubevirt,
-        depends_on=namespace_resource,
+        depends_on=[namespace_resource],
         k8s_provider=k8s_provider,
         namespace_resource=namespace_resource
     )
@@ -93,7 +94,7 @@ def deploy_kubevirt(
     # Transform the YAML and set the correct namespace
     transformed_yaml = _transform_yaml(kubevirt_yaml, namespace)
 
-    def kubevirt_transform(obj: dict, opts: pulumi.ResourceOptions):
+    def kubevirt_transform(obj: dict, opts: pulumi.ResourceOptions) -> pulumi.ResourceTransformationResult:
         """
         Transformation function to add labels and annotations to Kubernetes objects
         in the KubeVirt operator YAML manifests.
@@ -117,8 +118,7 @@ def deploy_kubevirt(
             obj["spec"]["template"]["metadata"].setdefault("annotations", {})
             obj["spec"]["template"]["metadata"]["annotations"].update(annotations)
 
-        # Debugging: print the transformed object
-        #print(f"Transformed object: {obj['metadata']}")
+        return pulumi.ResourceTransformationResult(obj, opts)
 
     # Write the transformed YAML to a temporary file
     with tempfile.NamedTemporaryFile(delete=False, mode='w') as temp_file:
@@ -192,7 +192,7 @@ def deploy_kubevirt(
     return version, operator
 
 
-def _transform_yaml(yaml_data, namespace: str) -> List[Dict]:
+def _transform_yaml(yaml_data: Any, namespace: str) -> List[Dict]:
     """
     Helper function to transform YAML to set namespace and modify resources.
 

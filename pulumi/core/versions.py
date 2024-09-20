@@ -1,4 +1,4 @@
-# src/lib/versions.py
+# core/versions.py
 
 import json
 import os
@@ -89,14 +89,14 @@ def load_default_versions(config: pulumi.Config) -> dict:
         if versions_stack_name:
             # Attempt to load versions from a stack-specific file (e.g., ./versions/dev.json)
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            versions_dir = os.path.join(current_dir, '..', '..', 'versions')
+            versions_dir = os.path.join(current_dir, '..', 'versions')
             stack_versions_path = os.path.join(versions_dir, f'{stack_name}.json')
             default_versions = load_versions_from_file(stack_versions_path)
 
         # If versions are still not loaded, attempt to load from local default_versions.json
         if not default_versions:
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            default_versions_path = os.path.join(current_dir, '..', '..', 'default_versions.json')
+            default_versions_path = os.path.join(current_dir, '..', 'default_versions.json')
             default_versions = load_versions_from_file(default_versions_path)
 
         # If still not loaded, attempt to fetch from a remote URL based on the specified channel

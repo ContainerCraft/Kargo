@@ -1,4 +1,4 @@
-# src/lib/utils.py
+# core/utils.py
 # Description: Utility functions for sanitizing compliance metadata labels.
 
 import re
