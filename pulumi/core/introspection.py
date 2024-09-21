@@ -3,7 +3,7 @@
 
 import inspect
 import importlib
-from typing import Type, Callable, Optional
+from typing import Type, Callable
 
 def discover_config_class(module_name: str) -> Type:
     """

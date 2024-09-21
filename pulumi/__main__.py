@@ -10,7 +10,6 @@ from core.init import initialize_pulumi
 from core.config import export_results
 from core.deploy_module import deploy_module
 
-
 def main():
     try:
         init = initialize_pulumi()
@@ -33,7 +32,6 @@ def main():
         pulumi.log.error(f"Deployment failed: {str(e)}")
         raise
 
-
 def deploy_modules(
         modules: List[str],
         config: pulumi.Config,
@@ -55,7 +53,6 @@ def deploy_modules(
             versions=versions,
             configurations=configurations,
         )
-
 
 if __name__ == "__main__":
     main()

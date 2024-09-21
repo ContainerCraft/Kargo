@@ -14,15 +14,6 @@ HELM_CHART_URL_TEMPLATE = "https://github.com/containercraft/kargo/releases/late
 CHART_NOT_FOUND = "Chart not found"
 
 def is_stable_version(version_str: str) -> bool:
-    """
-    Check if the version string is a valid and stable semantic version.
-
-    Args:
-        version_str (str): The version string to check.
-
-    Returns:
-        bool: True if the version is stable, False otherwise.
-    """
     try:
         parsed_version = parse_version(version_str)
         return isinstance(parsed_version, Version) and not parsed_version.is_prerelease and not parsed_version.is_devrelease
@@ -30,22 +21,11 @@ def is_stable_version(version_str: str) -> bool:
         return False
 
 def get_latest_helm_chart_version(url: str, chart_name: str) -> str:
-    """
-    Fetches the latest stable version of a Helm chart from a given URL.
-
-    Args:
-        url (str): The URL of the Helm chart repository.
-        chart_name (str): The name of the Helm chart.
-
-    Returns:
-        str: The latest stable version of the Helm chart, or an error message if the chart is not found or an error occurs during fetching.
-    """
     try:
         logging.info(f"Fetching URL: {url}")
         response = requests.get(url)
         response.raise_for_status()
 
-        # Parse the YAML content
         index = yaml.safe_load(response.content)
         if chart_name in index['entries']:
             chart_versions = index['entries'][chart_name]

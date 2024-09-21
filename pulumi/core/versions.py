@@ -8,7 +8,7 @@ import requests
 # TODO: replace with official github releases artifact URLs when released
 DEFAULT_VERSIONS_URL_TEMPLATE = 'https://raw.githubusercontent.com/ContainerCraft/Kargo/rerefactor/pulumi/'
 
-def load_default_versions(config: pulumi.Config) -> dict:
+def load_default_versions(config: pulumi.Config, force_refresh=False) -> dict:
     """
     Loads the default versions for modules based on the specified configuration settings.
 
@@ -27,6 +27,14 @@ def load_default_versions(config: pulumi.Config) -> dict:
     Raises:
         Exception: If default versions cannot be loaded from any source.
     """
+    cache_file = '/tmp/default_versions.json'
+    if not force_refresh and os.path.exists(cache_file):
+        try:
+            with open(cache_file) as f:
+                return json.load(f)
+        except Exception as e:
+            pulumi.log.warn(f"Error reading cache file: {e}")
+
     stack_name = pulumi.get_stack()
     default_versions_source = config.get('default_versions.source')
     versions_channel = config.get('versions.channel') or 'stable'
@@ -34,7 +42,6 @@ def load_default_versions(config: pulumi.Config) -> dict:
     default_versions = {}
 
     def load_versions_from_file(file_path: str) -> dict:
-        """Loads versions from a local JSON file."""
         try:
             with open(file_path, 'r') as f:
                 versions = json.load(f)
@@ -45,7 +52,6 @@ def load_default_versions(config: pulumi.Config) -> dict:
         return {}
 
     def load_versions_from_url(url: str) -> dict:
-        """Loads versions from a remote URL."""
         try:
             response = requests.get(url)
             response.raise_for_status()
@@ -82,5 +88,8 @@ def load_default_versions(config: pulumi.Config) -> dict:
 
         if not default_versions:
             raise Exception("Cannot proceed without default versions.")
+
+    with open(cache_file, 'w') as f:
+        json.dump(default_versions, f)
 
     return default_versions

@@ -13,10 +13,10 @@ from typing import Any, Dict, Tuple
 import pulumi
 
 def get_module_config(
-    module_name: str,
-    config: pulumi.Config,
-    default_versions: Dict[str, Any],
-) -> Tuple[Dict[str, Any], bool]:
+        module_name: str,
+        config: pulumi.Config,
+        default_versions: Dict[str, Any],
+    ) -> Tuple[Dict[str, Any], bool]:
     """
     Retrieves and prepares the configuration for a module.
 
@@ -33,7 +33,11 @@ def get_module_config(
     module_config['version'] = module_config.get('version', default_versions.get(module_name))
     return module_config, module_enabled
 
-def export_results(versions: Dict[str, str], configurations: Dict[str, Dict[str, Any]], compliance: Dict[str, Any]):
+def export_results(
+        versions: Dict[str, str],
+        configurations: Dict[str, Dict[str, Any]],
+        compliance: Dict[str, Any]
+    ):
     """
     Exports the results of the deployment processes including versions, configurations, and compliance information.
 

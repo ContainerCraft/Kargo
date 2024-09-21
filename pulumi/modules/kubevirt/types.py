@@ -17,15 +17,6 @@ class KubeVirtConfig:
 
     @classmethod
     def merge(cls, user_config: Dict[str, Any]) -> 'KubeVirtConfig':
-        """
-        Merge user-provided configuration with default configuration.
-
-        Args:
-            user_config (Dict[str, Any]): The user-provided configuration.
-
-        Returns:
-            KubeVirtConfig: The merged configuration object.
-        """
         default_config = cls()
         merged_config = default_config.__dict__.copy()
 
