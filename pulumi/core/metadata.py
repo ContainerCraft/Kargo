@@ -6,39 +6,34 @@
 
 import subprocess
 import pulumi
+import threading
 from typing import Dict
 
 class MetadataSingleton:
-    _instance: Dict[str, Dict[str, str]] = {}
+    _instance = None
+    __lock = threading.Lock()
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = {"_global_labels": {}, "_global_annotations": {}}
+            with cls.__lock:
+                if not cls._instance:
+                    cls._instance = super(MetadataSingleton, cls).__new__(cls)
+                    cls._instance._data = {"_global_labels": {}, "_global_annotations": {}}
         return cls._instance
 
 def set_global_labels(labels: Dict[str, str]):
-    MetadataSingleton()["_global_labels"] = labels
+    MetadataSingleton()._data["_global_labels"] = labels
 
 def set_global_annotations(annotations: Dict[str, str]):
-    MetadataSingleton()["_global_annotations"] = annotations
+    MetadataSingleton()._data["_global_annotations"] = annotations
 
 def get_global_labels() -> Dict[str, str]:
-    return MetadataSingleton()["_global_labels"]
+    return MetadataSingleton()._data["_global_labels"]
 
 def get_global_annotations() -> Dict[str, str]:
-    return MetadataSingleton()["_global_annotations"]
+    return MetadataSingleton()._data["_global_annotations"]
 
 def collect_git_info() -> Dict[str, str]:
-    """
-    Retrieves the current Git repository's remote URL, branch, and commit hash.
-
-    This function uses subprocess to run git commands that fetch the remote URL, the current branch,
-    and the latest commit hash. This information is useful for tracking which version of the code
-    is being deployed, which branch it’s from, and which repository it originates from.
-
-    Returns:
-        Dict[str, str]: A dictionary containing the remote URL, branch name, and commit hash.
-    """
     try:
         remote = subprocess.check_output(['git', 'config', '--get', 'remote.origin.url'], stderr=subprocess.STDOUT).strip().decode('utf-8')
         branch = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], stderr=subprocess.STDOUT).strip().decode('utf-8')

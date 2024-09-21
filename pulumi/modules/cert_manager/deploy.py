@@ -1,8 +1,7 @@
 # ./pulumi/modules/cert_manager/deploy.py
 # Description: Deploys the CertManager module using Helm with labels and annotations.
 
-from typing import List, Dict, Any, Tuple, Optional  # Add Optional import
-import requests
+from typing import List, Dict, Any, Tuple, Optional
 import pulumi
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes.apiextensions.CustomResource import CustomResource
@@ -11,6 +10,7 @@ from core.namespace import create_namespace
 from core.helm_chart_versions import get_latest_helm_chart_version
 from core.types import NamespaceConfig
 from core.metadata import get_global_annotations, get_global_labels
+from core.utils import set_resource_metadata
 from .types import CertManagerConfig
 
 def deploy_cert_manager_module(
@@ -18,17 +18,6 @@ def deploy_cert_manager_module(
         global_depends_on: List[pulumi.Resource],
         k8s_provider: k8s.Provider,
     ) -> Tuple[str, pulumi.Resource, str]:
-    """
-    Deploys the CertManager module with labels and annotations.
-
-    Args:
-        config_cert_manager (CertManagerConfig): Configuration object for CertManager deployment.
-        global_depends_on (List[pulumi.Resource]): A list of resources that the deployment depends on.
-        k8s_provider (k8s.Provider): The Kubernetes provider for this deployment.
-
-    Returns:
-        Tuple[str, pulumi.Resource, str]: The deployed CertManager version, release resource, and Base64-encoded CA certificate.
-    """
     cert_manager_version, release, ca_cert_b64 = deploy_cert_manager(
         config_cert_manager=config_cert_manager,
         depends_on=global_depends_on,
@@ -36,6 +25,7 @@ def deploy_cert_manager_module(
     )
 
     global_depends_on.append(release)
+    pulumi.export("cert_manager_selfsigned_cert", ca_cert_b64)
 
     return cert_manager_version, release, ca_cert_b64
 
@@ -44,17 +34,6 @@ def deploy_cert_manager(
         depends_on: List[pulumi.Resource],
         k8s_provider: k8s.Provider
     ) -> Tuple[str, k8s.helm.v3.Release, str]:
-    """
-    Deploys CertManager using Helm with labels and annotations.
-
-    Args:
-        config_cert_manager (CertManagerConfig): Configuration object for CertManager deployment.
-        depends_on (List[pulumi.Resource]): List of resources that this deployment depends on.
-        k8s_provider (k8s.Provider): The Kubernetes provider for this deployment.
-
-    Returns:
-        Tuple[str, k8s.helm.v3.Release, str]: The CertManager version, release resource, and Base64-encoded CA certificate.
-    """
     namespace = config_cert_manager.namespace
     version = config_cert_manager.version
     cluster_issuer_name = config_cert_manager.cluster_issuer
@@ -74,7 +53,7 @@ def deploy_cert_manager(
 
     def helm_transform(args: pulumi.ResourceTransformationArgs):
         metadata = args.props.get('metadata', {})
-        set_resource_metadata(metadata, get_global_labels(), get_global_annotations())
+        set_resource_metadata(metadata, global_labels, global_annotations)
         args.props['metadata'] = metadata
         return pulumi.ResourceTransformationResult(args.props, args.opts)
 
@@ -112,15 +91,6 @@ def deploy_cert_manager(
     return version, release, ca_data_tls_crt_b64
 
 def generate_helm_values(config_cert_manager: CertManagerConfig) -> Dict[str, Any]:
-    """
-    Generates Helm values for CertManager from the configuration object.
-
-    Args:
-        config_cert_manager (CertManagerConfig): The configuration object for CertManager.
-
-    Returns:
-        Dict[str, Any]: The Helm values dictionary for CertManager.
-    """
     return {
         'replicaCount': 1,
         'installCRDs': config_cert_manager.install_crds,
@@ -131,17 +101,6 @@ def generate_helm_values(config_cert_manager: CertManagerConfig) -> Dict[str, An
     }
 
 def get_helm_chart_version(chart_url: str, chart_name: str, version: Optional[str]) -> str:
-    """
-    Fetches or verifies the Helm chart version.
-
-    Args:
-        chart_url (str): The Helm chart repository URL.
-        chart_name (str): The name of the Helm chart.
-        version (Optional[str]): The specified version or 'latest'.
-
-    Returns:
-        str: The resolved version of the Helm chart.
-    """
     if version == 'latest' or version is None:
         version = get_latest_helm_chart_version(f"{chart_url}/index.yaml", chart_name).lstrip("v")
         pulumi.log.info(f"Setting Helm release version to latest: {chart_name}/{version}")
@@ -149,46 +108,7 @@ def get_helm_chart_version(chart_url: str, chart_name: str, version: Optional[st
         pulumi.log.info(f"Using Helm release version: {chart_name}/{version}")
     return version
 
-def set_resource_metadata(metadata: Any, global_labels: Dict[str, str], global_annotations: Dict[str, str]):
-    """
-    Sets metadata for a resource with global labels and annotations.
-
-    Args:
-        metadata: The metadata object or dictionary.
-        global_labels (Dict[str, str]): The global labels.
-        global_annotations (Dict[str, str]): The global annotations.
-    """
-    if isinstance(metadata, dict):
-        if metadata.get('labels') is None:
-            metadata['labels'] = {}
-        metadata.setdefault('labels', {}).update(global_labels)
-
-        if metadata.get('annotations') is None:
-            metadata['annotations'] = {}
-        metadata.setdefault('annotations', {}).update(global_annotations)
-
-    elif isinstance(metadata, k8s.meta.v1.ObjectMetaArgs):
-        if metadata.labels is None:
-            metadata.labels = {}
-        metadata.labels.update(global_labels)
-
-        if metadata.annotations is None:
-            metadata.annotations = {}
-        metadata.annotations.update(global_annotations)
-
 def create_cluster_issuers(cluster_issuer_name: str, namespace: str, k8s_provider: k8s.Provider, release: pulumi.Resource) -> Tuple[CustomResource, CustomResource, CustomResource]:
-    """
-    Creates cluster issuers for cert-manager.
-
-    Args:
-        cluster_issuer_name (str): The name of the cluster issuer.
-        namespace (str): The namespace for the cluster issuer.
-        k8s_provider (k8s.Provider): The Kubernetes provider.
-        release (pulumi.Resource): The release resource.
-
-    Returns:
-        Tuple[CustomResource, CustomResource, CustomResource]: The created cluster issuers.
-    """
     cluster_issuer_root = CustomResource(
         "cluster-selfsigned-issuer-root",
         api_version="cert-manager.io/v1",
