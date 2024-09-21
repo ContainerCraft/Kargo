@@ -45,7 +45,7 @@ Located in `pulumi/core/compliance.py`, this section deals with generating compl
 
 - **`ComplianceConfig`**
   Central configuration object for compliance settings.
-- **`FismaConfig`, `NistConfig`, `ScipConfig`**
+- **`FismaConfig`, `NistConfig`, and `ScipConfig`**
   Nested configuration types used within `ComplianceConfig`.
 
 ### Configuration
@@ -137,7 +137,7 @@ Located in `pulumi/core/types.py`, this section defines shared configuration typ
 
 - **`NamespaceConfig`**
   Configuration object for Kubernetes namespaces.
-- **`ComplianceConfig`, `FismaConfig`, `NistConfig`, `ScipConfig`**
+- **`ComplianceConfig`, `FismaConfig`, `NistConfig`, and `ScipConfig`**
   Configuration objects for compliance settings.
 
 ### Utilities

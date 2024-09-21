@@ -3,6 +3,7 @@ import json
 import os
 import pulumi
 import requests
+from typing import Dict
 
 #DEFAULT_VERSIONS_URL_TEMPLATE = 'https://github.com/containercraft/kargo/releases/latest/download/'
 # TODO: replace with official github releases artifact URLs when released

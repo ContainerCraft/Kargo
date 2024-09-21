@@ -22,18 +22,48 @@ class MetadataSingleton:
         return cls._instance
 
 def set_global_labels(labels: Dict[str, str]):
+    """
+    Sets global labels.
+
+    Args:
+        labels (Dict[str, str]): The global labels.
+    """
     MetadataSingleton()._data["_global_labels"] = labels
 
 def set_global_annotations(annotations: Dict[str, str]):
+    """
+    Sets global annotations.
+
+    Args:
+        annotations (Dict[str, str]): The global annotations.
+    """
     MetadataSingleton()._data["_global_annotations"] = annotations
 
 def get_global_labels() -> Dict[str, str]:
+    """
+    Retrieves global labels.
+
+    Returns:
+        Dict[str, str]: The global labels.
+    """
     return MetadataSingleton()._data["_global_labels"]
 
 def get_global_annotations() -> Dict[str, str]:
+    """
+    Retrieves global annotations.
+
+    Returns:
+        Dict[str, str]: The global annotations.
+    """
     return MetadataSingleton()._data["_global_annotations"]
 
 def collect_git_info() -> Dict[str, str]:
+    """
+    Collects Git repository information.
+
+    Returns:
+        Dict[str, str]: The Git information.
+    """
     try:
         remote = subprocess.check_output(['git', 'config', '--get', 'remote.origin.url'], stderr=subprocess.STDOUT).strip().decode('utf-8')
         branch = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], stderr=subprocess.STDOUT).strip().decode('utf-8')
@@ -44,12 +74,30 @@ def collect_git_info() -> Dict[str, str]:
         return {'remote': 'N/A', 'branch': 'N/A', 'commit': 'N/A'}
 
 def generate_git_labels(git_info: Dict[str, str]) -> Dict[str, str]:
+    """
+    Generates git-related labels.
+
+    Args:
+        git_info (Dict[str, str]): The Git information.
+
+    Returns:
+        Dict[str, str]: The git-related labels.
+    """
     return {
         "git.branch": git_info.get("branch", ""),
         "git.commit": git_info.get("commit", "")[:7],
     }
 
 def generate_git_annotations(git_info: Dict[str, str]) -> Dict[str, str]:
+    """
+    Generates git-related annotations.
+
+    Args:
+        git_info (Dict[str, str]): The Git information.
+
+    Returns:
+        Dict[str, str]: The git-related annotations.
+    """
     return {
         "git.remote": git_info.get("remote", ""),
         "git.commit.full": git_info.get("commit", ""),

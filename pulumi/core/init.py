@@ -1,11 +1,10 @@
 # ./pulumi/core/init.py
 # Description: Initializes Pulumi configuration, Kubernetes provider, and global resources.
-
 import os
 import pulumi
 import pulumi_kubernetes as k8s
 from pulumi_kubernetes import Provider
-from typing import Dict, List, Any
+from typing import Dict, Any, List
 
 from .versions import load_default_versions
 from .metadata import (

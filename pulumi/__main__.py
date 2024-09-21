@@ -1,5 +1,4 @@
 # ./pulumi/__main__.py
-# Description:
 
 from typing import List, Dict, Any
 
