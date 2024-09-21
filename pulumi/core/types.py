@@ -1,13 +1,12 @@
-# ./pulumi/core/types.py
+# pulumi/core/types.py
 
 """
-Types and data structures used across Kargo modules.
+Types and Data Structures Module
 
-This module defines shared configuration types that are utilized by various modules
+This module defines all shared data classes and types used across modules
 within the Kargo PaaS platform.
 """
 
-import pulumi
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
 

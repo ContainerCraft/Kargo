@@ -1,13 +1,12 @@
-# ./pulumi/__main__.py
+# pulumi/__main__.py
 
 from typing import List, Dict, Any
 
 import pulumi
 from pulumi_kubernetes import Provider
 
-from core.init import initialize_pulumi
+from core.deployment import initialize_pulumi, deploy_module
 from core.config import export_results
-from core.module import deploy_module
 
 def main():
     try:
@@ -22,7 +21,15 @@ def main():
 
         modules_to_deploy = ["cert_manager", "kubevirt"]
 
-        deploy_modules(modules_to_deploy, config, default_versions, global_depends_on, k8s_provider, versions, configurations)
+        deploy_modules(
+            modules_to_deploy,
+            config,
+            default_versions,
+            global_depends_on,
+            k8s_provider,
+            versions,
+            configurations,
+        )
 
         compliance_config = init.get("compliance_config", {})
         export_results(versions, configurations, compliance_config)
@@ -38,7 +45,7 @@ def deploy_modules(
         global_depends_on: List[pulumi.Resource],
         k8s_provider: Provider,
         versions: Dict[str, str],
-        configurations: Dict[str, Dict[str, Any]]
+        configurations: Dict[str, Dict[str, Any]],
     ) -> None:
 
     for module_name in modules:

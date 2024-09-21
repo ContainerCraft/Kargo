@@ -1,13 +1,23 @@
-# ./pulumi/core/metadata.py
+# pulumi/core/metadata.py
 # Description:
 # TODO: enhance with support for propagation of labels annotations on AWS resources
 # TODO: enhance by adding additional data to global tags / labels / annotation metadata
 #       - git release tag
 
+"""
+Metadata Management Module
+
+This module manages global metadata, labels, and annotations.
+It includes functions to generate compliance and Git-related metadata.
+"""
+
 import subprocess
 import pulumi
 import threading
-from typing import Dict
+from typing import Dict, Any
+import json
+from .types import ComplianceConfig
+import re
 
 class MetadataSingleton:
     _instance = None
@@ -103,3 +113,61 @@ def generate_git_annotations(git_info: Dict[str, str]) -> Dict[str, str]:
         "git.commit.full": git_info.get("commit", ""),
         "git.branch": git_info.get("branch", "")
     }
+
+def generate_compliance_labels(compliance_config: ComplianceConfig) -> Dict[str, str]:
+    """
+    Generates compliance labels based on the given compliance configuration.
+
+    Args:
+        compliance_config (ComplianceConfig): The compliance configuration object.
+
+    Returns:
+        Dict[str, str]: A dictionary of compliance labels.
+    """
+    labels = {}
+    if compliance_config.fisma.enabled:
+        labels['compliance.fisma.enabled'] = 'true'
+    if compliance_config.nist.enabled:
+        labels['compliance.nist.enabled'] = 'true'
+    if compliance_config.scip.environment:
+        labels['compliance.scip.environment'] = sanitize_label_value(compliance_config.scip.environment)
+    return labels
+
+def generate_compliance_annotations(compliance_config: ComplianceConfig) -> Dict[str, str]:
+    """
+    Generates compliance annotations based on the given compliance configuration.
+
+    Args:
+        compliance_config (ComplianceConfig): The compliance configuration object.
+
+    Returns:
+        Dict[str, str]: A dictionary of compliance annotations.
+    """
+    annotations = {}
+    if compliance_config.fisma.level:
+        annotations['compliance.fisma.level'] = compliance_config.fisma.level
+    if compliance_config.fisma.ato:
+        annotations['compliance.fisma.ato'] = json.dumps(compliance_config.fisma.ato)  # Store as JSON
+    if compliance_config.nist.controls:
+        annotations['compliance.nist.controls'] = json.dumps(compliance_config.nist.controls)  # Store as JSON array
+    if compliance_config.nist.auxiliary:
+        annotations['compliance.nist.auxiliary'] = json.dumps(compliance_config.nist.auxiliary)
+    if compliance_config.nist.exceptions:
+        annotations['compliance.nist.exceptions'] = json.dumps(compliance_config.nist.exceptions)
+    return annotations
+
+def sanitize_label_value(value: str) -> str:
+    """
+    Sanitizes a label value to comply with Kubernetes naming conventions.
+
+    Args:
+        value (str): The value to sanitize.
+
+    Returns:
+        str: The sanitized value.
+    """
+    value = value.lower()
+    sanitized = re.sub(r'[^a-z0-9_.-]', '-', value)
+    sanitized = re.sub(r'^[^a-z0-9]+', '', sanitized)
+    sanitized = re.sub(r'[^a-z0-9]+$', '', sanitized)
+    return sanitized[:63]
