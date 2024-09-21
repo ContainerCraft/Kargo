@@ -1,9 +1,12 @@
-# core/metadata.py
-
-# TODO: enhance with support for propagation of labels/annotations on AWS resources
-# TODO: enhance with
+# ./pulumi/core/metadata.py
+# Description:
+# TODO: enhance with support for propagation of labels annotations on AWS resources
+# TODO: enhance by adding additional data to global tags / labels / annotation metadata
+#       - git release tag
 
 import subprocess
+import threading
+import pulumi
 from typing import Dict
 from .utils import sanitize_label_value, extract_repo_name
 
@@ -83,7 +86,6 @@ def generate_git_annotations(git_info: Dict[str, str]) -> Dict[str, str]:
         "git.branch": git_info.get("branch", "")
     }
 
-
 ##########################################
 # Global labels and annotations
 ##########################################
@@ -96,6 +98,7 @@ class MetadataSingleton:
     This is important for global state management.
     """
 
+    __lock = threading.Lock()
     __instance = None
 
     def __new__(cls):
@@ -104,14 +107,15 @@ class MetadataSingleton:
 
         This method checks if an instance already exists. If not, it creates one.
         """
-        if cls.__instance is None:
-            cls.__instance = super(MetadataSingleton, cls).__new__(cls)
-            cls.__instance._global_labels = {}
-            cls.__instance._global_annotations = {}
+        with cls.__lock:
+            if cls.__instance is None:
+                cls.__instance = super(MetadataSingleton, cls).__new__(cls)
+                cls.__instance._global_labels = {}
+                cls.__instance._global_annotations = {}
         return cls.__instance
 
     @property
-    def global_labels(self):
+    def global_labels(self) -> Dict[str, str]:
         """
         Property method to get global labels.
 
@@ -120,17 +124,17 @@ class MetadataSingleton:
         return self._global_labels
 
     @global_labels.setter
-    def global_labels(self, labels):
+    def global_labels(self, labels: Dict[str, str]):
         """
         Property method to set global labels.
 
         Args:
-            labels (dict): A dictionary of labels to set globally.
+            labels (Dict[str, str]): A dictionary of labels to set globally.
         """
         self._global_labels = labels
 
     @property
-    def global_annotations(self):
+    def global_annotations(self) -> Dict[str, str]:
         """
         Property method to get global annotations.
 
@@ -139,12 +143,12 @@ class MetadataSingleton:
         return self._global_annotations
 
     @global_annotations.setter
-    def global_annotations(self, annotations):
+    def global_annotations(self, annotations: Dict[str, str]):
         """
         Property method to set global annotations.
 
         Args:
-            annotations (dict): A dictionary of annotations to set globally.
+            annotations (Dict[str, str]): A dictionary of annotations to set globally.
         """
         self._global_annotations = annotations
 

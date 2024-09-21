@@ -1,4 +1,5 @@
-# src/kubevirt/deploy.py
+# ./pulumi/modules/kubevirt/deploy.py
+# Description:
 
 import requests
 import yaml
@@ -65,6 +66,15 @@ def deploy_kubevirt(
     ) -> Tuple[str, k8s.yaml.ConfigFile]:
     """
     Deploys KubeVirt into the Kubernetes cluster using its YAML manifests and applies labels and annotations.
+
+    Args:
+        config_kubevirt (KubeVirtConfig): Configuration object for KubeVirt deployment.
+        depends_on (List[pulumi.Resource]): List of resources that this deployment depends on.
+        k8s_provider (k8s.Provider): The Kubernetes provider for this deployment.
+        namespace_resource (pulumi.Resource): The namespace resource.
+
+    Returns:
+        Tuple[str, k8s.yaml.ConfigFile]: The KubeVirt version and the operator resource.
     """
     # Extract configuration details from the KubeVirtConfig object
     namespace = config_kubevirt.namespace
@@ -94,10 +104,17 @@ def deploy_kubevirt(
     # Transform the YAML and set the correct namespace
     transformed_yaml = _transform_yaml(kubevirt_yaml, namespace)
 
-    def kubevirt_transform(obj: dict, opts: pulumi.ResourceOptions) -> pulumi.ResourceTransformationResult:
+    def kubevirt_transform(obj: Dict[str, Any], opts: pulumi.ResourceOptions) -> pulumi.ResourceTransformationResult:
         """
         Transformation function to add labels and annotations to Kubernetes objects
         in the KubeVirt operator YAML manifests.
+
+        Args:
+            obj (Dict[str, Any]): The resource object to transform.
+            opts (pulumi.ResourceOptions): The resource options for the transformation.
+
+        Returns:
+            pulumi.ResourceTransformationResult: The transformed resource and options.
         """
         # Ensure the 'metadata' field exists in the object
         obj.setdefault("metadata", {})
@@ -192,7 +209,7 @@ def deploy_kubevirt(
     return version, operator
 
 
-def _transform_yaml(yaml_data: Any, namespace: str) -> List[Dict]:
+def _transform_yaml(yaml_data: Any, namespace: str) -> List[Dict[str, Any]]:
     """
     Helper function to transform YAML to set namespace and modify resources.
 
@@ -201,7 +218,7 @@ def _transform_yaml(yaml_data: Any, namespace: str) -> List[Dict]:
         namespace: The namespace to set for the resources.
 
     Returns:
-        List[Dict]: The transformed YAML with the appropriate namespace.
+        List[Dict[str, Any]]: The transformed YAML with the appropriate namespace.
     """
     transformed = []
     for resource in yaml_data:

@@ -1,12 +1,5 @@
-# core/namespace.py
-
-"""
-Utility functions for managing Kubernetes namespaces within the Kargo PaaS platform.
-
-This module provides functions to create and manage Kubernetes namespaces
-using Pulumi and the Kubernetes provider. It leverages the NamespaceConfig
-data class to standardize configurations and ensure consistency across deployments.
-"""
+# ./pulumi/core/namespace.py
+# Description:
 
 import pulumi
 import pulumi_kubernetes as k8s
@@ -18,6 +11,17 @@ def create_namespace(
     k8s_provider: k8s.Provider,
     depends_on: Optional[List[pulumi.Resource]] = None,
 ) -> k8s.core.v1.Namespace:
+    """
+    Creates a Kubernetes namespace with the provided configuration.
+
+    Args:
+        config (NamespaceConfig): The configuration object for the namespace.
+        k8s_provider (k8s.Provider): The Kubernetes provider.
+        depends_on (Optional[List[pulumi.Resource]]): List of resources this namespace depends on.
+
+    Returns:
+        k8s.core.v1.Namespace: The created namespace resource.
+    """
     if depends_on is None:
         depends_on = []
 
@@ -42,7 +46,7 @@ def create_namespace(
                 update=config.custom_timeouts.get("update", "10m"),
                 delete=config.custom_timeouts.get("delete", "10m"),
             ),
-        )
+        ),
     )
 
     return namespace_resource

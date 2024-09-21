@@ -1,4 +1,4 @@
-# core/types.py
+# ./pulumi/core/types.py
 
 """
 Types and data structures used across Kargo modules.
@@ -9,13 +9,9 @@ within the Kargo PaaS platform.
 
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
-import pulumi
 
 @dataclass
 class NamespaceConfig:
-    """
-    Configuration for creating or managing a Kubernetes namespace.
-    """
     name: str
     labels: Dict[str, str] = field(default_factory=lambda: {"ccio.v1/app": "kargo"})
     annotations: Dict[str, str] = field(default_factory=dict)
@@ -56,10 +52,18 @@ class ComplianceConfig:
 
     @staticmethod
     def merge(user_config: Dict[str, Any]) -> 'ComplianceConfig':
+        """
+        Merges user-provided compliance configuration with default configuration.
+
+        Args:
+            user_config (Dict[str, Any]): The user-provided compliance configuration.
+
+        Returns:
+            ComplianceConfig: The merged compliance configuration object.
+        """
         default_config = ComplianceConfig()
         for key, value in user_config.items():
             if hasattr(default_config, key):
-                # Recursively merge nested configurations
                 nested_config = getattr(default_config, key)
                 for nested_key, nested_value in value.items():
                     if hasattr(nested_config, nested_key):

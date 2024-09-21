@@ -1,4 +1,4 @@
-# modules/cert_manager/types.py
+# ./pulumi/modules/cert_manager/types.py
 
 from dataclasses import dataclass
 from typing import Optional, Dict, Any
@@ -13,6 +13,15 @@ class CertManagerConfig:
 
     @staticmethod
     def merge(user_config: Dict[str, Any]) -> 'CertManagerConfig':
+        """
+        Merges user-provided configuration with default configuration.
+
+        Args:
+            user_config (Dict[str, Any]): The user-provided configuration.
+
+        Returns:
+            CertManagerConfig: The merged configuration object.
+        """
         default_config = CertManagerConfig()
         for key, value in user_config.items():
             if hasattr(default_config, key):
