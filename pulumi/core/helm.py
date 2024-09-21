@@ -1,4 +1,4 @@
-# ./pulumi/core/helm_chart_versions.py
+# ./pulumi/core/helm.py
 # Description:
 
 import requests

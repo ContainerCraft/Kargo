@@ -7,7 +7,7 @@ from pulumi_kubernetes import Provider
 
 from core.init import initialize_pulumi
 from core.config import export_results
-from core.deploy_module import deploy_module
+from core.module import deploy_module
 
 def main():
     try:

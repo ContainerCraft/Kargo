@@ -7,7 +7,7 @@ import pulumi_kubernetes as k8s
 from pulumi_kubernetes.apiextensions.CustomResource import CustomResource
 
 from core.namespace import create_namespace
-from core.helm_chart_versions import get_latest_helm_chart_version
+from core.helm import get_latest_helm_chart_version
 from core.types import NamespaceConfig
 from core.metadata import get_global_annotations, get_global_labels
 from core.utils import set_resource_metadata
