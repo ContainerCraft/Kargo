@@ -1,181 +1,186 @@
-# KubeVirt Module
+# KubeVirt Module Guide
 
-ContainerCraft Kargo Kubevirt PaaS KubeVirt module.
-
-The `kubevirt` module automates the deployment and configuration of KubeVirt in your Kubernetes environment using [KubeVirt](https://kubevirt.io/). KubeVirt is a Kubernetes-native solution to run and manage virtual machines alongside container workloads. This module simplifies the setup, configuration, and management of KubeVirt components for a seamless virtualization experience within Kubernetes.
+Welcome to the **KubeVirt Module** for the Kargo KubeVirt Kubernetes PaaS! This guide is intended to help both newcomers and experienced developers understand, deploy, and customize the KubeVirt module within the Kargo platform.
 
 ---
 
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [Prerequisites](#prerequisites)
-- [Features](#features)
+- [Why Use KubeVirt?](#why-use-kubevirt)
+- [Getting Started](#getting-started)
 - [Enabling the Module](#enabling-the-module)
-- [Configuration](#configuration)
-  - [Default Configuration](#default-configuration)
-  - [Custom Configuration](#custom-configuration)
-- [Module Components](#module-components)
+- [Configuration Options](#configuration-options)
+  - [Default Settings](#default-settings)
+  - [Customizing Your Deployment](#customizing-your-deployment)
+- [Module Components Explained](#module-components-explained)
   - [Namespace Creation](#namespace-creation)
-  - [KubeVirt Deployment](#kubevirt-deployment)
-  - [Custom Resource Creation](#custom-resource-creation)
-- [Integration with Kargo PaaS](#integration-with-kargo-paas)
-- [Best Practices](#best-practices)
-- [Troubleshooting](#troubleshooting)
+  - [Operator Deployment](#operator-deployment)
+  - [Custom Resource Configuration](#custom-resource-configuration)
+- [Using the Module](#using-the-module)
+  - [Example Usage](#example-usage)
+- [Troubleshooting and FAQs](#troubleshooting-and-faqs)
 - [Additional Resources](#additional-resources)
+- [Conclusion](#conclusion)
 
 ---
 
 ## Introduction
 
-This guide provides an overview of the KubeVirt module, instructions on how to enable and configure it, and explanations of its functionality within the Kargo PaaS platform. Whether you're new to Kubernetes, KubeVirt, or ContainerCraft Kargo PaaS, this guide will help you get started.
-
-## Prerequisites
-
-Before deploying the module, ensure the following prerequisites are met:
-
-- [Pulumi CLI](https://www.pulumi.com/docs/get-started/)
-- Python 3.6 or higher
-- Python dependencies (install via `pip install -r requirements.txt`)
-- Kubernetes cluster (with `kubectl` configured)
-- Properly configured `kubeconfig` file
+The KubeVirt module enables you to run virtual machines (VMs) within your Kubernetes cluster using [KubeVirt](https://kubevirt.io/). It bridges the gap between containerized applications and traditional VM workloads, providing a unified platform for all your infrastructure needs.
 
 ---
 
-## Features
+## Why Use KubeVirt?
 
-- **Automated Deployment**: Deploys KubeVirt using the official operator YAMLs.
-- **Version Management**: Supports explicit version pinning or accepts `latest`.
-- **Namespace Isolation**: Deploys KubeVirt in a dedicated namespace.
-- **Customizable Configuration**: Allows setting overrides for customization, including emulation and feature gates.
-- **Metadata Propagation**: Applies global labels and annotations consistently across resources.
+- **Unified Platform**: Manage containers and VMs in a single Kubernetes cluster.
+- **Flexibility**: Run legacy applications alongside cloud-native ones.
+- **Scalability**: Leverage Kubernetes scaling features for VMs.
+- **Ecosystem Integration**: Use Kubernetes tools and practices for VM management.
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Kubernetes Cluster**: Access to a cluster with appropriate resources.
+- **Pulumi CLI**: Installed and configured.
+- **Kubeconfig**: Properly set up for cluster access.
+
+### Setup Steps
+
+1. **Navigate to the Kargo Pulumi Directory**:
+   ```bash
+   cd Kargo/pulumi
+   ```
+2. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **Initialize Pulumi Stack**:
+   ```bash
+   pulumi stack init dev
+   ```
 
 ---
 
 ## Enabling the Module
 
-The KubeVirt module is enabled by default. Customization can be configured in the Pulumi Stack Configuration.
+The KubeVirt module is enabled by default. To confirm or adjust its status, modify your Pulumi configuration.
 
-### Example Pulumi Configuration
+### Verifying Module Enablement
 
 ```yaml
 # Pulumi.<stack-name>.yaml
 
 config:
   kubevirt:
-    enabled: true # (default: true)
+    enabled: true  # Set to false to disable
 ```
 
-Alternatively, you can set configuration values via the Pulumi CLI:
+Alternatively, use the Pulumi CLI:
 
 ```bash
-pulumi config set --path kubevirt.key value
+pulumi config set --path kubevirt.enabled true
 ```
 
 ---
 
-## Configuration
+## Configuration Options
 
-### Default Configuration
-
-The module comes with sensible defaults to simplify deployment:
+### Default Settings
 
 - **Namespace**: `kubevirt`
-- **Version**: Uses the default version specified in `default_versions.json`
-- **Use Emulation**: `false`
-- **Labels and Annotations**: Derived from global configurations
+- **Version**: Defined in `default_versions.json`
+- **Use Emulation**: `false` (suitable for bare-metal environments)
 
-### Custom Configuration
+### Customizing Your Deployment
 
-You can customize the module's behavior by providing additional configuration options.
+#### Available Configuration Parameters
 
-#### Available Configuration Options
-
-- **namespace** *(string)*: The namespace where KubeVirt will be deployed.
-- **version** *(string)*: The version of the KubeVirt operator YAML to deploy. Use `'latest'` to fetch the latest version.
-- **use_emulation** *(bool)*: Whether to enable KVM emulation.
-- **labels** *(dict)*: Custom labels to apply to resources.
-- **annotations** *(dict)*: Custom annotations to apply to resources.
+- **enabled** *(bool)*: Enable or disable the module.
+- **namespace** *(string)*: Kubernetes namespace for KubeVirt.
+- **version** *(string)*: Specific version to deploy. Use `'latest'` for the most recent stable version.
+- **use_emulation** *(bool)*: Enable if running in a nested virtualization environment.
+- **labels** *(dict)*: Custom labels for resources.
+- **annotations** *(dict)*: Custom annotations for resources.
 
 #### Example Custom Configuration
 
 ```yaml
-# Pulumi.<stack-name>.yaml
-# Default values are shown for reference
-
 config:
   kubevirt:
     enabled: true
-    version: "0.43.0"
-    namespace: "custom-kubevirt"
+    namespace: "kubevirt"
+    version: "1.3.1"
     use_emulation: true
     labels:
-      app.kubernetes.io/name: "kubevirt"
+      app: "kubevirt"
     annotations:
-      organization: "ContainerCraft"
+      owner: "dev-team"
 ```
 
 ---
 
-## Module Components
+## Module Components Explained
 
 ### Namespace Creation
 
-The module creates a dedicated namespace for KubeVirt to ensure isolation and better management.
+A dedicated namespace is created for KubeVirt.
 
-- **Namespace**: Configurable via the `namespace` parameter.
-- **Labels and Annotations**: Applied as per best practices for identification.
+- **Purpose**: Isolates KubeVirt resources for better management.
+- **Customization**: Change using the `namespace` parameter.
 
-### KubeVirt Deployment
+### Operator Deployment
 
-The module deploys KubeVirt using the official operator YAML from the KubeVirt GitHub repository.
+Deploys the KubeVirt operator.
 
-- **Operator YAML**: Downloaded from the specified version or the latest release.
-- **Custom Values**: Includes configurations for namespaces, labels, and annotations.
-- **Version**: Configurable; defaults to the version specified in `default_versions.json`.
+- **Source**: Official KubeVirt operator YAML.
+- **Version Management**: Specify a version or use `'latest'`.
+- **Transformation**: YAML is adjusted to fit the specified namespace.
 
-### Custom Resource Creation
+### Custom Resource Configuration
 
-To manage KubeVirt operational settings, the module creates custom resources with specified configurations.
+Defines the KubeVirt CustomResource to configure KubeVirt settings.
 
-- **KubeVirt CR**: Customizes KubeVirt to enable emulation and additional feature gates.
-- **SMBIOS Configuration**: Adds specific values to the SMBIOS configuration for virtual machines.
-- **Namespace and Resources**: The custom resource is applied in the specified namespace with the appropriate labels and annotations.
-
-## Integration with Kargo PaaS
-
-KubeVirt integrates seamlessly with the Kargo Kubevirt PaaS, making it simple to manage and run virtual machines alongside container workloads. The deployment process is optimized for consistency and simplicity, ensuring a smooth user experience within the Kubernetes ecosystem.
+- **Emulation Mode**: Controlled by `use_emulation`.
+- **Feature Gates**: Enables additional features like `HostDevices` and `ExpandDisks`.
+- **SMBIOS Configuration**: Sets metadata for virtual machines.
 
 ---
 
-## Best Practices
+## Using the Module
 
-- **Namespace Isolation**: Always deploy KubeVirt in a dedicated namespace to avoid conflicts.
-- **Version Pinning**: Pin specific versions in production to avoid unintended issues with new releases.
-- **Emulation Enablement**: Enable `use_emulation` only if you intend to run KubeVirt on non-bare-metal setups.
+### Example Usage
+
+Deploy the module with your custom configuration:
+
+```bash
+pulumi up
+```
 
 ---
 
-## Troubleshooting
+## Troubleshooting and FAQs
 
-### Common Issues
+**Q1: Virtual machines are not starting.**
 
-- **Connection Errors**: Ensure your `kubeconfig` and Kubernetes context are correctly configured.
-- **Version Conflicts**: If deployment fails due to version issues, verify the specified version is available in the KubeVirt repository. Alternatively use `'latest'` and Kargo will fetch the latest version.
-- **Namespace Issues**: Ensure the specified namespace is unique or does not conflict with existing namespaces.
+- **A**: Ensure that your nodes support virtualization. If running in a VM without the `/dev/kvm` device, set `use_emulation` to `true`.
 
-### Debugging Steps
+**Q2: Deployment fails with version errors.**
 
-1. **Check Pulumi Logs**: Look for error messages during deployment.
-2. **Verify Kubernetes Resources**: Use `kubectl` to inspect the KubeVirt namespace and resources.
-3. **Review Configuration**: Ensure all configuration options are correctly set in your Pulumi config or remove configuration to use defaults.
+- **A**: Verify that the specified version exists. Use `'latest'` to automatically fetch the latest stable version.
+
+**Q3: How do I enable additional feature gates?**
+
+- **A**: Modify the `featureGates` section in the `deploy.py` or submit a feature request to expose this via configuration.
 
 ---
 
 ## Additional Resources
 
-- **KubeVirt Documentation**: [https://kubevirt.io/docs/](https://kubevirt.io/docs/)
-- **Kargo Kubevirt PaaS IaC Documentation**: Refer to the main [Kargo README](../README.md) for project usage.
-- **Pulumi Kubernetes Provider**: [https://www.pulumi.com/docs/reference/pkg/kubernetes/](https://www.pulumi.com/docs/reference/pkg/kubernetes/)
-- **Helm Charts**: [https://artifacthub.io/packages/helm/jetstack/cert-manager](https://artifacthub.io/packages/helm/jetstack/cert-manager)
-- **Need Help?** If you have questions or need assistance, feel free to reach out to the community or maintainers on GitHub, Discord, or Twitter.
+- **KubeVirt Documentation**: [kubevirt.io/docs](https://kubevirt.io/docs/)
+- **Kargo Project**: [Kargo GitHub Repository](https://github.com/ContainerCraft/Kargo)
+- **Pulumi Kubernetes Provider**: [Pulumi Kubernetes Docs](https://www.pulumi.com/docs/reference/pkg/kubernetes/)
+- **KubeVirt Releases**: [KubeVirt GitHub Releases](https://github.com/kubevirt/kubevirt/releases)

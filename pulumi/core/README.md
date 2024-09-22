@@ -1,30 +1,68 @@
-# Kargo Module Developmer Guide
+# Core Module Developer Guide
 
-This document provides an in-depth guide for developers, contributors, triage maintainers, and project maintainers utilizing the `core` module in the Kargo KubeVirt Kubernetes PaaS project. It includes a thorough overview of available functions, types, classes, and other core infrastructure details essential for productive module development.
+Welcome to the **Core Module** of the Kargo KubeVirt Kubernetes PaaS project! This guide is designed to help both newcomers to DevOps and experienced module developers navigate and contribute to the core functionalities of the Kargo platform. Whether you're looking to understand the basics or dive deep into the module development, this guide has got you covered.
+
+---
 
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [Core Module Structure](#core-module-structure)
+- [Getting Started](#getting-started)
+- [Core Module Overview](#core-module-overview)
+  - [Module Structure](#module-structure)
+  - [Key Components](#key-components)
+- [Detailed Explanation of Core Files](#detailed-explanation-of-core-files)
   - [config.py](#configpy)
   - [deployment.py](#deploymentpy)
   - [metadata.py](#metadatapy)
-  - [utils.py](#utilspy)
+  - [resource_helpers.py](#resource_helperspy)
   - [types.py](#typespy)
+  - [utils.py](#utilspy)
 - [Best Practices](#best-practices)
-- [Troubleshooting](#troubleshooting)
-- [Contributing Guidelines](#contributing-guidelines)
+- [Troubleshooting and FAQs](#troubleshooting-and-faqs)
+- [Contributing to the Core Module](#contributing-to-the-core-module)
 - [Additional Resources](#additional-resources)
 
 ---
 
 ## Introduction
 
-The `core` module is the backbone of the Kargo KubeVirt Kubernetes PaaS project. It houses essential functions, types, classes, and globals that facilitate the development and deployment of modules. This guide aims to equip you with the necessary knowledge to extend or maintain the core functionality effectively.
+The Core Module is the heart of the Kargo KubeVirt Kubernetes PaaS project. It provides essential functionalities that facilitate the development, deployment, and management of modules within the Kargo ecosystem. This guide aims to make core concepts accessible to everyone, regardless of their experience level in DevOps.
 
-## Core Module Structure
+---
 
-The `core` module structure:
+## Getting Started
+
+If you're new to Kargo or DevOps, start here!
+
+- **Prerequisites**:
+  - Basic understanding of Python and Kubernetes.
+  - [Pulumi CLI](https://www.pulumi.com/docs/get-started/) installed.
+  - Access to a Kubernetes cluster (minikube, kind, or cloud-based).
+
+- **Setup Steps**:
+  1. **Clone the Repository**:
+     ```bash
+     git clone https://github.com/ContainerCraft/Kargo.git
+     cd Kargo/pulumi
+     ```
+  2. **Install Dependencies**:
+     ```bash
+     pip install -r requirements.txt
+     ```
+  3. **Configure Pulumi**:
+     ```bash
+     pulumi login
+     pulumi stack init dev
+     ```
+
+---
+
+## Core Module Overview
+
+### Module Structure
+
+The Core Module is organized as follows:
 
 ```
 pulumi/core/
@@ -33,142 +71,187 @@ pulumi/core/
 ├── config.py
 ├── deployment.py
 ├── metadata.py
-├── utils.py
-└── types.py
+├── resource_helpers.py
+├── types.py
+└── utils.py
 ```
+
+### Key Components
+
+- **Configuration Management**: Handles loading and merging of user configurations.
+- **Deployment Orchestration**: Manages the deployment of modules and resources.
+- **Metadata Management**: Generates and applies global labels and annotations.
+- **Utility Functions**: Provides helper functions for common tasks.
+- **Type Definitions**: Contains shared data structures used across modules.
+
+---
+
+## Detailed Explanation of Core Files
 
 ### config.py
 
-**Responsibilities:**
+**Purpose**: Manages configuration settings for modules, including loading defaults and exporting deployment results.
 
-- Handle all configuration-related functionalities.
-- Load and merge user configurations with defaults.
-- Load default versions for modules.
-- Export deployment results.
+**Key Functions**:
 
-**Key Functions:**
+- `get_module_config(module_name, config, default_versions)`: Retrieves and merges the configuration for a specific module.
+- `load_default_versions(config, force_refresh=False)`: Loads default module versions, prioritizing user-specified sources.
+- `export_results(versions, configurations, compliance)`: Exports deployment outputs for reporting and auditing.
 
-- `get_module_config(module_name, config, default_versions)`: Retrieves and prepares the configuration for a module.
-- `load_default_versions(config, force_refresh=False)`: Loads the default versions for modules based on the specified configuration settings.
-- `export_results(versions, configurations, compliance)`: Exports the results of the deployment processes including versions, configurations, and compliance information.
+**Usage Example**:
 
-**Key Types:**
+```python
+from core.config import get_module_config
 
-- `ComplianceConfig`: Central configuration object for compliance settings (imported from `types.py`).
+module_config, is_enabled = get_module_config('cert_manager', config, default_versions)
+if is_enabled:
+    # Proceed with deployment
+```
 
 ---
 
 ### deployment.py
 
-**Responsibilities:**
+**Purpose**: Orchestrates the deployment of modules, initializing providers and handling dependencies.
 
-- Manage the deployment orchestration of modules.
-- Initialize Pulumi and Kubernetes providers.
-- Deploy individual modules based on configuration.
-- Discover module-specific configuration classes and deploy functions.
+**Key Functions**:
 
-**Key Functions:**
+- `initialize_pulumi()`: Sets up Pulumi configurations and Kubernetes provider.
+- `deploy_module(module_name, config, ...)`: Deploys a specified module, handling its configuration and dependencies.
 
-- `initialize_pulumi()`: Initializes Pulumi configuration, Kubernetes provider, and global resources.
-- `deploy_module(module_name, config, default_versions, global_depends_on, k8s_provider, versions, configurations)`: Helper function to deploy a module based on configuration.
-- `discover_config_class(module_name)`: Discovers and returns the configuration class from the module's `types.py`.
-- `discover_deploy_function(module_name)`: Discovers and returns the deploy function from the module's `deploy.py`.
+**Usage Example**:
+
+```python
+from core.deployment import initialize_pulumi, deploy_module
+
+init = initialize_pulumi()
+deploy_module('kubevirt', init['config'], ...)
+```
 
 ---
 
 ### metadata.py
 
-**Responsibilities:**
+**Purpose**: Manages global metadata, such as labels and annotations, ensuring consistency across resources.
 
-- Manage global metadata, labels, and annotations.
-- Generate compliance and Git-related metadata.
-- Sanitize label values to comply with Kubernetes naming conventions.
+**Key Components**:
 
-**Key Classes and Functions:**
+- **Singleton Pattern**: Ensures a single source of truth for metadata.
+- **Metadata Functions**:
+  - `set_global_labels(labels)`
+  - `set_global_annotations(annotations)`
+  - `get_global_labels()`
+  - `get_global_annotations()`
 
-- `MetadataSingleton`: Singleton class to store global labels and annotations.
-- `set_global_labels(labels)`: Sets global labels.
-- `set_global_annotations(annotations)`: Sets global annotations.
-- `get_global_labels()`: Retrieves global labels.
-- `get_global_annotations()`: Retrieves global annotations.
-- `collect_git_info()`: Collects Git repository information.
-- `generate_git_labels(git_info)`: Generates Git-related labels.
-- `generate_git_annotations(git_info)`: Generates Git-related annotations.
-- `generate_compliance_labels(compliance_config)`: Generates compliance labels.
-- `generate_compliance_annotations(compliance_config)`: Generates compliance annotations.
-- `sanitize_label_value(value)`: Sanitizes a label value to comply with Kubernetes naming conventions.
+**Usage Example**:
+
+```python
+from core.metadata import set_global_labels
+
+set_global_labels({'app': 'kargo', 'env': 'production'})
+```
 
 ---
 
-### utils.py
+### resource_helpers.py
 
-**Responsibilities:**
+**Purpose**: Provides helper functions for creating Kubernetes resources with consistent metadata.
 
-- Provide utility functions that are generic and reusable.
-- Handle tasks like resource transformations and Helm interactions.
-- Extract repository names from Git URLs.
+**Key Functions**:
 
-**Key Functions:**
+- `create_namespace(name, labels, annotations, ...)`
+- `create_custom_resource(name, args, ...)`
+- `create_helm_release(name, args, ...)`
 
-- `set_resource_metadata(metadata, global_labels, global_annotations)`: Updates resource metadata with global labels and annotations.
-- `generate_global_transformations(global_labels, global_annotations)`: Generates global transformations for resources.
-- `get_latest_helm_chart_version(url, chart_name)`: Fetches the latest stable version of a Helm chart from the given URL.
-- `is_stable_version(version_str)`: Determines if a version string represents a stable version.
-- `extract_repo_name(remote_url)`: Extracts the repository name from a Git remote URL.
+**Usage Example**:
+
+```python
+from core.resource_helpers import create_namespace
+
+namespace = create_namespace('kargo-system', labels={'app': 'kargo'})
+```
 
 ---
 
 ### types.py
 
-**Responsibilities:**
+**Purpose**: Defines shared data structures and configurations used across modules.
 
-- Define all shared data classes and types used across modules.
+**Key Data Classes**:
 
-**Key Data Classes:**
+- `NamespaceConfig`
+- `FismaConfig`
+- `NistConfig`
+- `ScipConfig`
+- `ComplianceConfig`
 
-- `NamespaceConfig`: Configuration object for Kubernetes namespaces.
-- `FismaConfig`: Configuration for FISMA compliance settings.
-- `NistConfig`: Configuration for NIST compliance settings.
-- `ScipConfig`: Configuration for SCIP compliance settings.
-- `ComplianceConfig`: Central configuration object for compliance settings.
+**Usage Example**:
 
-**Methods:**
+```python
+from core.types import ComplianceConfig
 
-- `ComplianceConfig.merge(user_config)`: Merges user-provided compliance configuration with default configuration.
+compliance_settings = ComplianceConfig(fisma=FismaConfig(enabled=True))
+```
+
+---
+
+### utils.py
+
+**Purpose**: Contains utility functions for common tasks such as version checking and resource transformations.
+
+**Key Functions**:
+
+- `set_resource_metadata(metadata, global_labels, global_annotations)`
+- `get_latest_helm_chart_version(url, chart_name)`
+- `is_stable_version(version_str)`
+
+**Usage Example**:
+
+```python
+from core.utils import get_latest_helm_chart_version
+
+latest_version = get_latest_helm_chart_version('https://charts.jetstack.io', 'cert-manager')
+```
 
 ---
 
 ## Best Practices
 
-- **Consistent Naming**: Follow consistent naming conventions for functions and variables.
-- **Documentation**: Use detailed docstrings and comments to document your code.
-- **Type Annotations**: Use type annotations to enhance readability and type safety.
-- **Reusable Code**: Centralize reusable code in the `core` module to ensure consistency across modules.
-- **Version Control**: Manage component versions to maintain consistency and avoid conflicts.
+- **Consistency**: Use the core functions and types to ensure consistency across modules.
+- **Modularity**: Keep module-specific logic separate from core functionalities.
+- **Documentation**: Document your code and configurations to aid future developers.
+- **Error Handling**: Use appropriate error handling and logging for better debugging.
 
 ---
 
-## Troubleshooting
+## Troubleshooting and FAQs
 
-- **Error Logging**: Use Pulumi's logging functions (`pulumi.log.info`, `pulumi.log.warn`, `pulumi.log.error`) to provide meaningful error messages.
-- **Configuration Issues**: Ensure all configuration options are correctly set and validate input using type checks.
-- **Module Dependencies**: Verify dependencies between modules are correctly resolved using Pulumi's dependency management features.
-- **Resource Conflicts**: Be cautious of naming collisions in Kubernetes resources; use namespaces and labels appropriately.
+**Q1: I get a `ConnectionError` when deploying modules. What should I do?**
+
+- **A**: Ensure your Kubernetes context is correctly configured and that you have network access to the cluster.
+
+**Q2: How do I add a new module?**
+
+- **A**: Create a new directory under `pulumi/modules/`, define your `deploy.py` and `types.py`, and update the main deployment script.
+
+**Q3: The deployment hangs during resource creation.**
+
+- **A**: Check for resource conflicts or namespace issues. Use `kubectl` to inspect the current state.
 
 ---
 
-## Contributing Guidelines
+## Contributing to the Core Module
 
-- **Submit Issues**: Report bugs or request features via GitHub issues.
-- **Pull Requests**: Submit pull requests with detailed descriptions and follow the project's coding standards.
-- **Code Reviews**: Participate in code reviews to maintain code quality.
-- **Testing**: Write unit tests for new functions and ensure existing tests pass.
+We welcome contributions from the community!
+
+- **Reporting Issues**: Use the GitHub issues page to report bugs or request features.
+- **Submitting Pull Requests**: Follow the project's coding standards and ensure all tests pass.
+- **Code Reviews**: Participate in reviews to maintain high code quality.
 
 ---
 
 ## Additional Resources
 
-- **Kargo KubeVirt Documentation**: [GitHub Repository](https://github.com/containercraft/kargo)
-- **Pulumi Documentation**: [Pulumi Docs](https://www.pulumi.com/docs/)
-- **Kubernetes API Reference**: [Kubernetes API](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/)
-- **Python Dataclasses**: [Dataclasses Documentation](https://docs.python.org/3/library/dataclasses.html)
+- **Kargo Project Documentation**: [Kargo GitHub Repository](https://github.com/ContainerCraft/Kargo)
+- **Pulumi Documentation**: [Pulumi Official Docs](https://www.pulumi.com/docs/)
+- **Kubernetes API Reference**: [Kubernetes API](https://kubernetes.io/docs/reference/generated/kubernetes-api/)

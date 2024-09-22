@@ -49,8 +49,13 @@ def generate_global_transformations(global_labels: Dict[str, str], global_annota
     """
     def global_transform(args: pulumi.ResourceTransformationArgs) -> Optional[pulumi.ResourceTransformationResult]:
         props = args.props
-        props.setdefault('metadata', {})
-        set_resource_metadata(props['metadata'], global_labels, global_annotations)
+
+        if 'metadata' in props:
+            set_resource_metadata(props['metadata'], global_labels, global_annotations)
+        elif 'spec' in props and isinstance(props['spec'], dict):
+            if 'metadata' in props['spec']:
+                set_resource_metadata(props['spec']['metadata'], global_labels, global_annotations)
+
         return pulumi.ResourceTransformationResult(props, args.opts)
 
     pulumi.runtime.register_stack_transformation(global_transform)
