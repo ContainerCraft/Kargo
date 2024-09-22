@@ -1,12 +1,14 @@
 config:
+  kargo:cert_manager:
+    version: latest
   kargo:compliance:
     fisma:
-      enforcing: warn # accepts: strict, warn, disabled
-      enabled: true
       ato:
         authorized: "2025-03-27T00:00:00Z"
         renew: "2026-03-27T00:00:00Z"
         review: "2028-03-27T00:00:00Z"
+      enabled: true
+      enforcing: warn # accepts: strict, warn, disabled
       level: moderate
     nist:
       auxiliary:
@@ -42,6 +44,8 @@ config:
         version: v2.87.11
   kargo:kubernetes:
     context: usrbinkat-optiplexprime # Kubernetes context for the stack
+  kargo:kubevirt:
+    version: latest
   kargo:talos:
     controlplane:
       cpu_cores: 1 # Controlplane CPU cores

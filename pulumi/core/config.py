@@ -18,6 +18,14 @@ from .types import ComplianceConfig
 # Default versions URL template
 DEFAULT_VERSIONS_URL_TEMPLATE = 'https://raw.githubusercontent.com/ContainerCraft/Kargo/rerefactor/pulumi/'
 
+# Default module enabled settings
+DEFAULT_ENABLED_CONFIG = {
+    "cert_manager": True,
+    "kubevirt": True,
+    "multus": False,
+}
+
+
 def get_module_config(
         module_name: str,
         config: pulumi.Config,
@@ -35,9 +43,13 @@ def get_module_config(
         Tuple[Dict[str, Any], bool]: A tuple containing the module's configuration dictionary and a boolean indicating if the module is enabled.
     """
     module_config = config.get_object(module_name) or {}
-    module_enabled = str(module_config.pop('enabled', 'false')).lower() == "true"
+
+    # Retrieve enabled status from configuration or defaults to defined default setting
+    module_enabled = str(module_config.pop('enabled', DEFAULT_ENABLED_CONFIG.get(module_name, False))).lower() == "true"
+
     module_config['version'] = module_config.get('version', default_versions.get(module_name))
     return module_config, module_enabled
+
 
 def load_default_versions(config: pulumi.Config, force_refresh=False) -> dict:
     """
