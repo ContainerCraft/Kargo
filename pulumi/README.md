@@ -92,7 +92,7 @@ Follow these steps to set up your environment:
    Set your Kubernetes context and any necessary configuration options.
 
    ```bash
-   pulumi config set kubernetes:kubeconfig <path-to-kubeconfig>
+   pulumi config set --path kubernetes.kubeconfig <path-to-kubeconfig>
    # Set other configuration options as needed
    ```
 
