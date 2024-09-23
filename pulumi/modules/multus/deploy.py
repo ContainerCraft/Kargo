@@ -1,46 +1,56 @@
+# pulumi/modules/multus/deploy.py
+
+"""
+Deploys the Multus module.
+"""
+
+from typing import List, Dict, Any, Tuple, Optional
 import pulumi
 import pulumi_kubernetes as k8s
+from core.metadata import get_global_labels, get_global_annotations
+from core.resource_helpers import create_namespace, create_custom_resource
+from core.utils import get_latest_helm_chart_version
+from .types import MultusConfig
 
-def transform_host_path(args):
+def deploy_multus_module(
+        config_multus: MultusConfig,
+        global_depends_on: List[pulumi.Resource],
+        k8s_provider: k8s.Provider,
+    ) -> Tuple[str, Optional[pulumi.Resource]]:
+    """
+    Deploys the Multus module and returns the version and the deployed resource.
+    """
+    multus_version, multus_resource = deploy_multus(
+        config_multus=config_multus,
+        depends_on=global_depends_on,
+        k8s_provider=k8s_provider,
+    )
 
-    # Get the object from the arguments
-    obj = args.props
-    pulumi.log.debug(f"Object keys: {list(obj.keys())}")
+    # Update global dependencies
+    global_depends_on.append(multus_resource)
 
-    # Transform DaemonSet named 'kube-multus-ds'
-    if obj.get('kind', '') == 'DaemonSet' and obj.get('metadata', {}).get('name', '') == 'kube-multus-ds':
-        # Ensure spec is present
-        if 'spec' in obj:
-            # Transform paths in containers
-            containers = obj['spec']['template']['spec'].get('containers', [])
-            for container in containers:
-                volume_mounts = container.get('volumeMounts', [])
-                for vm in volume_mounts:
-                    # Normalize path before checking to handle potential trailing slash
-                    current_path = vm.get('mountPath', '').rstrip('/')
-                    if current_path == '/run/netns':
-                        vm['mountPath'] = '/var/run/netns'
-
-            # Transform paths in volumes
-            volumes = obj['spec']['template']['spec'].get('volumes', [])
-            for vol in volumes:
-                if 'hostPath' in vol:
-                    # Normalize path before checking to handle potential trailing slash
-                    current_path = vol['hostPath'].get('path', '').rstrip('/')
-                    if current_path == '/run/netns':
-                        vol['hostPath']['path'] = '/var/run/netns'
-
-    # Return the modified object
-    return pulumi.ResourceTransformationResult(props=obj, opts=args.opts)
+    return multus_version, multus_resource
 
 def deploy_multus(
-        depends: pulumi.Input[list],
-        version: str,
-        bridge_name: str,
-        k8s_provider: k8s.Provider
-    ):
+        config_multus: MultusConfig,
+        depends_on: List[pulumi.Resource],
+        k8s_provider: k8s.Provider,
+    ) -> Tuple[str, Optional[pulumi.Resource]]:
+    """
+    Deploys Multus using YAML manifest and creates a NetworkAttachmentDefinition,
+    ensuring proper paths for host mounts.
+    """
+    namespace_resource = create_namespace(
+        name=config_multus.namespace,
+        labels=config_multus.labels,
+        annotations=config_multus.annotations,
+        k8s_provider=k8s_provider,
+        parent=k8s_provider,
+    )
 
-    resource_name = f"k8snetworkplumbingwg-multus-daemonset-thick"
+    # Deploy Multus DaemonSet
+    resource_name = f"multus-daemonset"
+    version = config_multus.version or "master"
     manifest_url = f"https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/{version}/deployments/multus-daemonset-thick.yml"
 
     multus = k8s.yaml.ConfigFile(
@@ -48,7 +58,7 @@ def deploy_multus(
         file=manifest_url,
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
-            depends_on=depends,
+            parent=namespace_resource,
             transformations=[transform_host_path],
             custom_timeouts=pulumi.CustomTimeouts(
                 create="8m",
@@ -58,43 +68,70 @@ def deploy_multus(
         )
     )
 
-    # Pulumi Kubernetes resource for NetworkAttachmentDefinition
-    network_attachment_definition = k8s.apiextensions.CustomResource(
-        "kargo-net-attach-def",
-        api_version="k8s.cni.cncf.io/v1",
-        kind="NetworkAttachmentDefinition",
-        metadata={
-            "name": f"{bridge_name}",
-            "namespace": "default"
-        },
-        spec={
-            "config": pulumi.Output.all(bridge_name, bridge_name).apply(lambda args: f'''
-            {{
-                "cniVersion": "0.3.1",
-                "name": "{bridge_name}",
-                "plugins": [
-                    {{
-                        "type": "bridge",
-                        "bridge": "{bridge_name}",
-                        "ipam": {{}}
-                    }},
-                    {{
-                        "type": "tuning"
-                    }}
-                ]
-            }}''')
+    # Create NetworkAttachmentDefinition
+    network_attachment_definition = create_custom_resource(
+        name=config_multus.bridge_name,
+        args={
+            "apiVersion": "k8s.cni.cncf.io/v1",
+            "kind": "NetworkAttachmentDefinition",
+            "metadata": {
+                "name": config_multus.bridge_name,
+                "namespace": config_multus.namespace,
+            },
+            "spec": {
+                "config": pulumi.Output.all(config_multus.bridge_name, config_multus.bridge_name).apply(lambda args: f'''
+                {{
+                    "cniVersion": "0.3.1",
+                    "name": "{args[0]}",
+                    "plugins": [
+                        {{
+                            "type": "bridge",
+                            "bridge": "{args[1]}",
+                            "ipam": {{}}
+                        }},
+                        {{
+                            "type": "tuning"
+                        }}
+                    ]
+                }}''')
+            },
         },
         opts=pulumi.ResourceOptions(
-            depends_on=multus,
             provider=k8s_provider,
+            parent=multus,
+            depends_on=namespace_resource,
             custom_timeouts=pulumi.CustomTimeouts(
                 create="5m",
                 update="5m",
-                delete="5m"
-        )
-    ))
+                delete="5m",
+            ),
+        ),
+    )
 
-    # Export the name of the resource
     pulumi.export('network_attachment_definition', network_attachment_definition.metadata['name'])
 
-    return "master", multus
+    return config_multus.version, multus
+
+def transform_host_path(args: pulumi.ResourceTransformationArgs) -> pulumi.ResourceTransformationResult:
+    """
+    Transforms the host paths in the Multus DaemonSet.
+    """
+    obj = args.props
+
+    if obj.get('kind', '') == 'DaemonSet' and obj.get('metadata', {}).get('name', '') == 'kube-multus-ds':
+        containers = obj['spec']['template']['spec'].get('containers', [])
+        for container in containers:
+            volume_mounts = container.get('volumeMounts', [])
+            for vm in volume_mounts:
+                current_path = vm.get('mountPath', '').rstrip('/')
+                if current_path == '/run/netns':
+                    vm['mountPath'] = '/var/run/netns'
+
+        volumes = obj['spec']['template']['spec'].get('volumes', [])
+        for vol in volumes:
+            if 'hostPath' in vol:
+                current_path = vol['hostPath'].get('path', '').rstrip('/')
+                if current_path == '/run/netns':
+                    vol['hostPath']['path'] = '/var/run/netns'
+
+    return pulumi.ResourceTransformationResult(props=obj, opts=args.opts)

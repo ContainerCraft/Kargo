@@ -22,6 +22,7 @@ DEFAULT_VERSIONS_URL_TEMPLATE = 'https://raw.githubusercontent.com/ContainerCraf
 DEFAULT_ENABLED_CONFIG = {
     "cert_manager": True,
     "kubevirt": True,
+    "multus": True,
 }
 
 
