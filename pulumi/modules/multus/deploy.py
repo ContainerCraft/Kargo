@@ -110,7 +110,7 @@ def deploy_multus(
 
     pulumi.export('network_attachment_definition', network_attachment_definition.metadata['name'])
 
-    return config_multus.version, multus
+    return version, multus
 
 def transform_host_path(args: pulumi.ResourceTransformationArgs) -> pulumi.ResourceTransformationResult:
     """
