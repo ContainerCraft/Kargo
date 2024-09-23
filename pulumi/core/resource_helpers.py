@@ -5,7 +5,6 @@ import pulumi_kubernetes as k8s
 from typing import Optional, Dict, Any, List, Callable
 from .metadata import get_global_labels, get_global_annotations
 from .utils import set_resource_metadata
-from .types import NamespaceConfig
 
 def create_namespace(
     name: str,
@@ -15,6 +14,7 @@ def create_namespace(
     custom_timeouts: Optional[Dict[str, str]] = None,
     opts: Optional[pulumi.ResourceOptions] = None,
     k8s_provider: Optional[k8s.Provider] = None,
+    parent: Optional[pulumi.Resource] = None,
     depends_on: Optional[List[pulumi.Resource]] = None,
 ) -> k8s.core.v1.Namespace:
     """
@@ -43,6 +43,8 @@ def create_namespace(
         custom_timeouts = {}
     if depends_on is None:
         depends_on = []
+    if parent is None:
+        parent = []
 
     global_labels = get_global_labels()
     global_annotations = get_global_annotations()
@@ -64,6 +66,7 @@ def create_namespace(
         pulumi.ResourceOptions(
             provider=k8s_provider,
             depends_on=depends_on,
+            parent=parent,
             custom_timeouts=pulumi.CustomTimeouts(
                 create=custom_timeouts.get("create", "5m"),
                 update=custom_timeouts.get("update", "10m"),
@@ -86,47 +89,62 @@ def create_custom_resource(
     k8s_provider: Optional[k8s.Provider] = None,
     depends_on: Optional[List[pulumi.Resource]] = None,
 ) -> k8s.apiextensions.CustomResource:
-    if opts is None:
-        opts = pulumi.ResourceOptions()
-    if depends_on is None:
-        depends_on = []
+    """
+    Creates a Kubernetes CustomResource with global labels and annotations.
 
-    if 'kind' not in args or 'apiVersion' not in args:
-        raise ValueError("The 'args' dictionary must include 'kind' and 'apiVersion' keys.")
+    Args:
+        name (str): The name of the custom resource.
+        args (Dict[str, Any]): Arguments for creating the custom resource.
+        opts (Optional[pulumi.ResourceOptions]): Pulumi resource options.
+        k8s_provider (Optional[k8s.Provider]): Kubernetes provider.
+        depends_on (Optional[List[pulumi.Resource]]): Resources this custom resource depends on.
 
-    global_labels = get_global_labels()
-    global_annotations = get_global_annotations()
+    Returns:
+        k8s.apiextensions.CustomResource: The created CustomResource.
+    """
+    try:
+        if 'kind' not in args or 'apiVersion' not in args:
+            raise ValueError("The 'args' dictionary must include 'kind' and 'apiVersion' keys.")
 
-    def custom_resource_transform(resource_args: pulumi.ResourceTransformationArgs):
-        props = resource_args.props
-        if 'metadata' in props:
-            set_resource_metadata(props['metadata'], global_labels, global_annotations)
-        return pulumi.ResourceTransformationResult(props, resource_args.opts)
+        if opts is None:
+            opts = pulumi.ResourceOptions()
+        if depends_on is None:
+            depends_on = []
 
-    opts = pulumi.ResourceOptions.merge(
-        opts,
-        pulumi.ResourceOptions(
-            provider=k8s_provider,
-            depends_on=depends_on,
-            transformations=[custom_resource_transform],
-        ),
-    )
+        global_labels = get_global_labels()
+        global_annotations = get_global_annotations()
 
-    # Extract required fields from args
-    api_version = args['apiVersion']
-    kind = args['kind']
-    metadata = args.get('metadata', None)
-    spec = args.get('spec', None)
+        def custom_resource_transform(resource_args: pulumi.ResourceTransformationArgs):
+            props = resource_args.props
+            if 'metadata' in props:
+                set_resource_metadata(props['metadata'], global_labels, global_annotations)
+            return pulumi.ResourceTransformationResult(props, resource_args.opts)
 
-    # Corrected constructor call
-    return k8s.apiextensions.CustomResource(
-        resource_name=name,
-        api_version=api_version,
-        kind=kind,
-        metadata=metadata,
-        spec=spec,
-        opts=opts
-    )
+        opts = pulumi.ResourceOptions.merge(
+            opts,
+            pulumi.ResourceOptions(
+                provider=k8s_provider,
+                depends_on=depends_on,
+                transformations=[custom_resource_transform],
+            ),
+        )
+
+        # Ensure metadata and spec are included if specified
+        metadata = args.get('metadata', {})
+        spec = args.get('spec', {})
+
+        return k8s.apiextensions.CustomResource(
+            resource_name=name,
+            api_version=args['apiVersion'],
+            kind=args['kind'],
+            metadata=metadata,
+            spec=spec,
+            opts=opts,
+        )
+
+    except Exception as e:
+        pulumi.log.error(f"Failed to create custom resource '{name}': {e}")
+        raise
 
 def create_helm_release(
     name: str,
@@ -189,6 +207,19 @@ def create_secret(
     k8s_provider: Optional[k8s.Provider] = None,
     depends_on: Optional[List[pulumi.Resource]] = None,
 ) -> k8s.core.v1.Secret:
+    """
+    Creates a Kubernetes Secret with global labels and annotations.
+
+    Args:
+        name (str): The name of the secret.
+        args (Dict[str, Any]): Arguments for creating the secret.
+        opts (Optional[pulumi.ResourceOptions]): Pulumi resource options.
+        k8s_provider (Optional[k8s.Provider]): Kubernetes provider.
+        depends_on (Optional[List[pulumi.Resource]]): Resources this secret depends on.
+
+    Returns:
+        k8s.core.v1.Secret: The created Secret.
+    """
     if opts is None:
         opts = pulumi.ResourceOptions()
     if depends_on is None:
@@ -279,13 +310,13 @@ def create_meta_objectmeta(
     **kwargs,
 ) -> k8s.meta.v1.ObjectMetaArgs:
     """
-    Creates an ObjectMetaArgs with global labels and annotations.
+    Creates a Kubernetes ObjectMetaArgs with global labels and annotations.
 
     Args:
-        name (str): The resource name.
+        name (str): The name of the resource.
         labels (Optional[Dict[str, str]]): Additional labels to apply.
         annotations (Optional[Dict[str, str]]): Additional annotations to apply.
-        namespace (Optional[str]): Namespace for the resource.
+        namespace (Optional[str]): The namespace of the resource.
 
     Returns:
         k8s.meta.v1.ObjectMetaArgs: The metadata arguments.

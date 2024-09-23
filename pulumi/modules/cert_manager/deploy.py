@@ -1,16 +1,16 @@
 # pulumi/modules/cert_manager/deploy.py
 
 """
-Deploys the CertManager module using Helm with labels and annotations.
+Deploys the cert-manager module with proper dependency management.
 """
 
+# Necessary imports
+import logging
 import pulumi
 import pulumi_kubernetes as k8s
-from typing import List, Dict, Any, Tuple, Optional
-
+from typing import List, Dict, Any, Tuple, Optional, cast
 from core.types import NamespaceConfig
-from core.metadata import get_global_labels, get_global_annotations
-from core.utils import get_latest_helm_chart_version
+from core.utils import get_latest_helm_chart_version, wait_for_crds
 from core.resource_helpers import (
     create_namespace,
     create_helm_release,
@@ -19,28 +19,30 @@ from core.resource_helpers import (
 )
 from .types import CertManagerConfig
 
+
 def deploy_cert_manager_module(
         config_cert_manager: CertManagerConfig,
         global_depends_on: List[pulumi.Resource],
         k8s_provider: k8s.Provider,
-    ) -> Tuple[str, pulumi.Resource, str]:
+    ) -> Tuple[str, k8s.helm.v3.Release, str]:
     """
-    Deploys the CertManager module and returns the version, release resource, and CA certificate.
+    Deploys the cert-manager module and returns the version, release resource, and CA certificate.
     """
-    # Deploy Cert Manager
+    # add k8s_provider to module dependencies
+    # TODO: Create module specific dependencies object to avoid blocking global resources on k8s_provider or other module specific dependencies
+
+    # Deploy cert-manager
     cert_manager_version, release, ca_cert_b64 = deploy_cert_manager(
         config_cert_manager=config_cert_manager,
-        depends_on=global_depends_on,
+        depends_on=global_depends_on,  # Correctly pass the global dependencies
         k8s_provider=k8s_provider,
     )
-
-    # Export the CA certificate
-    pulumi.export("cert_manager_selfsigned_cert", ca_cert_b64)
 
     # Update global dependencies
     global_depends_on.append(release)
 
     return cert_manager_version, release, ca_cert_b64
+
 
 def deploy_cert_manager(
         config_cert_manager: CertManagerConfig,
@@ -48,7 +50,8 @@ def deploy_cert_manager(
         k8s_provider: k8s.Provider,
     ) -> Tuple[str, k8s.helm.v3.Release, str]:
     """
-    Deploys Cert Manager using Helm and sets up cluster issuers.
+    Deploys cert-manager using Helm and sets up cluster issuers,
+    ensuring that CRDs are available before creating custom resources.
     """
     namespace = config_cert_manager.namespace
     version = config_cert_manager.version
@@ -59,13 +62,19 @@ def deploy_cert_manager(
     namespace_resource = create_namespace(
         name=namespace,
         k8s_provider=k8s_provider,
+        parent=k8s_provider,
         depends_on=depends_on,
     )
 
     # Get Helm Chart Version
     chart_name = "cert-manager"
-    chart_url = "https://charts.jetstack.io"
-    version = get_helm_chart_version(chart_url, chart_name, version)
+    chart_repo_url = "https://charts.jetstack.io"
+
+    if version == 'latest' or version is None:
+        version = get_latest_helm_chart_version(chart_repo_url, chart_name)
+        pulumi.log.info(f"Setting cert-manager chart version to latest: {version}")
+    else:
+        pulumi.log.info(f"Using cert-manager chart version: {version}")
 
     # Generate Helm values
     helm_values = generate_helm_values(config_cert_manager)
@@ -78,7 +87,7 @@ def deploy_cert_manager(
             version=version,
             namespace=namespace,
             skip_await=False,
-            repository_opts=k8s.helm.v3.RepositoryOptsArgs(repo=chart_url),
+            repository_opts=k8s.helm.v3.RepositoryOptsArgs(repo=chart_repo_url),
             values=helm_values,
         ),
         opts=pulumi.ResourceOptions(
@@ -89,41 +98,156 @@ def deploy_cert_manager(
         depends_on=[namespace_resource] + depends_on,
     )
 
-    # Create Cluster Issuers using the helper function
-    cluster_issuer_root, cluster_issuer_ca_certificate, cluster_issuer = create_cluster_issuers(
-        cluster_issuer_name, namespace, k8s_provider, release
+    # Wait for the CRDs to be registered
+    crds = wait_for_crds(
+        crd_names=[
+            "certificaterequests.cert-manager.io",
+            "certificates.cert-manager.io",
+            "challenges.acme.cert-manager.io",
+            "clusterissuers.cert-manager.io",
+            "issuers.cert-manager.io",
+            "orders.acme.cert-manager.io",
+        ],
+        k8s_provider=k8s_provider,
+        depends_on=[release],
+        parent=release
     )
 
-    # Create Secret using the helper function
-    #ca_secret = k8s.core.v1.Secret.get(
-    #    "cluster-selfsigned-issuer-ca-secret",
-    #    id=f"{namespace}/cluster-selfsigned-issuer-ca",
-    #    opts=pulumi.ResourceOptions(
-    #        parent=cluster_issuer,
-    #        depends_on=[cluster_issuer],
-    #        provider=k8s_provider,
-    #    )
-    #)
-    ca_secret = create_secret(
-        name="cluster-selfsigned-issuer-ca-secret",
-        args={
-            "metadata": {
-                "name": "cluster-selfsigned-issuer-ca",
-                "namespace": namespace,
-            },
-        },
-        opts=pulumi.ResourceOptions(
-            parent=cluster_issuer,
-            custom_timeouts=pulumi.CustomTimeouts(create="2m", update="2m", delete="2m"),
-        ),
-        k8s_provider=k8s_provider,
-        depends_on=[cluster_issuer],
+    # Create Cluster Issuers using the helper function
+    cluster_issuer_root, cluster_issuer_ca_certificate, cluster_issuer, ca_secret = create_cluster_issuers(
+        cluster_issuer_name, namespace, release, crds, k8s_provider
     )
 
     # Extract the CA certificate from the secret
-    ca_data_tls_crt_b64 = ca_secret.data.apply(lambda data: data["tls.crt"])
+    if ca_secret:
+        ca_data_tls_crt_b64 = ca_secret.data.apply(lambda data: data["tls.crt"])
+    else:
+        ca_data_tls_crt_b64 = "<no_value_during_dry_run>"
 
     return version, release, ca_data_tls_crt_b64
+
+def create_cluster_issuers(
+        cluster_issuer_name: str,
+        namespace: str,
+        release: k8s.helm.v3.Release,
+        crds: List[pulumi.Resource],
+        k8s_provider: k8s.Provider,
+) -> Tuple[
+    Optional[k8s.apiextensions.CustomResource],
+    Optional[k8s.apiextensions.CustomResource],
+    Optional[k8s.apiextensions.CustomResource],
+    Optional[k8s.core.v1.Secret],
+]:
+    """
+    Creates cluster issuers required for cert-manager, ensuring dependencies on CRDs.
+
+    Args:
+        cluster_issuer_name (str): The name of the cluster issuer.
+        namespace (str): The Kubernetes namespace.
+        release (k8s.helm.v3.Release): The Helm release resource.
+        crds (List[pulumi.Resource]): List of CRDs.
+        k8s_provider (k8s.Provider): Kubernetes provider.
+
+    Returns:
+        Tuple containing:
+            - ClusterIssuer for the self-signed root.
+            - ClusterIssuer's CA certificate.
+            - Primary ClusterIssuer.
+            - The secret resource containing the CA certificate.
+    """
+    try:
+        # SelfSigned Root Issuer
+        cluster_issuer_root = create_custom_resource(
+            name="cluster-selfsigned-issuer-root",
+            args={
+                "apiVersion": "cert-manager.io/v1",
+                "kind": "ClusterIssuer",
+                "metadata": {
+                    "name": "cluster-selfsigned-issuer-root",
+                },
+                "spec": {"selfSigned": {}},
+            },
+            opts=pulumi.ResourceOptions(
+                parent=release,
+                provider=k8s_provider,
+                depends_on=crds,
+                custom_timeouts=pulumi.CustomTimeouts(create="5m", update="5m", delete="5m"),
+            ),
+        )
+
+        # CA Certificate Issuer
+        cluster_issuer_ca_certificate = create_custom_resource(
+            name="cluster-selfsigned-issuer-ca",
+            args={
+                "apiVersion": "cert-manager.io/v1",
+                "kind": "Certificate",
+                "metadata": {
+                    "name": "cluster-selfsigned-issuer-ca",
+                    "namespace": namespace,
+                },
+                "spec": {
+                    "commonName": "cluster-selfsigned-issuer-ca",
+                    "duration": "2160h0m0s",
+                    "isCA": True,
+                    "issuerRef": {
+                        "group": "cert-manager.io",
+                        "kind": "ClusterIssuer",
+                        "name": "cluster-selfsigned-issuer-root",
+                    },
+                    "privateKey": {"algorithm": "RSA", "size": 2048},
+                    "renewBefore": "360h0m0s",
+                    "secretName": "cluster-selfsigned-issuer-ca",
+                },
+            },
+            opts=pulumi.ResourceOptions(
+                parent=cluster_issuer_root,
+                provider=k8s_provider,
+                depends_on=[cluster_issuer_root],
+                custom_timeouts=pulumi.CustomTimeouts(create="5m", update="5m", delete="10m"),
+            ),
+        )
+
+        # Main Cluster Issuer
+        cluster_issuer = create_custom_resource(
+            name=cluster_issuer_name,
+            args={
+                "apiVersion": "cert-manager.io/v1",
+                "kind": "ClusterIssuer",
+                "metadata": {
+                    "name": cluster_issuer_name,
+                },
+                "spec": {
+                    "ca": {"secretName": "cluster-selfsigned-issuer-ca"},
+                },
+            },
+            opts=pulumi.ResourceOptions(
+                parent=cluster_issuer_ca_certificate,
+                provider=k8s_provider,
+                depends_on=[cluster_issuer_ca_certificate],
+                custom_timeouts=pulumi.CustomTimeouts(create="5m", update="5m", delete="5m"),
+            ),
+        )
+
+        # Fetch CA Secret if not in dry-run
+        if not pulumi.runtime.is_dry_run():
+            ca_secret = k8s.core.v1.Secret.get(
+                resource_name="cluster-selfsigned-issuer-ca",
+                id=f"{namespace}/cluster-selfsigned-issuer-ca",
+                opts=pulumi.ResourceOptions(
+                    parent=cluster_issuer_ca_certificate,
+                    provider=k8s_provider,
+                    depends_on=[cluster_issuer_ca_certificate],
+                )
+            )
+        else:
+            ca_secret = None
+
+        return cluster_issuer_root, cluster_issuer_ca_certificate, cluster_issuer, ca_secret
+
+    except Exception as e:
+        pulumi.log.error(f"Error during the creation of cluster issuers: {str(e)}")
+        return None, None, None, None
+
 
 def generate_helm_values(config_cert_manager: CertManagerConfig) -> Dict[str, Any]:
     """
@@ -137,97 +261,3 @@ def generate_helm_values(config_cert_manager: CertManagerConfig) -> Dict[str, An
             'requests': {'cpu': '250m', 'memory': '512Mi'},
         },
     }
-
-def get_helm_chart_version(chart_url: str, chart_name: str, version: Optional[str]) -> str:
-    """
-    Retrieves the Helm chart version.
-    """
-    if version == 'latest' or version is None:
-        version = get_latest_helm_chart_version(f"{chart_url}/index.yaml", chart_name).lstrip("v")
-        pulumi.log.info(f"Setting Helm release version to latest: {chart_name}/{version}")
-    else:
-        pulumi.log.info(f"Using Helm release version: {chart_name}/{version}")
-    return version
-
-def create_cluster_issuers(
-        cluster_issuer_name: str,
-        namespace: str,
-        k8s_provider: k8s.Provider,
-        release: pulumi.Resource
-    ) -> Tuple[k8s.apiextensions.CustomResource, k8s.apiextensions.CustomResource, k8s.apiextensions.CustomResource]:
-    """
-    Creates cluster issuers required for CertManager.
-    """
-    # Create ClusterIssuer root using the helper function
-    cluster_issuer_root = create_custom_resource(
-        name="cluster-selfsigned-issuer-root",
-        args={
-            "apiVersion": "cert-manager.io/v1",
-            "kind": "ClusterIssuer",
-            "metadata": {
-                "name": "cluster-selfsigned-issuer-root",
-            },
-            "spec": {"selfSigned": {}},
-        },
-        opts=pulumi.ResourceOptions(
-            parent=release,
-            custom_timeouts=pulumi.CustomTimeouts(create="5m", update="10m", delete="10m"),
-        ),
-        k8s_provider=k8s_provider,
-        depends_on=[release],
-    )
-
-    # Create ClusterIssuer CA Certificate using the helper function
-    cluster_issuer_ca_certificate = create_custom_resource(
-        name="cluster-selfsigned-issuer-ca",
-        args={
-            "apiVersion": "cert-manager.io/v1",
-            "kind": "Certificate",
-            "metadata": {
-                "name": "cluster-selfsigned-issuer-ca",
-                "namespace": namespace,
-            },
-            "spec": {
-                "commonName": "cluster-selfsigned-issuer-ca",
-                "duration": "2160h0m0s",
-                "isCA": True,
-                "issuerRef": {
-                    "group": "cert-manager.io",
-                    "kind": "ClusterIssuer",
-                    "name": "cluster-selfsigned-issuer-root",
-                },
-                "privateKey": {"algorithm": "ECDSA", "size": 256},
-                "renewBefore": "360h0m0s",
-                "secretName": "cluster-selfsigned-issuer-ca",
-            },
-        },
-        opts=pulumi.ResourceOptions(
-            parent=cluster_issuer_root,
-            custom_timeouts=pulumi.CustomTimeouts(create="5m", update="10m", delete="10m"),
-        ),
-        k8s_provider=k8s_provider,
-        depends_on=[cluster_issuer_root],
-    )
-
-    # Create ClusterIssuer using the helper function
-    cluster_issuer = create_custom_resource(
-        name=cluster_issuer_name,
-        args={
-            "apiVersion": "cert-manager.io/v1",
-            "kind": "ClusterIssuer",
-            "metadata": {
-                "name": cluster_issuer_name,
-            },
-            "spec": {
-                "ca": {"secretName": "cluster-selfsigned-issuer-ca"},
-            },
-        },
-        opts=pulumi.ResourceOptions(
-            parent=cluster_issuer_ca_certificate,
-            custom_timeouts=pulumi.CustomTimeouts(create="4m", update="4m", delete="4m"),
-        ),
-        k8s_provider=k8s_provider,
-        depends_on=[cluster_issuer_ca_certificate],
-    )
-
-    return cluster_issuer_root, cluster_issuer_ca_certificate, cluster_issuer

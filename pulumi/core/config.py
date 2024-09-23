@@ -18,7 +18,7 @@ from .types import ComplianceConfig
 # Default versions URL template
 DEFAULT_VERSIONS_URL_TEMPLATE = 'https://raw.githubusercontent.com/ContainerCraft/Kargo/rerefactor/pulumi/'
 
-# Default module enabled settings
+# Module enabled defaults: Setting a module to True enables the module by default
 DEFAULT_ENABLED_CONFIG = {
     "cert_manager": True,
     "kubevirt": True,

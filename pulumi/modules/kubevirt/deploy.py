@@ -4,6 +4,7 @@
 Deploys the KubeVirt module.
 """
 
+# Import necessary modules
 import requests
 import yaml
 import tempfile
@@ -13,6 +14,7 @@ from typing import Optional, List, Tuple, Dict, Any
 import pulumi
 import pulumi_kubernetes as k8s
 
+from core.utils import wait_for_crds
 from core.metadata import get_global_labels, get_global_annotations
 from core.resource_helpers import (
     create_namespace,
@@ -25,29 +27,20 @@ def deploy_kubevirt_module(
         config_kubevirt: KubeVirtConfig,
         global_depends_on: List[pulumi.Resource],
         k8s_provider: k8s.Provider,
-    ) -> Tuple[Optional[str], Optional[pulumi.Resource]]:
+    ) -> Tuple[Optional[str], k8s.apiextensions.CustomResource]:
     """
     Deploys the KubeVirt module and returns the version and the deployed resource.
     """
-    # Create Namespace using the helper function
-    namespace_resource = create_namespace(
-        name=config_kubevirt.namespace,
-        k8s_provider=k8s_provider,
-        depends_on=global_depends_on,
-    )
-
-    # Combine dependencies
-    depends_on = global_depends_on + [namespace_resource]
-
     # Deploy KubeVirt
     kubevirt_version, kubevirt_resource = deploy_kubevirt(
         config_kubevirt=config_kubevirt,
-        depends_on=depends_on,
+        depends_on=global_depends_on,
         k8s_provider=k8s_provider,
     )
 
-    # Update global dependencies
-    global_depends_on.append(kubevirt_resource)
+    # Update global dependencies if not None
+    if kubevirt_resource:
+        global_depends_on.append(kubevirt_resource)
 
     return kubevirt_version, kubevirt_resource
 
@@ -55,10 +48,21 @@ def deploy_kubevirt(
         config_kubevirt: KubeVirtConfig,
         depends_on: List[pulumi.Resource],
         k8s_provider: k8s.Provider,
-    ) -> Tuple[str, pulumi.Resource]:
+    ) -> Tuple[str, Optional[pulumi.Resource]]:
     """
-    Deploys KubeVirt operator and creates the KubeVirt CustomResource.
+    Deploys KubeVirt operator and creates the KubeVirt CustomResource,
+    ensuring that the CRD is available before creating the CustomResource.
     """
+    # Create Namespace using the helper function
+    namespace_resource = create_namespace(
+        name=config_kubevirt.namespace,
+        k8s_provider=k8s_provider,
+        parent=k8s_provider,
+        depends_on=depends_on,
+    )
+
+    # Combine dependencies
+    depends_on = depends_on + [namespace_resource]
     namespace = config_kubevirt.namespace
     version = config_kubevirt.version
     use_emulation = config_kubevirt.use_emulation
@@ -79,12 +83,14 @@ def deploy_kubevirt(
         yaml.dump_all(transformed_yaml, temp_file)
         temp_file_path = temp_file.name
 
+    operator = None
     try:
         # Deploy KubeVirt operator using the helper function
         operator = create_config_file(
             name='kubevirt-operator',
             file=temp_file_path,
             opts=pulumi.ResourceOptions(
+                parent=namespace_resource,
                 custom_timeouts=pulumi.CustomTimeouts(
                     create="10m",
                     update="5m",
@@ -97,10 +103,18 @@ def deploy_kubevirt(
     finally:
         os.unlink(temp_file_path)
 
-    if use_emulation:
-        pulumi.log.info("KVM Emulation enabled for KubeVirt.")
+    # Wait for the CRDs to be registered
+    crds = wait_for_crds(
+        crd_names=[
+            "kubevirts.kubevirt.io",
+            # Add other required CRD names here if needed
+        ],
+        k8s_provider=k8s_provider,
+        depends_on=depends_on,
+        parent=operator
+    )
 
-    # Create KubeVirt CustomResource using the helper function
+    # Create the KubeVirt resource always
     kubevirt_resource = create_custom_resource(
         name="kubevirt",
         args={
@@ -131,17 +145,19 @@ def deploy_kubevirt(
             },
         },
         opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
+            parent=operator,
+            depends_on=depends_on + crds,
             custom_timeouts=pulumi.CustomTimeouts(
                 create="5m",
                 update="5m",
                 delete="5m",
             ),
         ),
-        k8s_provider=k8s_provider,
-        depends_on=[operator],
     )
 
     return version, kubevirt_resource
+
 
 def get_latest_kubevirt_version() -> str:
     """
