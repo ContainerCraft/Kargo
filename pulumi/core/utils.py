@@ -140,12 +140,14 @@ def wait_for_crds(crd_names: List[str], k8s_provider: k8s.Provider, depends_on: 
     Returns:
         List[pulumi.Resource]: The CRD resources or an empty list during preview.
     """
-    crds = []
+
+    # Instantiate crds list to store retrieved CRD resources with enforced type safety for k8s.apiextensions.v1.CustomResourceDefinition
+    crds: List[pulumi.Resource] = []
 
     for crd_name in crd_names:
         try:
             crd = k8s.apiextensions.v1.CustomResourceDefinition.get(
-                resource_name=crd_name,
+                resource_name=f"crd-{crd_name}",
                 id=crd_name,
                 opts=pulumi.ResourceOptions(
                     provider=k8s_provider,
@@ -155,10 +157,11 @@ def wait_for_crds(crd_names: List[str], k8s_provider: k8s.Provider, depends_on: 
             )
             crds.append(crd)
         except Exception:
-            pulumi.log.info(f"CRD {crd_name} not found, creating dummy CRD.")
-            dummy_crd = create_dummy_crd(crd_name, k8s_provider, depends_on, parent)
-            if dummy_crd:
-                crds.append(dummy_crd)
+            if pulumi.runtime.is_dry_run():
+                pulumi.log.info(f"CRD {crd_name} not found, creating dummy CRD.")
+                dummy_crd = create_dummy_crd(crd_name, k8s_provider, depends_on, parent)
+                if dummy_crd:
+                    crds.append(dummy_crd)
 
     return crds
 

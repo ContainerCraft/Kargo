@@ -42,6 +42,9 @@ config:
           - scip-east-1
           - scip-lunar-2
         version: v2.87.11
+  kargo:hostpath_provisioner:
+    enabled: true
+    version: latest
   kargo:kubernetes:
     context: usrbinkat-optiplexprime # Kubernetes context for the stack
   kargo:kubevirt:

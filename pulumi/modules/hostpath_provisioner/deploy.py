@@ -1,181 +1,250 @@
+# pulumi/modules/hostpath_provisioner/deploy.py
+
 import requests
 import pulumi
-from pulumi import ResourceOptions
 import pulumi_kubernetes as k8s
-from pulumi_kubernetes.apiextensions import CustomResource
-from pulumi_kubernetes.meta.v1 import ObjectMetaArgs
-from pulumi_kubernetes.storage.v1 import StorageClass
-from src.lib.namespace import create_namespace
+from typing import List, Dict, Any, Tuple, Optional
+from core.resource_helpers import create_namespace, create_custom_resource, create_config_file
+from core.utils import wait_for_crds
+from .types import HostPathProvisionerConfig
 
-def deploy(
-        depends: pulumi.Output[list],
-        version: str,
-        ns_name: str,
-        hostpath: str,
-        default: bool,
-        k8s_provider: k8s.Provider,
-    ):
 
-    # If version is not supplied, fetch the latest stable version
-    if version is None:
-        tag_url = 'https://github.com/kubevirt/hostpath-provisioner-operator/releases/latest'
-        tag = requests.get(tag_url, allow_redirects=False).headers.get('location')
-        version = tag.split('/')[-1] if tag else '0.17.0'
-        version = version.lstrip('v')
-        pulumi.log.info(f"Setting helm release version to latest stable: hostpath-provisioner/{version}")
-    else:
-        pulumi.log.info(f"Using helm release version: hostpath-provisioner/{version}")
+def deploy_hostpath_provisioner_module(
+    config_hostpath_provisioner: HostPathProvisionerConfig,
+    global_depends_on: List[pulumi.Resource],
+    k8s_provider: k8s.Provider,
+) -> Tuple[str, k8s.yaml.ConfigFile]:
+    """
+    Deploys the HostPath Provisioner module and returns the version and the deployed resource.
 
-    # Create namespace
-    ns_retain = True
-    ns_protect = False
-    ns_annotations = {}
-    ns_labels = {
-        "kubevirt.io": "",
-        "kubernetes.io/metadata.name": ns_name,
-        "pod-security.kubernetes.io/enforce": "privileged"
-    }
-    namespace = create_namespace(
-        depends,
-        ns_name,
-        ns_retain,
-        ns_protect,
-        k8s_provider,
-        ns_labels,
-        ns_annotations
+    Args:
+        config_hostpath_provisioner (HostPathProvisionerConfig): Configuration for the HostPath Provisioner.
+        global_depends_on (List[pulumi.Resource]): Global dependencies for all modules.
+        k8s_provider (k8s.Provider): The Kubernetes provider.
+
+    Returns:
+        Tuple[str, k8s.yaml.ConfigFile]: The version deployed and the configured webhook resource.
+    """
+    hostpath_version, hostpath_resource = deploy_hostpath_provisioner(
+        config_hostpath_provisioner=config_hostpath_provisioner,
+        depends_on=global_depends_on,
+        k8s_provider=k8s_provider,
     )
 
-    # Function to add namespace to resource if not set
-    def add_namespace(args):
-        obj = args.props
+    # Update global dependencies
+    global_depends_on.append(hostpath_resource)
 
-        if 'metadata' in obj:
-            if isinstance(obj['metadata'], ObjectMetaArgs):
-                if not obj['metadata'].namespace:
-                    obj['metadata'].namespace = ns_name
-            else:
-                if obj['metadata'] is None:
-                    obj['metadata'] = {}
-                if not obj['metadata'].get('namespace'):
-                    obj['metadata']['namespace'] = ns_name
-        else:
-            obj['metadata'] = {'namespace': ns_name}
+    return hostpath_version, hostpath_resource
 
-        # Return the modified object wrapped in ResourceTransformationResult
-        return pulumi.ResourceTransformationResult(props=obj, opts=args.opts)
+
+def deploy_hostpath_provisioner(
+    config_hostpath_provisioner: HostPathProvisionerConfig,
+    depends_on: List[pulumi.Resource],
+    k8s_provider: k8s.Provider,
+) -> Tuple[str, k8s.yaml.ConfigFile]:
+    """
+    Deploys the HostPath Provisioner and related resources.
+
+    Args:
+        config_hostpath_provisioner (HostPathProvisionerConfig): Configuration for the HostPath Provisioner.
+        depends_on (List[pulumi.Resource]): Dependencies for this deployment.
+        k8s_provider (k8s.Provider): The Kubernetes provider.
+
+    Returns:
+        Tuple[str, k8s.yaml.ConfigFile]: The version deployed and the configured webhook resource.
+    """
+    name = "hostpath-provisioner"
+    namespace = config_hostpath_provisioner.namespace
+
+    namespace_resource = create_namespace(
+        name=namespace,
+        labels=config_hostpath_provisioner.labels,
+        annotations=config_hostpath_provisioner.annotations,
+        k8s_provider=k8s_provider,
+        parent=k8s_provider,
+        depends_on=depends_on,
+    )
+
+    # Determine version to use
+    version = get_latest_version() if config_hostpath_provisioner.version == "latest" else config_hostpath_provisioner.version
+
+    def enforce_namespace(resource_args: pulumi.ResourceTransformationArgs) -> pulumi.ResourceTransformationResult:
+        """
+        Transformation function to enforce namespace on all resources.
+        """
+        props = resource_args.props
+        namespace_conflict = False
+
+        # Handle ObjectMetaArgs case
+        if isinstance(props.get('metadata'), k8s.meta.v1.ObjectMetaArgs):
+            meta = props['metadata']
+            if meta.namespace and meta.namespace != namespace:
+                namespace_conflict = True
+            updated_meta = k8s.meta.v1.ObjectMetaArgs(
+                name=meta.name,
+                namespace=namespace,
+                labels=meta.labels,
+                annotations=meta.annotations
+            )
+            props['metadata'] = updated_meta
+
+        # Handle dictionary style metadata
+        elif isinstance(props.get('metadata'), dict):
+            meta = props['metadata']
+            if 'namespace' in meta and meta['namespace'] != namespace:
+                namespace_conflict = True
+            meta['namespace'] = namespace
+
+        if namespace_conflict:
+            raise ValueError("Resource namespace conflict detected.")
+
+        return pulumi.ResourceTransformationResult(props, resource_args.opts)
 
     # Deploy the webhook
-    url_webhook = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/v{version}/webhook.yaml'
-    webhook = k8s.yaml.ConfigFile(
-        "hostpath-provisioner-webhook",
-        file=url_webhook,
-        opts=ResourceOptions(
-            parent=namespace,
-            depends_on=depends,
+    webhook_url = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/v{version}/webhook.yaml'
+    webhook = create_config_file(
+        name="hostpath-provisioner-webhook",
+        file=webhook_url,
+        opts=pulumi.ResourceOptions(
             provider=k8s_provider,
-            transformations=[add_namespace],
-            custom_timeouts=pulumi.CustomTimeouts(
-                create="1m",
-                update="1m",
-                delete="1m"
-            )
-        )
+            parent=namespace_resource,
+            depends_on=depends_on,
+            custom_timeouts=pulumi.CustomTimeouts(create="10m", update="5m", delete="5m"),
+            transformations=[enforce_namespace]
+        ),
     )
 
-    # Deploy the operator with a namespace transformation
-    url_operator = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/v{version}/operator.yaml'
-    operator = k8s.yaml.ConfigFile(
-        "hostpath-provisioner-operator",
-        file=url_operator,
-        opts=ResourceOptions(
+    # Deploy the operator
+    operator_url = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/v{version}/operator.yaml'
+    operator = create_config_file(
+        name="hostpath-provisioner-operator",
+        file=operator_url,
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
             parent=webhook,
-            depends_on=depends,
-            provider=k8s_provider,
-            transformations=[add_namespace],
-            custom_timeouts=pulumi.CustomTimeouts(
-                create="8m",
-                update="8m",
-                delete="2m"
-            )
-        )
+            depends_on=depends_on,
+            custom_timeouts=pulumi.CustomTimeouts(create="10m", update="5m", delete="5m"),
+            transformations=[enforce_namespace]
+        ),
     )
 
-    # Ensure the CRDs are created before the HostPathProvisioner resource
-    # TODO: solve for the case where child resources are created before parent exists
-    crd = k8s.apiextensions.v1.CustomResourceDefinition.get(
-        "hostpathprovisioners",
-        id="hostpathprovisioners.hostpathprovisioner.kubevirt.io",
-        opts=ResourceOptions(
-            parent=operator,
-            depends_on=depends,
-            provider=k8s_provider,
-            custom_timeouts=pulumi.CustomTimeouts(
-                create="9m",
-                update="9m",
-                delete="2m"
-            )
-        )
+    # Ensure CRDs are created before HostPathProvisioner resource
+    crds = wait_for_crds(
+        crd_names=["hostpathprovisioners.hostpathprovisioner.kubevirt.io"],
+        k8s_provider=k8s_provider,
+        depends_on=depends_on,
+        parent=operator,
     )
 
-    # Create a HostPathProvisioner resource
-    hostpath_provisioner = CustomResource(
-        "hostpath-provisioner-hpp",
-        api_version="hostpathprovisioner.kubevirt.io/v1beta1",
-        kind="HostPathProvisioner",
-        metadata={
-            "name": "hostpath-provisioner-class-ssd",
-            "namespace": ns_name
-        },
-        spec={
-            "imagePullPolicy": "IfNotPresent",
-            "storagePools": [{
-                "name": "ssd",
-                "path": hostpath
-            }],
-            "workload": {
-                "nodeSelector": {
-                    "kubernetes.io/os": "linux"
+    # Create HostPathProvisioner resource
+    hostpath_provisioner = create_custom_resource(
+        name="hostpath-provisioner",
+        args={
+            "apiVersion": "hostpathprovisioner.kubevirt.io/v1beta1",
+            "kind": "HostPathProvisioner",
+            "metadata": {
+                "name": "hostpath-provisioner",
+                "namespace": namespace,
+            },
+            "spec": {
+                "imagePullPolicy": "IfNotPresent",
+                "storagePools": [{
+                    "name": "ssd",
+                    "path": config_hostpath_provisioner.hostpath,
+                }],
+                "workload": {
+                    "nodeSelector": {
+                        "kubernetes.io/os": "linux"
+                    }
                 }
-            }
+            },
         },
         opts=pulumi.ResourceOptions(
             parent=operator,
-            depends_on=crd,
+            depends_on=depends_on + crds,
             provider=k8s_provider,
-            ignore_changes=["status"],
-            custom_timeouts=pulumi.CustomTimeouts(
-                create="8m",
-                update="8m",
-                delete="2m"
-            )
-        )
+            custom_timeouts=pulumi.CustomTimeouts(create="10m", update="5m", delete="5m")
+        ),
     )
 
     # Define the StorageClass
-    storage_class = StorageClass(
-        "hostpath-storage-class-ssd",
-        metadata=ObjectMetaArgs(
-            name="ssd",
-            annotations={
-                "storageclass.kubernetes.io/is-default-class": "true" if default else "false"
-            }
-        ),
-        reclaim_policy="Delete",
+    storage_class = create_storage_class(
+        name="hostpath-storage-class-ssd",
         provisioner="kubevirt.io.hostpath-provisioner",
-        volume_binding_mode="WaitForFirstConsumer",
-        parameters={
-            "storagePool": "ssd",
-        },
-        opts=ResourceOptions(
-            parent=hostpath_provisioner,
-            #depends_on=hostpath_provisioner,
-            provider=k8s_provider,
-            custom_timeouts=pulumi.CustomTimeouts(
-                create="8m",
-                update="8m",
-                delete="2m"
-            )
-        )
+        namespace=namespace,
+        default=config_hostpath_provisioner.default,
+        storage_pool="ssd",
+        parent=hostpath_provisioner,
+        k8s_provider=k8s_provider,
     )
 
-    return version, webhook # operator
+    return version, webhook
+
+
+def get_latest_version() -> str:
+    """
+    Retrieves the latest stable version of HostPath Provisioner.
+
+    Returns:
+        str: The latest version number.
+    """
+    try:
+        tag_url = 'https://github.com/kubevirt/hostpath-provisioner-operator/releases/latest'
+        response = requests.get(tag_url, allow_redirects=False)
+        final_url = response.headers.get('location')
+        version = final_url.split('/')[-1].lstrip('v') if response.status_code == 302 else "0.17.0"
+        return version
+    except Exception as e:
+        pulumi.log.error(f"Error fetching the latest version: {e}")
+        return "0.17.0"
+
+
+def create_storage_class(
+    name: str,
+    provisioner: str,
+    namespace: str,
+    default: bool,
+    storage_pool: str,
+    parent: pulumi.Resource,
+    k8s_provider: k8s.Provider,
+) -> k8s.storage.v1.StorageClass:
+    """
+    Creates a StorageClass resource specific to HostPath Provisioner.
+
+    Args:
+        name (str): The name of the storage class.
+        provisioner (str): The provisioner to use.
+        namespace (str): The namespace to deploy into.
+        default (bool): Whether this storage class should be the default.
+        storage_pool (str): The name of the storage pool.
+        parent (pulumi.Resource): The parent resource.
+        k8s_provider (k8s.Provider): The Kubernetes provider.
+
+    Returns:
+        k8s.storage.v1.StorageClass: The created StorageClass resource.
+    """
+    if default:
+        is_default_storage_class = "true"
+    else:
+        is_default_storage_class = "false"
+
+    return k8s.storage.v1.StorageClass(
+        resource_name=name,
+        metadata=k8s.meta.v1.ObjectMetaArgs(
+            name=name,
+            annotations={
+                "storageclass.kubernetes.io/is-default-class": is_default_storage_class,
+            },
+        ),
+        provisioner=provisioner,
+        reclaim_policy="Delete",
+        volume_binding_mode="WaitForFirstConsumer",
+        parameters={
+            "storagePool": storage_pool,
+        },
+        opts=pulumi.ResourceOptions(
+            parent=parent,
+            provider=k8s_provider,
+            custom_timeouts=pulumi.CustomTimeouts(create="5m", update="5m", delete="5m")
+        ),
+    )
