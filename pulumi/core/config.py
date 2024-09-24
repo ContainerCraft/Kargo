@@ -25,6 +25,7 @@ DEFAULT_ENABLED_CONFIG = {
     "multus": True,
     "hostpath_provisioner": True,
     "containerized_data_importer": True,
+    "prometheus": True,
 }
 
 

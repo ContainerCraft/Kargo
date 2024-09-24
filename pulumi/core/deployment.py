@@ -209,3 +209,25 @@ def discover_deploy_function(module_name: str) -> Callable:
     if not deploy_function:
         raise ValueError(f"No deploy function named '{function_name}' found in modules.{module_name}.deploy")
     return deploy_function
+
+def deploy_modules(
+        modules: List[str],
+        config: pulumi.Config,
+        default_versions: Dict[str, Any],
+        global_depends_on: List[pulumi.Resource],
+        k8s_provider: Provider,
+        versions: Dict[str, str],
+        configurations: Dict[str, Dict[str, Any]],
+    ) -> None:
+
+    for module_name in modules:
+        pulumi.log.info(f"Deploying module: {module_name}")
+        deploy_module(
+            module_name=module_name,
+            config=config,
+            default_versions=default_versions,
+            global_depends_on=global_depends_on,
+            k8s_provider=k8s_provider,
+            versions=versions,
+            configurations=configurations,
+        )
