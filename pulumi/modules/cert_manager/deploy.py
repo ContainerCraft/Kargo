@@ -4,11 +4,12 @@
 Deploys the cert-manager module with proper dependency management.
 """
 
-# Necessary imports
-import logging
+from typing import List, Dict, Any, Tuple, Optional, cast
+
 import pulumi
 import pulumi_kubernetes as k8s
-from typing import List, Dict, Any, Tuple, Optional, cast
+from pulumi import log
+
 from core.types import NamespaceConfig
 from core.utils import get_latest_helm_chart_version, wait_for_crds
 from core.resource_helpers import (
@@ -17,6 +18,7 @@ from core.resource_helpers import (
     create_custom_resource,
     create_secret,
 )
+
 from .types import CertManagerConfig
 
 
@@ -28,7 +30,6 @@ def deploy_cert_manager_module(
     """
     Deploys the cert-manager module and returns the version, release resource, and CA certificate.
     """
-    # add k8s_provider to module dependencies
     # TODO: Create module specific dependencies object to avoid blocking global resources on k8s_provider or other module specific dependencies
 
     # Deploy cert-manager
@@ -65,16 +66,19 @@ def deploy_cert_manager(
         parent=k8s_provider,
         depends_on=depends_on,
     )
+    # TODO: consider adding k8s_provider to module_depends_on dependencies
 
     # Get Helm Chart Version
+    # TODO: set the chart name and repo URL as variables in the CertManagerConfig class to allow for user configuration
     chart_name = "cert-manager"
     chart_repo_url = "https://charts.jetstack.io"
 
+    # TODO: re-implement into the get_module_config function and adopt across all modules to reduce code duplication
     if version == 'latest' or version is None:
         version = get_latest_helm_chart_version(chart_repo_url, chart_name)
-        pulumi.log.info(f"Setting cert-manager chart version to latest: {version}")
+        log.info(f"Setting cert-manager chart version to latest: {version}")
     else:
-        pulumi.log.info(f"Using cert-manager chart version: {version}")
+        log.info(f"Using cert-manager chart version: {version}")
 
     # Generate Helm values
     helm_values = generate_helm_values(config_cert_manager)
@@ -99,6 +103,8 @@ def deploy_cert_manager(
     )
 
     # Wait for the CRDs to be registered
+    # TODO: re-evaluate effectiveness of approach to wait for CRDs and complete the wait_for_crds implementation until it's effective.
+    #       The current implementation fails to wait for the CRDs to be registered before continuing with child and dependent resources.
     crds = wait_for_crds(
         crd_names=[
             "certificaterequests.cert-manager.io",
@@ -114,11 +120,17 @@ def deploy_cert_manager(
     )
 
     # Create Cluster Issuers using the helper function
+    # TODO:
+    # - make self-signed-issuer configurable enabled/disabled from boolean set in cert_manager/types.py CertManagerConfig class, default to enabled.
     cluster_issuer_root, cluster_issuer_ca_certificate, cluster_issuer, ca_secret = create_cluster_issuers(
         cluster_issuer_name, namespace, release, crds, k8s_provider
     )
 
     # Extract the CA certificate from the secret
+    # TODO:
+    # - re-evaluate relevance. IIRC this is used to return unwrapped secret values as b64 encoded strings for OpenUnison configuration.
+    # - consider maintaining the secret object as a return value for future use in other modules without exporting the secret values.
+    # - if user need requires the CA for client secret trust then consider documenting the use case and user instructions for utilization.
     if ca_secret:
         ca_data_tls_crt_b64 = ca_secret.data.apply(lambda data: data["tls.crt"])
     else:
@@ -245,7 +257,7 @@ def create_cluster_issuers(
         return cluster_issuer_root, cluster_issuer_ca_certificate, cluster_issuer, ca_secret
 
     except Exception as e:
-        pulumi.log.error(f"Error during the creation of cluster issuers: {str(e)}")
+        log.error(f"Error during the creation of cluster issuers: {str(e)}")
         return None, None, None, None
 
 

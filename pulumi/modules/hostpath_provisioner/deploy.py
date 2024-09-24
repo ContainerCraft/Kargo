@@ -1,14 +1,20 @@
 # pulumi/modules/hostpath_provisioner/deploy.py
 
 import requests
+from typing import List, Dict, Any, Tuple, Optional
+
 import pulumi
 import pulumi_kubernetes as k8s
-from typing import List, Dict, Any, Tuple, Optional
+from pulumi import log
+
 from core.resource_helpers import create_namespace, create_custom_resource, create_config_file
 from core.utils import wait_for_crds
 from .types import HostPathProvisionerConfig
 
 
+# Function to call the deploy_hostpath_provisioner function and encapsulate any auxiliary logic like updating global dependencies
+# TODO: standardize function signatures and common function names across all modules for deploy functions including adopting common naming conventions like using `config` parameter name instead of `config_<module>` format.
+# TODO: adopt a consistent naming convention for common function names across all modules.
 def deploy_hostpath_provisioner_module(
     config_hostpath_provisioner: HostPathProvisionerConfig,
     global_depends_on: List[pulumi.Resource],
@@ -32,11 +38,14 @@ def deploy_hostpath_provisioner_module(
     )
 
     # Update global dependencies
+    # TODO: re-evaluate global_depends_on usage, implementation, and hygene, and document strategy. Then adopt a consistent approach across all modules.
     global_depends_on.append(hostpath_resource)
 
     return hostpath_version, hostpath_resource
 
 
+# Function to deploy the HostPath Provisioner
+# TODO: standardize function signatures and common function names across all modules for deploy functions including adopting common naming conventions like using `config` parameter name instead of `config_<module>` format.
 def deploy_hostpath_provisioner(
     config_hostpath_provisioner: HostPathProvisionerConfig,
     depends_on: List[pulumi.Resource],
@@ -68,6 +77,8 @@ def deploy_hostpath_provisioner(
     # Determine version to use
     version = get_latest_version() if config_hostpath_provisioner.version == "latest" else config_hostpath_provisioner.version
 
+    # Transformation function to enforce namespace override on all resources
+    # TODO: consider implementing as a utility or resource helper function and adopting directly in core/resource_helpers.py in applicable functions.
     def enforce_namespace(resource_args: pulumi.ResourceTransformationArgs) -> pulumi.ResourceTransformationResult:
         """
         Transformation function to enforce namespace on all resources.
@@ -95,12 +106,15 @@ def deploy_hostpath_provisioner(
                 namespace_conflict = True
             meta['namespace'] = namespace
 
+        # TODO: document when/if this case is applicable and why this approach is used.
         if namespace_conflict:
             raise ValueError("Resource namespace conflict detected.")
 
         return pulumi.ResourceTransformationResult(props, resource_args.opts)
 
     # Deploy the webhook
+    # TODO: consider relocating url variable into the HostpathProvisionerConfig class as a property for better user configuration.
+    # TODO: consider supporting remote and local path webhook.yaml sources.
     webhook_url = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/v{version}/webhook.yaml'
     webhook = create_config_file(
         name="hostpath-provisioner-webhook",
@@ -115,6 +129,8 @@ def deploy_hostpath_provisioner(
     )
 
     # Deploy the operator
+    # TODO: consider relocating url variable into the HostpathProvisionerConfig class as a property for better user configuration.
+    # TODO: consider supporting remote and local path operator.yaml sources.
     operator_url = f'https://github.com/kubevirt/hostpath-provisioner-operator/releases/download/v{version}/operator.yaml'
     operator = create_config_file(
         name="hostpath-provisioner-operator",
@@ -129,6 +145,7 @@ def deploy_hostpath_provisioner(
     )
 
     # Ensure CRDs are created before HostPathProvisioner resource
+    # TODO: re-evaluate if this is functional and finish the implementation to ensure pulumi waits for CRDs to be created before creating the HostPathProvisioner resource.
     crds = wait_for_crds(
         crd_names=["hostpathprovisioners.hostpathprovisioner.kubevirt.io"],
         k8s_provider=k8s_provider,
@@ -168,6 +185,7 @@ def deploy_hostpath_provisioner(
     )
 
     # Define the StorageClass
+    # TODO: make more user configurable and consider supporting multiple storage pools from a configuration map or array.
     storage_class = create_storage_class(
         name="hostpath-storage-class-ssd",
         provisioner="kubevirt.io.hostpath-provisioner",
@@ -181,6 +199,8 @@ def deploy_hostpath_provisioner(
     return version, webhook
 
 
+# Function to retrieve the latest version of HostPath Provisioner from GitHub Releases
+# TODO: consider relocating this function to a utility or resource helper module to reduce code duplication.
 def get_latest_version() -> str:
     """
     Retrieves the latest stable version of HostPath Provisioner.
@@ -192,13 +212,15 @@ def get_latest_version() -> str:
         tag_url = 'https://github.com/kubevirt/hostpath-provisioner-operator/releases/latest'
         response = requests.get(tag_url, allow_redirects=False)
         final_url = response.headers.get('location')
-        version = final_url.split('/')[-1].lstrip('v') if response.status_code == 302 else "0.17.0"
+        version = final_url.split('/')[-1].lstrip('v')
         return version
     except Exception as e:
-        pulumi.log.error(f"Error fetching the latest version: {e}")
+        log.error(f"Error fetching the latest version: {e}")
         return "0.17.0"
 
 
+# Function to create a StorageClass resource
+# TODO: consider supporting iterating over multiple storage pools from a configuration map or array.
 def create_storage_class(
     name: str,
     provisioner: str,

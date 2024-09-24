@@ -15,7 +15,7 @@ import pulumi
 
 @dataclass
 class CertManagerConfig:
-    version: Optional[str] = None
+    version: Optional[str] = "latest"
     namespace: str = "cert-manager"
     cluster_issuer: str = "cluster-selfsigned-issuer"
     install_crds: bool = True

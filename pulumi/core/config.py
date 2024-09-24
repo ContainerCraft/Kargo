@@ -19,6 +19,7 @@ from .types import ComplianceConfig
 DEFAULT_VERSIONS_URL_TEMPLATE = 'https://raw.githubusercontent.com/ContainerCraft/Kargo/rerefactor/pulumi/'
 
 # Module enabled defaults: Setting a module to True enables the module by default
+# TODO: relocate to pulumi/__main__.py for better visibility
 DEFAULT_ENABLED_CONFIG = {
     "cert_manager": True,
     "kubevirt": True,
@@ -28,7 +29,8 @@ DEFAULT_ENABLED_CONFIG = {
     "prometheus": True,
 }
 
-
+# Centralized Pulumi Config Retrieval
+# Fetches the configuration for a module and determines if the module is enabled.
 def get_module_config(
         module_name: str,
         config: pulumi.Config,
@@ -54,6 +56,17 @@ def get_module_config(
     return module_config, module_enabled
 
 
+# Retrieve Module Component Version Control Configuration from external local or remote json file.
+# Supports centralized component version control configuration via local or remote json objects including:
+# - `latest` for dynamic retrieval and utilization of the latest version.
+# - `v0.00.0` hard coded version in Pulumi Config for overrid-ing version control.
+# - `{lts,stable,edge,latest}` for subscribing to remote version control channels.
+# TODO:
+# - Refactor function to use more obvious prescedence ordering and configuration loading.
+# - Refactor function for easier module maintainer adoption.
+# - Adopt remote stable channel as first default version source after first github releases are published.
+# - Adopt local stable channel as exception fallback for centralized version configuration.
+# - Adopt `latest` as default version for modules without remote or local or pulumi config version configuration.
 def load_default_versions(config: pulumi.Config, force_refresh=False) -> dict:
     """
     Loads the default versions for modules based on the specified configuration settings.
@@ -87,6 +100,10 @@ def load_default_versions(config: pulumi.Config, force_refresh=False) -> dict:
     versions_stack_name = config.get_bool('versions.stack_name') or False
     default_versions = {}
 
+    # Function to try loading default versions from file
+    # TODO:
+    # - Adopt standardized local file storage location `./pulumi/versions/{filename}.json`
+    # - Adopt file naming convention `default.json` `lts.json` `stable.json` `edge.json` `latest.json`
     def load_versions_from_file(file_path: str) -> dict:
         try:
             with open(file_path, 'r') as f:
@@ -140,6 +157,7 @@ def load_default_versions(config: pulumi.Config, force_refresh=False) -> dict:
 
     return default_versions
 
+# Function to export global deployment stack metadata
 def export_results(
         versions: Dict[str, str],
         configurations: Dict[str, Dict[str, Any]],

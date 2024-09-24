@@ -4,11 +4,15 @@
 Deploys the Prometheus module following the shared design patterns.
 """
 
+from typing import List, Dict, Any, Tuple, Optional
+
 import pulumi
 import pulumi_kubernetes as k8s
-from typing import List, Dict, Any, Tuple, Optional
+from pulumi import log
+
 from core.resource_helpers import create_namespace, create_helm_release
 from core.utils import get_latest_helm_chart_version
+
 from .types import PrometheusConfig
 
 def deploy_prometheus_module(
@@ -63,30 +67,36 @@ def deploy_prometheus(
 
     chart_name = "kube-prometheus-stack"
     chart_url = "https://prometheus-community.github.io/helm-charts"
+
+    # Get the latest version of the Helm chart
+    # TODO: re-implement into the get_module_config function and adopt across all modules to reduce code duplication
     if version is None or version == "latest":
         version = get_latest_helm_chart_version(chart_url, chart_name)
-        pulumi.log.info(f"Setting Prometheus helm chart version to latest release: {version}")
+        log.info(f"Setting Prometheus helm chart version to latest release: {version}")
     else:
-        pulumi.log.info(f"Using Prometheus helm release version: {version}")
+        log.info(f"Using Prometheus helm release version: {version}")
 
     # Helm values customization based on OpenUnison integration
-    prometheus_helm_values = {
-        "grafana": {
-            "grafana.ini": {
-                "users": {
-                    "allow_sign_up": False,
-                    "auto_assign_org": True,
-                    "auto_assign_org_role": "Admin"
-                },
-                "auth.proxy": {
-                    "enabled": True,
-                    "header_name": "X-WEBAUTH-USER",
-                    "auto_sign_up": True,
-                    "headers": "Groups:X-WEBAUTH-GROUPS"
+    if openunison_enabled:
+        prometheus_helm_values = {
+            "grafana": {
+                "grafana.ini": {
+                    "users": {
+                        "allow_sign_up": False,
+                        "auto_assign_org": True,
+                        "auto_assign_org_role": "Admin"
+                    },
+                    "auth.proxy": {
+                        "enabled": True,
+                        "header_name": "X-WEBAUTH-USER",
+                        "auto_sign_up": True,
+                        "headers": "Groups:X-WEBAUTH-GROUPS"
+                    }
                 }
             }
         }
-    } if openunison_enabled else {}
+    else :
+        prometheus_helm_values = {}
 
     # Create the Helm Release
     release = create_helm_release(
@@ -160,6 +170,8 @@ def create_prometheus_services(
         }
     ]
 
+    # Create services from list of service definitions
+    # TODO: re-evaluate if this should be centralized into a pulumi/core/utils.py helper function
     for service_def in service_definitions:
         service = k8s.core.v1.Service(
             f"service-{service_def['name']}",

@@ -2,6 +2,24 @@
 
 """
 Deploys the KubeVirt module.
+
+This module is responsible for deploying KubeVirt on the Kubernetes cluster.
+
+The configuration options are:
+
+    namespace: str - The namespace where KubeVirt will be deployed. Default is 'kubevirt'.
+    version: Optional[str] - The version of KubeVirt to deploy. Default is None.
+    use_emulation: bool - Whether to use emulation or not. Default is False.
+    labels: Dict[str, str] - The labels to apply to the KubeVirt resources. Default is {}.
+    annotations: Dict[str, Any] - The annotations to apply to the KubeVirt resources. Default is {}.
+    global_depends_on: List[pulumi.Resource] - The list of resources that the KubeVirt module depends on. Default is [].
+    k8s_provider: k8s.Provider - The Kubernetes provider. Default is None.
+
+    Returns:
+        Tuple[Optional[str], k8s.apiextensions.CustomResource] - The version of KubeVirt deployed and the deployed resource.
+
+    Raises:
+        Exception: If the KubeVirt CRDs are not available.
 """
 
 # Import necessary modules
@@ -13,6 +31,7 @@ from typing import Optional, List, Tuple, Dict, Any
 
 import pulumi
 import pulumi_kubernetes as k8s
+from pulumi import log
 
 from core.utils import wait_for_crds
 from core.metadata import get_global_labels, get_global_annotations
@@ -39,6 +58,8 @@ def deploy_kubevirt_module(
     )
 
     # Update global dependencies if not None
+    # TODO: re-evaluate if global_depends_on should be updated here or in the calling function
+    # TODO: regardless, the if statement is not necessary as this code will not be executed if kubevirt module is not enabled
     if kubevirt_resource:
         global_depends_on.append(kubevirt_resource)
 
@@ -53,7 +74,7 @@ def deploy_kubevirt(
     Deploys KubeVirt operator and creates the KubeVirt CustomResource,
     ensuring that the CRD is available before creating the CustomResource.
     """
-    # Create Namespace using the helper function
+    # Create Namespace using the helper function from core/resource_helpers.py
     namespace_resource = create_namespace(
         name=config_kubevirt.namespace,
         k8s_provider=k8s_provider,
@@ -61,18 +82,22 @@ def deploy_kubevirt(
         depends_on=depends_on,
     )
 
-    # Combine dependencies
+    # Add the namespace to the dependencies
+    # TODO: reevaluate if this is necessary, helpful, and if a module scoped `module_depends_on` pattern should be adopted across modules
     depends_on = depends_on + [namespace_resource]
-    namespace = config_kubevirt.namespace
+
+    # Extract config objects from config dictionary
     version = config_kubevirt.version
+    namespace = config_kubevirt.namespace
     use_emulation = config_kubevirt.use_emulation
 
-    # Determine KubeVirt version
+    # Determine latest version release from GitHub Releases
+    # TODO: reimplement into the get_module_config function and adopt across all modules to reduce code duplication
     if version == 'latest' or version is None:
         version = get_latest_kubevirt_version()
-        pulumi.log.info(f"Setting KubeVirt release version to latest: {version}")
+        log.info(f"Setting KubeVirt release version to latest: {version}")
     else:
-        pulumi.log.info(f"Using KubeVirt version: {version}")
+        log.info(f"Using KubeVirt version: {version}")
 
     # Download and transform KubeVirt operator YAML
     kubevirt_operator_yaml = download_kubevirt_operator_yaml(version)
@@ -159,10 +184,13 @@ def deploy_kubevirt(
     return version, kubevirt_resource
 
 
+# Function to get the latest KubeVirt version if the version is set to 'latest' or no version configuration is supplied
 def get_latest_kubevirt_version() -> str:
     """
     Retrieves the latest stable version of KubeVirt.
     """
+
+    # TODO: relocate this URL to a default in the KubevirtConfig class and allow for an override
     url = 'https://storage.googleapis.com/kubevirt-prow/release/kubevirt/kubevirt/stable.txt'
     response = requests.get(url)
     if response.status_code != 200:
@@ -173,12 +201,16 @@ def download_kubevirt_operator_yaml(version: str) -> Any:
     """
     Downloads the KubeVirt operator YAML for the specified version.
     """
+
+    # TODO: relocate this URL to a default in the KubevirtConfig class and allow for an override
+    # TODO: support remote or local kubevirt-operator.yaml file
     url = f'https://github.com/kubevirt/kubevirt/releases/download/v{version}/kubevirt-operator.yaml'
     response = requests.get(url)
     if response.status_code != 200:
         raise Exception(f"Failed to download KubeVirt operator YAML from {url}")
     return list(yaml.safe_load_all(response.text))
 
+# Function to remove Namespace resources from the YAML data and replace other object namespaces with the specified namespace value as an override
 def _transform_yaml(yaml_data: Any, namespace: str) -> List[Dict[str, Any]]:
     """
     Transforms the YAML data to set the namespace and exclude Namespace resources.

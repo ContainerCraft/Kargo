@@ -5,10 +5,14 @@ Enhanced deployment script for the Containerized Data Importer (CDI) module.
 """
 
 import requests
+from typing import List, Dict, Any, Tuple, Optional
+
 import pulumi
 import pulumi_kubernetes as k8s
-from typing import List, Dict, Any, Tuple, Optional
+from pulumi import log
+
 from core.resource_helpers import create_namespace, create_custom_resource
+
 from .types import CdiConfig
 
 def deploy_containerized_data_importer_module(
@@ -28,13 +32,13 @@ def deploy_containerized_data_importer_module(
         Tuple[Optional[str], Optional[pulumi.Resource]]: The version deployed and the deployed resource.
     """
     try:
-        pulumi.log.info("Starting deployment of CDI module")
+        log.info("Starting deployment of CDI module")
 
         version = config_cdi.version if config_cdi.version and config_cdi.version != "latest" else fetch_latest_version()
-        pulumi.log.info(f"Using CDI version: {version}")
+        log.info(f"Using CDI version: {version}")
 
         # Create namespace
-        pulumi.log.info(f"Creating namespace: {config_cdi.namespace}")
+        log.info(f"Creating namespace: {config_cdi.namespace}")
         namespace_resource = create_namespace(
             name=config_cdi.namespace,
             labels=config_cdi.labels,
@@ -45,8 +49,9 @@ def deploy_containerized_data_importer_module(
         )
 
         # Deploy CDI operator
+        # TODO: consider moving url variable to config via new value in ContainerizedDataImporterConfig class with default value, may require helper function in <module>/types.py to support `latest`
         operator_url = f"https://github.com/kubevirt/containerized-data-importer/releases/download/v{version}/cdi-operator.yaml"
-        pulumi.log.info(f"Deploying CDI operator from URL: {operator_url}")
+        log.info(f"Deploying CDI operator from URL: {operator_url}")
 
         operator_resource = k8s.yaml.ConfigFile(
             "cdi-operator",
@@ -58,10 +63,11 @@ def deploy_containerized_data_importer_module(
         )
 
         # Ensure dependencies on operator and namespace
+        # TODO: re-evaluate implementing module specific module_depends_on and consistently adopting across all modules
         depends_on = global_depends_on + [operator_resource]
 
         # Create CDI custom resource
-        pulumi.log.info("Creating CDI custom resource")
+        log.info("Creating CDI custom resource")
         cdi_resource = create_custom_resource(
             name="cdi",
             args={
@@ -104,13 +110,15 @@ def deploy_containerized_data_importer_module(
             )
         )
 
-        pulumi.log.info("CDI module deployment complete")
+        log.info("CDI module deployment complete")
         return version, operator_resource
 
     except Exception as e:
-        pulumi.log.error(f"Deployment of CDI module failed: {str(e)}")
+        log.error(f"Deployment of CDI module failed: {str(e)}")
         raise
 
+# Function to fetch the latest stable semantic version from GitHub releases
+# TODO: consider making github latest release version fetching a shared utility function & adopting across all modules to reduce code duplication
 def fetch_latest_version() -> str:
     """
     Fetches the latest stable version of CDI from GitHub releases.
@@ -123,8 +131,8 @@ def fetch_latest_version() -> str:
         tag = requests.get(latest_release_url, allow_redirects=False).headers.get('location')
         version = tag.split('/')[-1]
         version = version.lstrip('v')
-        pulumi.log.info(f"Fetched latest CDI version: {version}")
+        log.info(f"Fetched latest CDI version: {version}")
         return version
     except Exception as e:
-        pulumi.log.error(f"Error fetching the latest version: {e}")
+        log.error(f"Error fetching the latest version: {e}")
         return "latest"

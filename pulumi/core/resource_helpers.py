@@ -33,6 +33,10 @@ def create_namespace(
     Returns:
         k8s.core.v1.Namespace: The created Namespace resource.
     """
+
+    # If the optional arguments are not provided, set them to default values.
+    # TODO:
+    # - refactor/simplify for better readability and maintainability
     if opts is None:
         opts = pulumi.ResourceOptions()
     if labels is None:
@@ -61,6 +65,11 @@ def create_namespace(
     if finalizers:
         spec["finalizers"] = finalizers
 
+    # Set Global Pulumi Resource Options
+    # TODO:
+    # - Enhance core/config.py with a centralized default pulumi `opts` configuration
+    # - Support merging with custom opts
+    # - Adopt across project resources to improve consistency and DRYness
     opts = pulumi.ResourceOptions.merge(
         opts,
         pulumi.ResourceOptions(
@@ -302,6 +311,11 @@ def create_config_file(
 
     return k8s.yaml.ConfigFile(name, file, opts=opts)
 
+# ------------------------------------------------------------------------------
+# Metadata
+# ------------------------------------------------------------------------------
+# TODO:
+# - Evaluate full codebase for wider utilization of create_meta_objectmeta()
 def create_meta_objectmeta(
     name: str,
     labels: Optional[Dict[str, str]] = None,

@@ -22,6 +22,7 @@ from packaging.version import parse as parse_version, InvalidVersion, Version
 # Set up basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# Function to update global resource tags, labels, and annotations from compliance config spec
 def set_resource_metadata(metadata: Any, global_labels: Dict[str, str], global_annotations: Dict[str, str]):
     """
     Updates resource metadata with global labels and annotations.
@@ -37,6 +38,7 @@ def set_resource_metadata(metadata: Any, global_labels: Dict[str, str], global_a
             metadata.annotations = {}
         metadata.annotations.update(global_annotations)
 
+# Function to apply global resource tags, labels, and annotations to all yaml objects
 def generate_global_transformations(global_labels: Dict[str, str], global_annotations: Dict[str, str]):
     """
     Generates global transformations for resources.
@@ -54,6 +56,7 @@ def generate_global_transformations(global_labels: Dict[str, str], global_annota
 
     pulumi.runtime.register_stack_transformation(global_transform)
 
+# Function to fetch the latest stable version of a Helm chart from a helm chart index.yaml url
 def get_latest_helm_chart_version(repo_url: str, chart_name: str) -> str:
     """
     Fetches the latest stable version of a Helm chart from the given repository URL.
@@ -92,6 +95,7 @@ def get_latest_helm_chart_version(repo_url: str, chart_name: str) -> str:
         logging.error(f"Error parsing Helm repository index YAML: {e}")
         return f"Error parsing YAML: {e}"
 
+# Sanity check Helm chart versions for stable releases
 def is_stable_version(version_str: str) -> bool:
     """
     Determines if a version string represents a stable version.
@@ -108,6 +112,7 @@ def is_stable_version(version_str: str) -> bool:
     except InvalidVersion:
         return False
 
+# Function to extract the repository name from a Git remote URL
 def extract_repo_name(remote_url: str) -> str:
     """
     Extracts the repository name from a Git remote URL.
@@ -124,9 +129,7 @@ def extract_repo_name(remote_url: str) -> str:
     return remote_url
 
 
-# Set up basic logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
+# Function to wait for a list of CRDs to be present
 def wait_for_crds(crd_names: List[str], k8s_provider: k8s.Provider, depends_on: List[pulumi.Resource], parent: pulumi.Resource) -> List[pulumi.Resource]:
     """
     Waits for the specified CRDs to be present and ensures dependencies.
@@ -165,6 +168,8 @@ def wait_for_crds(crd_names: List[str], k8s_provider: k8s.Provider, depends_on: 
 
     return crds
 
+# HACK: Create a dummy CRD definition to use during pulumi dry_run / preview runs if CRDs are not found.
+# TODO: Solve this in a more elegant way.
 def create_dummy_crd(crd_name: str, k8s_provider: k8s.Provider, depends_on: List[pulumi.Resource], parent: pulumi.Resource) -> Optional[k8s.yaml.ConfigFile]:
     """
     Create a dummy CRD definition to use during preview runs.

@@ -1,15 +1,19 @@
 # pulumi/modules/multus/deploy.py
+# TODO: enhance logging and error handling consistent with documented best practices and other modules.
 
 """
 Deploys the Multus module.
 """
 
 from typing import List, Dict, Any, Tuple, Optional
+
 import pulumi
 import pulumi_kubernetes as k8s
+
+from core.utils import get_latest_helm_chart_version
 from core.metadata import get_global_labels, get_global_annotations
 from core.resource_helpers import create_namespace, create_custom_resource
-from core.utils import get_latest_helm_chart_version
+
 from .types import MultusConfig
 
 def deploy_multus_module(
@@ -51,6 +55,7 @@ def deploy_multus(
     # Deploy Multus DaemonSet
     resource_name = f"multus-daemonset"
     version = config_multus.version or "master"
+    # TODO: consider moving url variable to config via new value in MultusConfig class with default value, may require helper function in multus/types.py to support `latest`
     manifest_url = f"https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/{version}/deployments/multus-daemonset-thick.yml"
 
     multus = k8s.yaml.ConfigFile(
@@ -69,6 +74,7 @@ def deploy_multus(
     )
 
     # Create NetworkAttachmentDefinition
+    # TODO: document the dependency on `br0` bridge interface, also consider making this configurable
     network_attachment_definition = create_custom_resource(
         name=config_multus.bridge_name,
         args={
@@ -115,6 +121,9 @@ def deploy_multus(
 def transform_host_path(args: pulumi.ResourceTransformationArgs) -> pulumi.ResourceTransformationResult:
     """
     Transforms the host paths in the Multus DaemonSet.
+
+    The Multus DaemonSet mounts the host path `/run/netns` to kubelet pod at `/var/run/netns`.
+    This transformation ensures the unique path required is utilized for Talos Linux compatibility.
     """
     obj = args.props
 

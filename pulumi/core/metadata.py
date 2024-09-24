@@ -1,8 +1,8 @@
 # pulumi/core/metadata.py
-# Description:
-# TODO: enhance with support for propagation of labels annotations on AWS resources
-# TODO: enhance by adding additional data to global tags / labels / annotation metadata
-#       - git release tag
+# TODO:
+# - enhance with support for propagation of labels annotations on AWS resources
+# - enhance by adding additional data to global tag / label / annotation metadata
+# - support adding git release semver to global tag / label / annotation metadata
 
 """
 Metadata Management Module
@@ -11,14 +11,20 @@ This module manages global metadata, labels, and annotations.
 It includes functions to generate compliance and Git-related metadata.
 """
 
-import subprocess
-import pulumi
-import threading
-from typing import Dict, Any
-import json
-from .types import ComplianceConfig
 import re
+import json
+import threading
+import subprocess
+from typing import Dict, Any
 
+import pulumi
+from pulumi import log
+
+from .types import ComplianceConfig
+
+# Singleton class to manage global metadata
+# Globals are correctly chosen to enforce consistency across all modules and resources
+# This class is thread-safe and used to store global labels and annotations
 class MetadataSingleton:
     _instance = None
     __lock = threading.Lock()
@@ -67,6 +73,9 @@ def get_global_annotations() -> Dict[str, str]:
     """
     return MetadataSingleton()._data["_global_annotations"]
 
+# Function to collect Git repository information
+# TODO: re-implement this function to use the GitPython library or other more pythonic approach
+# TODO: add support for fetching and returning the latest git release semver
 def collect_git_info() -> Dict[str, str]:
     """
     Collects Git repository information.
@@ -80,7 +89,7 @@ def collect_git_info() -> Dict[str, str]:
         commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], stderr=subprocess.STDOUT).strip().decode('utf-8')
         return {'remote': remote, 'branch': branch, 'commit': commit}
     except subprocess.CalledProcessError as e:
-        pulumi.log.error(f"Error fetching git information: {e}")
+        log.error(f"Error fetching git information: {e}")
         return {'remote': 'N/A', 'branch': 'N/A', 'commit': 'N/A'}
 
 def generate_git_labels(git_info: Dict[str, str]) -> Dict[str, str]:
@@ -143,19 +152,25 @@ def generate_compliance_annotations(compliance_config: ComplianceConfig) -> Dict
     Returns:
         Dict[str, str]: A dictionary of compliance annotations.
     """
+
+    # TODO: enhance if logic to improve efficiency, DRY, readability and maintainability
     annotations = {}
     if compliance_config.fisma.level:
         annotations['compliance.fisma.level'] = compliance_config.fisma.level
     if compliance_config.fisma.ato:
-        annotations['compliance.fisma.ato'] = json.dumps(compliance_config.fisma.ato)  # Store as JSON
+        annotations['compliance.fisma.ato'] = json.dumps(compliance_config.fisma.ato)
     if compliance_config.nist.controls:
-        annotations['compliance.nist.controls'] = json.dumps(compliance_config.nist.controls)  # Store as JSON array
+        annotations['compliance.nist.controls'] = json.dumps(compliance_config.nist.controls)
     if compliance_config.nist.auxiliary:
         annotations['compliance.nist.auxiliary'] = json.dumps(compliance_config.nist.auxiliary)
     if compliance_config.nist.exceptions:
         annotations['compliance.nist.exceptions'] = json.dumps(compliance_config.nist.exceptions)
     return annotations
 
+# Function to sanitize a label value to comply with Kubernetes `label` naming conventions
+# https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+# TODO:
+# - retool this feature as a more efficient implementation in `collect_git_info()` and related functions.
 def sanitize_label_value(value: str) -> str:
     """
     Sanitizes a label value to comply with Kubernetes naming conventions.

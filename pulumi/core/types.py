@@ -7,9 +7,10 @@ This module defines all shared data classes and types used across modules
 within the Kargo PaaS platform.
 """
 
+from typing import Optional, List, Dict, Any
+
 import pulumi
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any
 
 @dataclass
 class NamespaceConfig:
