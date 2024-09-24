@@ -1,0 +1,6 @@
+config:
+  kargo:cert_manager:
+    enabled: true
+  kargo:kubernetes:
+    context: admin@talos-kargo-docker
+    kubeconfig: /workspaces/Kargo/.kube/config

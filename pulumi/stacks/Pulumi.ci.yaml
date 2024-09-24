@@ -1,0 +1,56 @@
+# Pulumi.ci.yaml
+config:
+  kargo:cert_manager:
+    enabled: true
+    namespace: cert-manager
+    version: latest
+  kargo:cilium:
+    enabled: false
+  kargo:compliance:
+    fisma:
+      ato:
+        authorized: "2025-03-27T00:00:00Z"
+        renew: "2026-03-27T00:00:00Z"
+        review: "2028-03-27T00:00:00Z"
+      enabled: true
+      level: moderate
+    nist:
+      auxiliary:
+        - ac-6.1
+        - ac-2.13
+      controls:
+        - ac-1
+        - ac-2
+      enabled: true
+      exceptions:
+        - ca-7.1
+        - ma-2.2
+        - si-12
+    scip:
+      environment: prod
+      ownership:
+        operator:
+          contacts:
+            - seti2@nasa.gov
+            - alien51@nasa.gov
+          name: science-team-seti2-obs2819
+        provider:
+          contacts:
+            - scip@nasa.gov
+            - bobert@nasa.gov
+          name: scip-team-xyz
+      provider:
+        name: kubevirt
+        regions:
+          - scip-west-1
+          - scip-east-1
+          - scip-lunar-2
+        version: v2.87.11
+  kargo:kubernetes:
+    context: admin@talos-kargo-docker
+    distribution: talos
+    kubeconfig: /Users/usrbinkat/drive/Git/ccio/kargo/.kube/config
+  kargo:multus:
+    enabled: false
+  kargo:vm:
+    enabled: false

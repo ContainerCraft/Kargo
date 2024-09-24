@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# Delete all resources in namespace
+set -euo pipefail
+
+# Function to delete all resources in a namespace
 delete_resources_in_namespace() {
   local namespace=$1
   echo "Deleting all resources in namespace: $namespace"
@@ -8,14 +10,20 @@ delete_resources_in_namespace() {
     | xargs -n 1 kubectl delete --all -n "$namespace" --ignore-not-found --wait
 }
 
-# Remove finalizers and delete stuck namespace
-delete_namespace() {
+# Function to remove finalizers from a namespace
+remove_finalizers() {
   local namespace=$1
-  echo "Removing finalizers and deleting namespace: $namespace"
+  echo "Removing finalizers from namespace: $namespace"
   kubectl get namespace "$namespace" -o json \
     | jq 'del(.spec.finalizers)' \
     | kubectl replace --raw "/api/v1/namespaces/$namespace/finalize" -f -
-  kubectl delete namespace "$namespace"
+}
+
+# Function to delete a namespace
+delete_namespace() {
+  local namespace=$1
+  echo "Deleting namespace: $namespace"
+  kubectl delete namespace "$namespace" --ignore-not-found --wait
   echo "Waiting for namespace $namespace to be deleted..."
   while kubectl get namespace "$namespace" &>/dev/null; do
     sleep 1
@@ -23,14 +31,36 @@ delete_namespace() {
   echo "Namespace $namespace has been deleted."
 }
 
-# Check for at least one namespace provided as argument
-if [ $# -eq 0 ]; then
-  echo "Usage: $0 <namespace1> <namespace2> ... <namespaceN>"
-  exit 1
-fi
+# Function to delete CustomResourceDefinitions (CRDs)
+delete_crds() {
+  local crds=("certificaterequests.cert-manager.io" "certificates.cert-manager.io" "challenges.acme.cert-manager.io" \
+              "orders.acme.cert-manager.io" "clusterissuers.cert-manager.io" "issuers.cert-manager.io" \
+              "kubevirts.kubevirt.io")
 
-# Loop through and delete list of namespaces
-for namespace in "$@"; do
-  delete_resources_in_namespace "$namespace"
-  delete_namespace "$namespace"
-done
+  for crd in "${crds[@]}"; do
+    echo "Deleting CRD: $crd"
+    kubectl delete crd "$crd" --ignore-not-found --wait
+  done
+}
+
+# Main deletion process
+main() {
+  if [ $# -eq 0 ]; then
+    echo "Usage: $0 <namespace1> <namespace2> ... <namespaceN>"
+    exit 1
+  fi
+
+  for namespace in "$@"; do
+    delete_resources_in_namespace "$namespace"
+    remove_finalizers "$namespace" || echo "Failed to remove finalizers for namespace: $namespace"
+    delete_namespace "$namespace" || {
+      echo "Namespace $namespace is stuck. Attempting to force removal."
+      remove_finalizers "$namespace"
+      delete_namespace "$namespace"
+    }
+  done
+
+  delete_crds
+}
+
+main "$@"

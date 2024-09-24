@@ -8,55 +8,55 @@ runtime:
   name: python
   options:
     virtualenv: venv
-config:
-  pulumi:tags:
-    value:
-      pulumi:template: ccio-kargo-python
-  vm:
-    value:
-      enabled: false
-      namespace: default
-      instance_name: ubuntu
-      image_name: docker.io/containercraft/ubuntu:22.04
-      node_port: 30590
-      ssh_user: kc2
-      ssh_password: kc2
-  kubernetes:
-    value:
-      context: kargo
-      kubeconfig: .kube/config
-  cert_manager:
-    value:
-      enabled: true
-      version: 1.15.3
-  kubevirt:
-    value:
-      enabled: true
-      version: 1.3.1
-  hostpath_provisioner:
-    value:
-      enabled: true
-      version: 0.20.0
-      default_storage_class: true
-  cdi:
-    value:
-      enabled: true
-      version: 1.60.2
-  multus:
-    value:
-      enabled: true
-  cnao:
-    value:
-      enabled: false
-      version: 0.94.2
-  prometheus:
-    value:
-      enabled: false
-      version: 61.3.2
-  kubernetes_dashboard:
-    value:
-      enabled: false
-      version: 7.4.0
-  cilium:
-    value:
-      enabled: false
+#config:
+#  pulumi:tags:
+#    value:
+#      pulumi:template: ccio-kargo-python
+#  vm:
+#    value:
+#      enabled: false
+#      namespace: default
+#      instance_name: ubuntu
+#      image_name: docker.io/containercraft/ubuntu:22.04
+#      node_port: 30590
+#      ssh_user: kc2
+#      ssh_password: kc2
+#  kubernetes:
+#    value:
+#      context: kargo
+#      kubeconfig: .kube/config
+#  cert_manager:
+#    value:
+#      enabled: true
+#      version: 1.15.3
+#  kubevirt:
+#    value:
+#      enabled: true
+#      version: 1.3.1
+#  hostpath_provisioner:
+#    value:
+#      enabled: true
+#      version: 0.20.0
+#      default_storage_class: true
+#  cdi:
+#    value:
+#      enabled: true
+#      version: 1.60.2
+#  multus:
+#    value:
+#      enabled: true
+#  cnao:
+#    value:
+#      enabled: false
+#      version: 0.94.2
+#  prometheus:
+#    value:
+#      enabled: false
+#      version: 61.3.2
+#  kubernetes_dashboard:
+#    value:
+#      enabled: false
+#      version: 7.4.0
+#  cilium:
+#    value:
+#      enabled: false
