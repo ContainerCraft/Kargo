@@ -23,7 +23,8 @@ DEFAULT_ENABLED_CONFIG = {
     "cert_manager": True,
     "kubevirt": True,
     "multus": True,
-    "hostpath_provisioner": False,
+    "hostpath_provisioner": True,
+    "containerized_data_importer": True,
 }
 
 

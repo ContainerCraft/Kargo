@@ -19,7 +19,7 @@ def main():
         default_versions = init["default_versions"]
         global_depends_on = init["global_depends_on"]
 
-        modules_to_deploy = ["cert_manager", "kubevirt", "multus", "hostpath_provisioner"]
+        modules_to_deploy = ["cert_manager", "kubevirt", "multus", "hostpath_provisioner", "containerized_data_importer"]
 
         deploy_modules(
             modules_to_deploy,
