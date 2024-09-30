@@ -15,7 +15,7 @@ vars:
   talos_patch: "{{.talos_dir}}/patch/cluster.yaml"
   talos_config_file: "{{.talos_dir}}/manifest/talosconfig"
   cluster_name: "talos-kargo-docker"
-  exposed_ports: "30590:30590/tcp"
+  exposed_ports: "30590:30590/tcp,443:443/tcp"
   memory: "8192"
   arch:
     sh: |
@@ -191,7 +191,6 @@ tasks:
           --context {{.cluster_name}} \
           --name {{.cluster_name}} \
           --workers 0 --crashdump
-          --exposed-ports=443:443/https
 
   kubernetes-ready:
     desc: "Wait for the Talos cluster control plane components to be ready."
