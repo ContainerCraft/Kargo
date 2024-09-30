@@ -191,6 +191,7 @@ tasks:
           --context {{.cluster_name}} \
           --name {{.cluster_name}} \
           --workers 0 --crashdump
+          --exposed-ports=443:443/https
 
   kubernetes-ready:
     desc: "Wait for the Talos cluster control plane components to be ready."
