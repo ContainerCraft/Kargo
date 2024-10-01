@@ -15,7 +15,7 @@ vars:
   talos_patch: "{{.talos_dir}}/patch/cluster.yaml"
   talos_config_file: "{{.talos_dir}}/manifest/talosconfig"
   cluster_name: "talos-kargo-docker"
-  exposed_ports: "30590:30590/tcp,443:443/tcp"
+  exposed_ports: "30590:30590/tcp,10443:10443/tcp"
   memory: "8192"
   arch:
     sh: |
@@ -137,6 +137,13 @@ tasks:
       - source .envrc && pulumi config set --path cilium.enabled false
       - source .envrc && pulumi config set --path multus.enabled false
       - source .envrc && pulumi config set --path vm.enabled false
+
+  configure-openunison:
+    desc: "Configure OpenUnison."
+    cmds:
+      - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
+      - source .envrc && pulumi config set --path openunison.enabled true
+
 
   iac-deploy:
     desc: "Deploy Pulumi infrastructure."

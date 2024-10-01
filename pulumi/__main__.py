@@ -19,6 +19,7 @@ from src.kv_manager.deploy import deploy_ui_for_kubevirt
 from src.ceph.deploy import deploy_rook_operator
 from src.vm.ubuntu import deploy_ubuntu_vm
 from src.vm.talos import deploy_talos_cluster
+from src.ingress_nginx.deploy import deploy_ingress_nginx
 
 ##################################################################################
 # Load the Pulumi Config
@@ -369,42 +370,46 @@ def run_openunison():
         domain_suffix = config_openunison.get('dns_suffix') or "kargo.arpa"
         cluster_issuer = config_openunison.get('cluster_issuer') or "cluster-selfsigned-issuer-ca"
 
-        config_openunison_github = config_openunison.get_object('github') or {}
-        openunison_github_teams = config_openunison_github.get('teams')
-        openunison_github_client_id = config_openunison_github.get('client_id')
-        openunison_github_client_secret = config_openunison_github.get('client_secret')
+        # config_openunison_github = config_openunison.get_object('github') or {}
+        # openunison_github_teams = config_openunison_github.get('teams')
+        # openunison_github_client_id = config_openunison_github.get('client_id')
+        # openunison_github_client_secret = config_openunison_github.get('client_secret')
 
         enabled = {}
 
-        if kubevirt_enabled:
-            enabled["kubevirt"] = {"enabled": kubevirt_enabled}
+        # Assume ingress-nginx for OpenUnison
+        deploy_ingress_nginx(None,"ingress-nginx",k8s_provider)
 
-        if prometheus_enabled:
-            enabled["prometheus"] = {"enabled": prometheus_enabled}
+        # if kubevirt_enabled:
+        #     enabled["kubevirt"] = {"enabled": kubevirt_enabled}
 
-        pulumi.export("enabled", enabled)
+        # if prometheus_enabled:
+        #     enabled["prometheus"] = {"enabled": prometheus_enabled}
 
-        openunison = deploy_openunison(
-            depends,
-            ns_name,
-            openunison_version,
-            k8s_provider,
-            domain_suffix,
-            cluster_issuer,
-            cert_manager_selfsigned_cert,
-            kubernetes_dashboard_release,
-            openunison_github_client_id,
-            openunison_github_client_secret,
-            openunison_github_teams,
-            enabled,
-        )
+        # pulumi.export("enabled", enabled)
 
-        versions["openunison"] = {"enabled": openunison_enabled, "version": openunison[0]}
-        openunison_release = openunison[1]
+        # openunison = deploy_openunison(
+        #     depends,
+        #     ns_name,
+        #     openunison_version,
+        #     k8s_provider,
+        #     domain_suffix,
+        #     cluster_issuer,
+        #     cert_manager_selfsigned_cert,
+        #     kubernetes_dashboard_release,
+        #     openunison_github_client_id,
+        #     openunison_github_client_secret,
+        #     openunison_github_teams,
+        #     enabled,
+        # )
 
-        safe_append(depends, openunison_release)
+        # versions["openunison"] = {"enabled": openunison_enabled, "version": openunison[0]}
+        # openunison_release = openunison[1]
 
-        return openunison, openunison_release
+        # safe_append(depends, openunison_release)
+
+        # return openunison, openunison_release
+        return None, None
     return None, None
 
 openunison, openunison_release = run_openunison()
