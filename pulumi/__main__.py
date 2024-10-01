@@ -349,7 +349,8 @@ def run_kubernetes_dashboard():
             depends,
             ns_name,
             kubernetes_dashboard_version,
-            k8s_provider
+            k8s_provider,
+            openunison_enabled
         )
 
         versions["kubernetes_dashboard"] = {"enabled": kubernetes_dashboard_enabled, "version": kubernetes_dashboard[0]}

@@ -8,6 +8,7 @@ def deploy_kubernetes_dashboard(
         ns_name: str,
         version: str,
         k8s_provider: k8s.Provider,
+        openunison_enabled: bool
     ):
 
     # Create namespace
@@ -41,6 +42,9 @@ def deploy_kubernetes_dashboard(
         # Log the version override
         pulumi.log.info(f"Using helm release version: {chart_name}/{version}")
 
+
+    helm_values = gen_helm_values(openunison_enabled)
+
     release = k8s.helm.v3.Release(
             "kubernetes-dashboard",
             k8s.helm.v3.ReleaseArgs(
@@ -51,6 +55,7 @@ def deploy_kubernetes_dashboard(
                 repository_opts= k8s.helm.v3.RepositoryOptsArgs(
                     repo=chart_url
                 ),
+                values=helm_values
             ),
             opts=pulumi.ResourceOptions(
                 provider = k8s_provider,
@@ -65,3 +70,121 @@ def deploy_kubernetes_dashboard(
         )
 
     return version, release
+
+def gen_helm_values(openunison_enabled: bool):
+    if openunison_enabled:
+        return {
+            "nginx": {
+                "enabled": False
+            },
+            "kong": {
+                "enabled": False
+            },
+            "api": {
+                "scaling": {
+                "replicas": 1
+                },
+                "containers": {
+                "ports": [
+                    {
+                    "name": "api-tls",
+                    "containerPort": 8001,
+                    "protocol": "TCP"
+                    }
+                ],
+                "volumeMounts": [
+                    {
+                    "mountPath": "/tmp",
+                    "name": "tmp-volume"
+                    },
+                    {
+                    "mountPath": "/certs",
+                    "name": "tls"
+                    }
+                ]
+                },
+                "volumes": [
+                {
+                    "name": "tmp-volume",
+                    "emptyDir": {
+                    }
+                },
+                {
+                    "name": "tls",
+                    "secret": {
+                    "secretName": "kubernetes-dashboard-certs",
+                    "optional": True
+                    }
+                }
+                ]
+            },
+            "web": {
+                "scaling": {
+                "replicas": 1
+                },
+                "containers": {
+                "ports": [
+                    {
+                    "name": "api-tls",
+                    "containerPort": 8001,
+                    "protocol": "TCP"
+                    }
+                ],
+                "volumeMounts": [
+                    {
+                    "mountPath": "/tmp",
+                    "name": "tmp-volume"
+                    },
+                    {
+                    "mountPath": "/certs",
+                    "name": "tls"
+                    }
+                ]
+                },
+                "volumes": [
+                {
+                    "name": "tmp-volume",
+                    "emptyDir": {
+                    }
+                },
+                {
+                    "name": "tls",
+                    "secret": {
+                    "secretName": "kubernetes-dashboard-certs",
+                    "optional": True
+                    }
+                }
+                ]
+            },
+            "auth": {
+                "scaling": {
+                "replicas": 0
+                },
+                "volumeMounts": [
+                {
+                    "mountPath": "/tmp",
+                    "name": "tmp-volume"
+                },
+                {
+                    "mountPath": "/certs",
+                    "name": "tls"
+                }
+                ],
+                "volumes": [
+                {
+                    "name": "tmp-volume",
+                    "emptyDir": {
+                    }
+                },
+                {
+                    "name": "tls",
+                    "secret": {
+                    "secretName": "kubernetes-dashboard-certs",
+                    "optional": False
+                    }
+                }
+                ]
+            }
+            }
+    else:
+        return {}

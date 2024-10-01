@@ -143,6 +143,7 @@ tasks:
     cmds:
       - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
       - source .envrc && pulumi config set --path openunison.enabled true
+      - source .envrc && pulumi config set --path kubernetes_dashboard.enabled true
 
 
   iac-deploy:
