@@ -56,6 +56,9 @@ def deploy_ingress_nginx(
             },
             "containerPort": {
                 "https": 10443,
+            },
+            "config": {
+                "use-forwarded-headers": "true"
             }
         }
 
@@ -98,4 +101,4 @@ def deploy_ingress_nginx(
         )
     )
 
-    return release
+    return release, version

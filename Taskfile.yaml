@@ -141,9 +141,14 @@ tasks:
   configure-openunison:
     desc: "Configure OpenUnison."
     cmds:
+      - wget -P /tmp https://github.com/charmbracelet/gum/releases/download/v0.14.5/gum_0.14.5_amd64.deb
+      - sudo dpkg -i /tmp/gum_0.14.5_amd64.deb
       - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
       - source .envrc && pulumi config set --path openunison.enabled true
       - source .envrc && pulumi config set --path kubernetes_dashboard.enabled true
+      - source .envrc && pulumi config set --path openunison.github.client_id $(gum input --placeholder='GitHub OAuth2 Client Id' --header='GitHub OAuth2 Client Id')
+      - source .envrc && pulumi config set --secret --path openunison.github.client_secret $(gum input --placeholder='GitHub OAuth2 Client Secret' --header='GitHub OAuth2 Client Secret')
+      - source .envrc && pulumi config set --path openunison.github.teams $(gum input --placeholder='GitHub OAuth2 Teams' --header='GitHub OAuth2 Teams')
 
 
   iac-deploy:

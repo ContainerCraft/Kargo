@@ -371,15 +371,24 @@ def run_openunison():
         domain_suffix = config_openunison.get('dns_suffix') or "kargo.arpa"
         cluster_issuer = config_openunison.get('cluster_issuer') or "cluster-selfsigned-issuer-ca"
 
-        # config_openunison_github = config_openunison.get_object('github') or {}
-        # openunison_github_teams = config_openunison_github.get('teams')
-        # openunison_github_client_id = config_openunison_github.get('client_id')
-        # openunison_github_client_secret = config_openunison_github.get('client_secret')
+        config_openunison_github = config_openunison.get('github') or {}
+        openunison_github_teams = config_openunison_github.get('teams')
+        openunison_github_client_id = config_openunison_github.get('client_id')
+        openunison_github_client_secret = config_openunison_github.get('client_secret')
 
         enabled = {}
 
+        custom_depends = []
+
+
         # Assume ingress-nginx for OpenUnison
-        deploy_ingress_nginx(None,"ingress-nginx",k8s_provider)
+        nginx_release, nginx_version = deploy_ingress_nginx(None,"ingress-nginx",k8s_provider)
+        versions["nginx"] = {"enabled": openunison_enabled, "version": nginx_version}
+
+
+        safe_append(custom_depends,nginx_release)
+        safe_append(custom_depends,kubernetes_dashboard_release)
+
 
         # if kubevirt_enabled:
         #     enabled["kubevirt"] = {"enabled": kubevirt_enabled}
@@ -387,30 +396,31 @@ def run_openunison():
         # if prometheus_enabled:
         #     enabled["prometheus"] = {"enabled": prometheus_enabled}
 
-        # pulumi.export("enabled", enabled)
+        pulumi.export("enabled", enabled)
 
-        # openunison = deploy_openunison(
-        #     depends,
-        #     ns_name,
-        #     openunison_version,
-        #     k8s_provider,
-        #     domain_suffix,
-        #     cluster_issuer,
-        #     cert_manager_selfsigned_cert,
-        #     kubernetes_dashboard_release,
-        #     openunison_github_client_id,
-        #     openunison_github_client_secret,
-        #     openunison_github_teams,
-        #     enabled,
-        # )
+        openunison = deploy_openunison(
+            custom_depends,
+            ns_name,
+            openunison_version,
+            k8s_provider,
+            domain_suffix,
+            cluster_issuer,
+            cert_manager_selfsigned_cert,
+            kubernetes_dashboard_release,
+            nginx_release,
+            openunison_github_client_id,
+            openunison_github_client_secret,
+            openunison_github_teams,
+            enabled,
+        )
 
-        # versions["openunison"] = {"enabled": openunison_enabled, "version": openunison[0]}
-        # openunison_release = openunison[1]
+        versions["openunison"] = {"enabled": openunison_enabled, "version": openunison[0]}
+        openunison_release = openunison[1]
 
-        # safe_append(depends, openunison_release)
+        safe_append(depends, openunison_release)
 
-        # return openunison, openunison_release
-        return None, None
+        return openunison, openunison_release
+
     return None, None
 
 openunison, openunison_release = run_openunison()

@@ -1,4 +1,5 @@
 import json
+import os
 import base64
 import secrets
 import pulumi
@@ -23,10 +24,11 @@ def deploy_openunison(
         cluster_issuer: str,
         cert_manager_selfsigned_cert: str,
         kubernetes_dashboard_release: str,
+        nginx_release: str,
         ou_github_client_id: str,
         ou_github_client_secret: str,
         ou_github_teams: str,
-        enabled
+        enabled : bool
     ):
 
     ns_retain = True
@@ -36,7 +38,7 @@ def deploy_openunison(
         "kubernetes.io/metadata.name": ns_name
     }
     namespace = create_namespace(
-        depends,
+        None,
         ns_name,
         ns_retain,
         ns_protect,
@@ -89,12 +91,29 @@ def deploy_openunison(
     )
     depends.append(ou_certificate)
 
+    ou_host = ""
+    k8sdb_host = ""
+    api_server_host = ""
+
+    running_in_gh_spaces = os.getenv("GITHUB_USER") or None
+
+    # if running inside of Github Spaces, we'll set the hosts based on the github space name
+    # if it's standalone, we'll configure based on the suffix
+    if running_in_gh_spaces:
+        ou_host = os.getenv("CODESPACE_NAME") + '-10443.app.github.dev'
+        k8sdb_host = os.getenv("CODESPACE_NAME") + '-11443.app.github.dev'
+        api_server_host = os.getenv("CODESPACE_NAME") + '-12443.app.github.dev'
+    else:
+        ou_host = f"k8sou.{domain_suffix}"
+        k8sdb_host = f"k8sdb.{domain_suffix}"
+        api_server_host = f"k8sapi.{domain_suffix}"
+
     ou_helm_values = {
         "enable_wait_for_job": True,
         "network": {
-            "ou_host": f"k8sou.{domain_suffix}",
-            "dashboard_host": f"k8sdb.{domain_suffix}",
-            "api_server_host": f"k8sapi.{domain_suffix}",
+            "openunison_host": ou_host,
+            "dashboard_host": k8sdb_host,
+            "api_server_host": api_server_host,
             "session_inactivity_timeout_seconds": 900,
             "k8s_url": "https://192.168.2.130:6443",
             "force_redirect_to_tls": False,
@@ -113,22 +132,21 @@ def deploy_openunison(
         "k8s_cluster_name": "openunison-kargo",
         "enable_impersonation": True,
         "impersonation": {
-            "use_jetstack": True,
-            "explicit_certificate_trust": True
+            "use_jetstack": not running_in_gh_spaces,
+            "explicit_certificate_trust": not running_in_gh_spaces
         },
         "dashboard": {
             "namespace": "kubernetes-dashboard",
-            "label": "app.kubernetes.io/name=kubernetes-dashboard",
-            "require_session": True
+            "label": "k8s-app=kubernetes-dashboard",
+            "require_session": True,
+            "new": True
+
         },
         "certs": {
             "use_k8s_cm": False
         },
         "trusted_certs": [
-        {
-            "name": "unison-ca",
-            "pem_b64": cert_manager_selfsigned_cert,
-        }
+
         ],
         "monitoring": {
             "prometheus_service_account": "system:serviceaccount:monitoring:prometheus-k8s"
@@ -178,6 +196,14 @@ def deploy_openunison(
         }
     }
 
+    if not running_in_gh_spaces:
+        ou_helm_values["trusted_certs"].append(
+            {
+            "name": "unison-ca",
+            "pem_b64": cert_manager_selfsigned_cert,
+            }
+        )
+
     # now that OpenUnison is deployed, we'll make ClusterAdmins of all the groups specified in openunison.github.teams
     github_teams = ou_github_teams.split(',')
     subjects = []
@@ -207,60 +233,60 @@ def deploy_openunison(
     alertmanager_icon_json = json.dumps(assets["alertmanager_icon"])
     grafana_icon_json = json.dumps(assets["grafana_icon"])
 
-    if enabled["kubevirt"]["enabled"]:
-        ou_helm_values["openunison"]["apps"].append(
-            {
-                "name": "kubevirt-manager",
-                "label": "KubeVirt Manager",
-                "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
-                "badgeUrl": "https://kubeverit-manager." + domain_suffix + "/",
-                "injectToken": False,
-                "proxyTo": "http://kubevirt-manager.kubevirt-manager.svc:8080${fullURI}",
-                "az_groups": az_groups,
-                "icon": f"{kubevirt_icon_json}",
-            }
-        )
+    # if enabled["kubevirt"] and enabled["kubevirt"]["enabled"]:
+    #     ou_helm_values["openunison"]["apps"].append(
+    #         {
+    #             "name": "kubevirt-manager",
+    #             "label": "KubeVirt Manager",
+    #             "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
+    #             "badgeUrl": "https://kubeverit-manager." + domain_suffix + "/",
+    #             "injectToken": False,
+    #             "proxyTo": "http://kubevirt-manager.kubevirt-manager.svc:8080${fullURI}",
+    #             "az_groups": az_groups,
+    #             "icon": f"{kubevirt_icon_json}",
+    #         }
+    #     )
 
-    if enabled["prometheus"]["enabled"]:
-        ou_helm_values["openunison"]["apps"].append(
-            {
-                "name": "prometheus",
-                "label": "Prometheus",
-                "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
-                "badgeUrl": f"https://prometheus.{domain_suffix}/",
-                "injectToken": False,
-                "proxyTo": "http://prometheus.monitoring.svc:9090${fullURI}",
-                "az_groups": az_groups,
-                "icon": f"{prometheus_icon_json}",
-            }
-        )
+    # if enabled["prometheus"] and enabled["prometheus"]["enabled"]:
+    #     ou_helm_values["openunison"]["apps"].append(
+    #         {
+    #             "name": "prometheus",
+    #             "label": "Prometheus",
+    #             "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
+    #             "badgeUrl": f"https://prometheus.{domain_suffix}/",
+    #             "injectToken": False,
+    #             "proxyTo": "http://prometheus.monitoring.svc:9090${fullURI}",
+    #             "az_groups": az_groups,
+    #             "icon": f"{prometheus_icon_json}",
+    #         }
+    #     )
 
-        ou_helm_values["openunison"]["apps"].append(
-                    {
-                        "name": "alertmanager",
-                        "label": "Alert Manager",
-                        "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
-                        "badgeUrl": "https://alertmanager." + domain_suffix + "/",
-                        "injectToken": False,
-                        "proxyTo": "http://alertmanager.monitoring.svc:9093${fullURI}",
-                        "az_groups": az_groups,
-                        "icon": f"{alertmanager_icon_json}",
-                    }
-        )
+    #     ou_helm_values["openunison"]["apps"].append(
+    #                 {
+    #                     "name": "alertmanager",
+    #                     "label": "Alert Manager",
+    #                     "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
+    #                     "badgeUrl": "https://alertmanager." + domain_suffix + "/",
+    #                     "injectToken": False,
+    #                     "proxyTo": "http://alertmanager.monitoring.svc:9093${fullURI}",
+    #                     "az_groups": az_groups,
+    #                     "icon": f"{alertmanager_icon_json}",
+    #                 }
+    #     )
 
-        ou_helm_values["openunison"]["apps"].append(
-            {
-                "name": "grafana",
-                "label": "Grafana",
-                "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
-                "badgeUrl": "https://grafana." + domain_suffix + "/",
-                "injectToken": False,
-                "azSuccessResponse":"grafana",
-                "proxyTo": "http://grafana.monitoring.svc${fullURI}",
-                "az_groups": az_groups,
-                "icon": f"{grafana_icon_json}",
-            }
-        )
+    #     ou_helm_values["openunison"]["apps"].append(
+    #         {
+    #             "name": "grafana",
+    #             "label": "Grafana",
+    #             "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
+    #             "badgeUrl": "https://grafana." + domain_suffix + "/",
+    #             "injectToken": False,
+    #             "azSuccessResponse":"grafana",
+    #             "proxyTo": "http://grafana.monitoring.svc${fullURI}",
+    #             "az_groups": az_groups,
+    #             "icon": f"{grafana_icon_json}",
+    #         }
+    #     )
 
     ou_helm_values["dashboard"]["service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name))
     ou_helm_values["dashboard"]["cert_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + "-certs"))
