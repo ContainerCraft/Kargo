@@ -289,6 +289,9 @@ def deploy_openunison(
     #     )
 
     ou_helm_values["dashboard"]["service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name))
+    ou_helm_values["dashboard"]["auth_service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + '-auth'))
+    ou_helm_values["dashboard"]["api_service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + '-api'))
+    ou_helm_values["dashboard"]["web_service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + '-web'))
     ou_helm_values["dashboard"]["cert_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + "-certs"))
 
     # Apply function to wait for the dashboard release names before proceeding
@@ -532,3 +535,111 @@ def deploy_openunison(
 #                )
 #            )
 #        )
+
+def setup_local_ingress(ou_orchestra_release: any, k8s_provider: any):
+
+    ingress_object = {
+        "apiVersion": "networking.k8s.io/v1",
+        "kind": "Ingress",
+        "metadata": {
+            "annotations": {
+            "argocd.argoproj.io/sync-wave": "50",
+            "cert-manager.io/cluster-issuer": "enterprise-ca",
+            "kubernetes.io/ingress.class": "nginx",
+            "nginx.ingress.kubernetes.io/affinity": "cookie",
+            "nginx.ingress.kubernetes.io/backend-protocol": "HTTPS",
+            "nginx.ingress.kubernetes.io/secure-backends": "true",
+            "nginx.ingress.kubernetes.io/session-cookie-hash": "sha1",
+            "nginx.ingress.kubernetes.io/session-cookie-name": "openunison-orchestra",
+            "nginx.org/ssl-services": "openunison-orchestra"
+            },
+            "labels": {
+            "app.kubernetes.io/component": "ingress-nginx",
+            "app.kubernetes.io/instance": "openunison-orchestra",
+            "app.kubernetes.io/name": "openunison",
+            "app.kubernetes.io/part-of": "openunison"
+            },
+            "name": "openunison-orchestra-localhost",
+            "namespace": "openunison"
+        },
+        "spec": {
+            "rules": [
+            {
+                "host": "localhost",
+                "http": {
+                "paths": [
+                    {
+                    "backend": {
+                        "service": {
+                        "name": ou_orchestra_release.name.apply(lambda name: sanitize_name('openunison-' + name)) ,
+                        "port": {
+                            "number": 443
+                        }
+                        }
+                    },
+                    "path": "/",
+                    "pathType": "Prefix"
+                    }
+                ]
+                }
+            },
+            {
+                "host": "localhost",
+                "http": {
+                "paths": [
+                    {
+                    "backend": {
+                        "service": {
+                        "name": ou_orchestra_release.name.apply(lambda name: sanitize_name('openunison-' + name)),
+                        "port": {
+                            "number": 443
+                        }
+                        }
+                    },
+                    "path": "/",
+                    "pathType": "Prefix"
+                    }
+                ]
+                }
+            },
+            {
+                "host": "localhost",
+                "http": {
+                "paths": [
+                    {
+                    "backend": {
+                        "service": {
+                        "name": ou_orchestra_release.name.apply(lambda name: sanitize_name('openunison-' + name)),
+                        "port": {
+                            "number": 443
+                        }
+                        }
+                    },
+                    "path": "/",
+                    "pathType": "Prefix"
+                    }
+                ]
+                }
+            }
+            ],
+            "tls": [
+            {
+                "hosts": [
+                "localhost"
+                ],
+                "secretName": "ou-tls-certificate"
+            }
+            ]
+        },
+        "status": {
+            "loadBalancer": {
+            "ingress": [
+                {
+                "hostname": "localhost"
+                }
+            ]
+            }
+        }
+        }
+
+     new kubernetes.networking.v1.Ingress("ingress",ingress_object
