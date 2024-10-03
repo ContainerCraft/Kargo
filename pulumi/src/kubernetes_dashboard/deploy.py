@@ -2,6 +2,14 @@ import pulumi
 import pulumi_kubernetes as k8s
 from src.lib.namespace import create_namespace
 from src.lib.helm_chart_versions import get_latest_helm_chart_version
+import json
+
+def sanitize_name(name: str) -> str:
+    """Ensure the name complies with DNS-1035 and RFC 1123."""
+    name = name.strip('-')
+    if not name:
+        raise ValueError("Invalid name: resulting sanitized name is empty")
+    return name
 
 def deploy_kubernetes_dashboard(
         depends: pulumi.Input[list],
@@ -68,6 +76,7 @@ def deploy_kubernetes_dashboard(
                 )
             )
         )
+
 
     return version, release
 

@@ -8,14 +8,14 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: HTTPS
     nginx.ingress.kubernetes.io/secure-backends: "true"
     nginx.ingress.kubernetes.io/session-cookie-hash: sha1
-    nginx.ingress.kubernetes.io/session-cookie-name: openunison-{{ .Values.orchestra_service_name }}
-    nginx.org/ssl-services: openunison-{{ .Values.orchestra_service_name }}
+    nginx.ingress.kubernetes.io/session-cookie-name: {{ .Values.orchestra_service_name }}
+    nginx.org/ssl-services: {{ .Values.orchestra_service_name }}
   labels:
     app.kubernetes.io/component: ingress-nginx
-    app.kubernetes.io/instance: openunison-{{ .Values.orchestra_service_name }}
+    app.kubernetes.io/instance: {{ .Values.orchestra_service_name }}
     app.kubernetes.io/name: openunison
     app.kubernetes.io/part-of: openunison
-  name: openunison-{{ .Values.orchestra_service_name }}-localhost
+  name: {{ .Values.orchestra_service_name }}-localhost
   namespace: openunison
 spec:
   rules:
@@ -24,7 +24,7 @@ spec:
       paths:
       - backend:
           service:
-            name: openunison-{{ .Values.orchestra_service_name }}
+            name: {{ .Values.orchestra_service_name }}
             port:
               number: 443
         path: /
@@ -34,7 +34,7 @@ spec:
       paths:
       - backend:
           service:
-            name: openunison-{{ .Values.orchestra_service_name }}
+            name: {{ .Values.orchestra_service_name }}
             port:
               number: 443
         path: /
@@ -44,7 +44,7 @@ spec:
       paths:
       - backend:
           service:
-            name: openunison-{{ .Values.orchestra_service_name }}
+            name: {{ .Values.orchestra_service_name }}
             port:
               number: 443
         path: /
@@ -57,4 +57,4 @@ status:
   loadBalancer:
     ingress:
     - hostname: localhost
-{{ else }}
+{{ end }}

@@ -292,7 +292,7 @@ def deploy_openunison(
     ou_helm_values["dashboard"]["auth_service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + '-auth'))
     ou_helm_values["dashboard"]["api_service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + '-api'))
     ou_helm_values["dashboard"]["web_service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + '-web'))
-    ou_helm_values["dashboard"]["cert_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + "-certs"))
+
 
     # Apply function to wait for the dashboard release names before proceeding
     def wait_for_dashboard_release_names():
@@ -547,7 +547,7 @@ def deploy_kargo_helm(running_in_gh_spaces: bool,ou_orchestra_release,k8s_provid
     kargo_openunison_release = k8s.helm.v3.Release(
         'kargo-openunison',
         k8s.helm.v3.ReleaseArgs(
-            chart='helm/openunison-kargo',
+            chart='src/helm/openunison-kargo',
 
             namespace='openunison',
             skip_await=False,
