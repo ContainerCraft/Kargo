@@ -471,30 +471,29 @@ def deploy_openunison(
         )
     )
 
+    deploy_kargo_helm(running_in_gh_spaces=running_in_gh_spaces,ou_orchestra_release=ou_orchestra_release,k8s_provider=k8s_provider)
+    cluster_admin_cluster_role_binding = k8s.rbac.v1.ClusterRoleBinding(
+        "clusteradmin-clusterrolebinding",
+        metadata=k8s.meta.v1.ObjectMetaArgs(
+            name="openunison-github-cluster-admins"
+        ),
+        role_ref=k8s.rbac.v1.RoleRefArgs(
+            api_group="rbac.authorization.k8s.io",  # The API group of the role being referenced
+            kind="ClusterRole",  # Indicates the kind of role being referenced
+            name="cluster-admin"  # The name of the ClusterRole you're binding
+        ),
+        subjects=subjects,
+        opts=pulumi.ResourceOptions(
+            provider = k8s_provider,
+            depends_on=[],
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m",
+                update="10m",
+                delete="10m"
+            )
+        )
+    )
     return version, operator_release
-
-
-#    cluster_admin_cluster_role_binding = k8s.rbac.v1.ClusterRoleBinding(
-#        "clusteradmin-clusterrolebinding",
-#        metadata=k8s.meta.v1.ObjectMetaArgs(
-#            name="openunison-github-cluster-admins"
-#        ),
-#        role_ref=k8s.rbac.v1.RoleRefArgs(
-#            api_group="rbac.authorization.k8s.io",  # The API group of the role being referenced
-#            kind="ClusterRole",  # Indicates the kind of role being referenced
-#            name="cluster-admin"  # The name of the ClusterRole you're binding
-#        ),
-#        subjects=subjects,
-#        opts=pulumi.ResourceOptions(
-#            provider = k8s_provider,
-#            depends_on=[],
-#            custom_timeouts=pulumi.CustomTimeouts(
-#                create="8m",
-#                update="10m",
-#                delete="10m"
-#            )
-#        )
-#    )
 #
 #
 #    if prometheus_enabled:
@@ -536,110 +535,32 @@ def deploy_openunison(
 #            )
 #        )
 
-def setup_local_ingress(ou_orchestra_release: any, k8s_provider: any):
 
-    ingress_object = {
-        "apiVersion": "networking.k8s.io/v1",
-        "kind": "Ingress",
-        "metadata": {
-            "annotations": {
-            "argocd.argoproj.io/sync-wave": "50",
-            "cert-manager.io/cluster-issuer": "enterprise-ca",
-            "kubernetes.io/ingress.class": "nginx",
-            "nginx.ingress.kubernetes.io/affinity": "cookie",
-            "nginx.ingress.kubernetes.io/backend-protocol": "HTTPS",
-            "nginx.ingress.kubernetes.io/secure-backends": "true",
-            "nginx.ingress.kubernetes.io/session-cookie-hash": "sha1",
-            "nginx.ingress.kubernetes.io/session-cookie-name": "openunison-orchestra",
-            "nginx.org/ssl-services": "openunison-orchestra"
-            },
-            "labels": {
-            "app.kubernetes.io/component": "ingress-nginx",
-            "app.kubernetes.io/instance": "openunison-orchestra",
-            "app.kubernetes.io/name": "openunison",
-            "app.kubernetes.io/part-of": "openunison"
-            },
-            "name": "openunison-orchestra-localhost",
-            "namespace": "openunison"
-        },
-        "spec": {
-            "rules": [
-            {
-                "host": "localhost",
-                "http": {
-                "paths": [
-                    {
-                    "backend": {
-                        "service": {
-                        "name": ou_orchestra_release.name.apply(lambda name: sanitize_name('openunison-' + name)) ,
-                        "port": {
-                            "number": 443
-                        }
-                        }
-                    },
-                    "path": "/",
-                    "pathType": "Prefix"
-                    }
-                ]
-                }
-            },
-            {
-                "host": "localhost",
-                "http": {
-                "paths": [
-                    {
-                    "backend": {
-                        "service": {
-                        "name": ou_orchestra_release.name.apply(lambda name: sanitize_name('openunison-' + name)),
-                        "port": {
-                            "number": 443
-                        }
-                        }
-                    },
-                    "path": "/",
-                    "pathType": "Prefix"
-                    }
-                ]
-                }
-            },
-            {
-                "host": "localhost",
-                "http": {
-                "paths": [
-                    {
-                    "backend": {
-                        "service": {
-                        "name": ou_orchestra_release.name.apply(lambda name: sanitize_name('openunison-' + name)),
-                        "port": {
-                            "number": 443
-                        }
-                        }
-                    },
-                    "path": "/",
-                    "pathType": "Prefix"
-                    }
-                ]
-                }
-            }
-            ],
-            "tls": [
-            {
-                "hosts": [
-                "localhost"
-                ],
-                "secretName": "ou-tls-certificate"
-            }
-            ]
-        },
-        "status": {
-            "loadBalancer": {
-            "ingress": [
-                {
-                "hostname": "localhost"
-                }
-            ]
-            }
-        }
-        }
 
-     new kubernetes.networking.v1.Ingress("ingress",ingress_object
+def deploy_kargo_helm(running_in_gh_spaces: bool,ou_orchestra_release,k8s_provider: k8s.Provider):
+    kargo_values = {
+        "in_github_codespace": running_in_gh_spaces,
+        "orchestra_service_name": ou_orchestra_release.name.apply(lambda name: sanitize_name('openunison-' + name))
+    }
+
+    chart_name = "kargo-openunison"
+    kargo_openunison_release = k8s.helm.v3.Release(
+        'kargo-openunison',
+        k8s.helm.v3.ReleaseArgs(
+            chart='helm/openunison-kargo',
+
+            namespace='openunison',
+            skip_await=False,
+
+            values=kargo_values,
+        ),
+        opts=pulumi.ResourceOptions(
+            provider = k8s_provider,
+            depends_on=[ou_orchestra_release],
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m",
+                update="10m",
+                delete="10m"
+            )
+        )
+    )
