@@ -177,6 +177,16 @@ tasks:
             echo "Set your GitHub OAuth2 Application's 'Authorization callback URL' to https://$CODESPACE_NAME-10443.app.github.dev/auth/github"
           fi
 
+  enable-kubevirt-manager:
+    desc: Enables the KubeVirt Manager Web UI
+    cmds:
+    - task: install-gum
+    - task: install-pen
+    - pen 13443 127.0.0.1:10443
+    - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
+    - source .envrc && pulumi config set --path kubevirt_manager.enabled true
+
+
 
   iac-deploy:
     desc: "Deploy Pulumi infrastructure."
