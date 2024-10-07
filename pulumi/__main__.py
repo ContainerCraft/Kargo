@@ -20,6 +20,7 @@ from src.ceph.deploy import deploy_rook_operator
 from src.vm.ubuntu import deploy_ubuntu_vm
 from src.vm.talos import deploy_talos_cluster
 from src.ingress_nginx.deploy import deploy_ingress_nginx
+from src.kv_manager.deploy import deploy_ui_for_kubevirt
 
 ##################################################################################
 # Load the Pulumi Config
@@ -388,6 +389,8 @@ def run_openunison():
 
         safe_append(custom_depends,nginx_release)
         safe_append(custom_depends,kubernetes_dashboard_release)
+        if (kubevirt_manager):
+            safe_append(custom_depends,kubevirt_manager);
 
 
         # if kubevirt_enabled:
@@ -445,14 +448,11 @@ rook_operator = run_rook_ceph()
 ##################################################################################
 # Deploy Kubevirt Manager
 def run_kubevirt_manager():
-    kubevirt_manager_enabled = config.get_bool('kubevirt_manager.enabled') or False
+    kubevirt_manager_enabled = config_kubevirt_manager.get("enabled") or False
     if kubevirt_manager_enabled:
         kubevirt_manager = deploy_ui_for_kubevirt(
             "kargo",
             k8s_provider,
-            kubernetes_distribution,
-            "kargo",
-            "kubevirt_manager"
         )
         pulumi.export('kubevirt_manager', kubevirt_manager)
         return kubevirt_manager
