@@ -365,6 +365,21 @@ def run_kubernetes_dashboard():
 kubernetes_dashboard, kubernetes_dashboard_release = run_kubernetes_dashboard()
 
 ##################################################################################
+# Deploy Kubevirt Manager
+def run_kubevirt_manager():
+    kubevirt_manager_enabled = config_kubevirt_manager.get("enabled") or False
+    if kubevirt_manager_enabled:
+        kubevirt_manager = deploy_ui_for_kubevirt(
+            "kargo",
+            k8s_provider,
+        )
+
+        return kubevirt_manager
+    return None
+
+kubevirt_manager = run_kubevirt_manager()
+
+##################################################################################
 def run_openunison():
     if openunison_enabled:
         ns_name = "openunison"
@@ -415,6 +430,7 @@ def run_openunison():
             openunison_github_client_secret,
             openunison_github_teams,
             enabled,
+            kubevirt_manager != None
         )
 
         versions["openunison"] = {"enabled": openunison_enabled, "version": openunison[0]}
@@ -445,20 +461,7 @@ def run_rook_ceph():
 
 rook_operator = run_rook_ceph()
 
-##################################################################################
-# Deploy Kubevirt Manager
-def run_kubevirt_manager():
-    kubevirt_manager_enabled = config_kubevirt_manager.get("enabled") or False
-    if kubevirt_manager_enabled:
-        kubevirt_manager = deploy_ui_for_kubevirt(
-            "kargo",
-            k8s_provider,
-        )
-        pulumi.export('kubevirt_manager', kubevirt_manager)
-        return kubevirt_manager
-    return None
 
-kubevirt_manager = run_kubevirt_manager()
 
 ##################################################################################
 # Deploy Ubuntu VM

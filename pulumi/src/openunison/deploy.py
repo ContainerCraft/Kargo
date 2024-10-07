@@ -28,7 +28,8 @@ def deploy_openunison(
         ou_github_client_id: str,
         ou_github_client_secret: str,
         ou_github_teams: str,
-        enabled : bool
+        enabled : bool,
+        kubevirt_manager_enabled: bool
     ):
 
     ns_retain = True
@@ -94,6 +95,7 @@ def deploy_openunison(
     ou_host = ""
     k8sdb_host = ""
     api_server_host = ""
+    kubevirt_manager_host = ""
 
     running_in_gh_spaces = os.getenv("GITHUB_USER") or None
 
@@ -103,10 +105,12 @@ def deploy_openunison(
         ou_host = os.getenv("CODESPACE_NAME") + '-10443.app.github.dev'
         k8sdb_host = os.getenv("CODESPACE_NAME") + '-11443.app.github.dev'
         api_server_host = os.getenv("CODESPACE_NAME") + '-12443.app.github.dev'
+        kubevirt_manager_host = os.getenv("CODESPACE_NAME") + '-13443.app.github.dev'
     else:
         ou_host = f"k8sou.{domain_suffix}"
         k8sdb_host = f"k8sdb.{domain_suffix}"
         api_server_host = f"k8sapi.{domain_suffix}"
+        kubevirt_manager_host = f"kubevirt-manager.{domain_suffix}"
 
     ou_helm_values = {
         "enable_wait_for_job": True,
@@ -233,19 +237,25 @@ def deploy_openunison(
     alertmanager_icon_json = json.dumps(assets["alertmanager_icon"])
     grafana_icon_json = json.dumps(assets["grafana_icon"])
 
+
+
     # if enabled["kubevirt"] and enabled["kubevirt"]["enabled"]:
-    #     ou_helm_values["openunison"]["apps"].append(
-    #         {
-    #             "name": "kubevirt-manager",
-    #             "label": "KubeVirt Manager",
-    #             "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
-    #             "badgeUrl": "https://kubeverit-manager." + domain_suffix + "/",
-    #             "injectToken": False,
-    #             "proxyTo": "http://kubevirt-manager.kubevirt-manager.svc:8080${fullURI}",
-    #             "az_groups": az_groups,
-    #             "icon": f"{kubevirt_icon_json}",
-    #         }
-    #     )
+    if kubevirt_manager_enabled:
+
+
+
+        ou_helm_values["openunison"]["apps"].append(
+            {
+                "name": "kubevirt-manager",
+                "label": "KubeVirt Manager",
+                "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
+                "badgeUrl": "https://" + kubevirt_manager_host,
+                "injectToken": False,
+                "proxyTo": "http://kubevirt-manager.kubevirt-manager.svc:8080${fullURI}",
+                "az_groups": az_groups,
+                "icon": f"{kubevirt_icon_json}",
+            }
+        )
 
     # if enabled["prometheus"] and enabled["prometheus"]["enabled"]:
     #     ou_helm_values["openunison"]["apps"].append(
