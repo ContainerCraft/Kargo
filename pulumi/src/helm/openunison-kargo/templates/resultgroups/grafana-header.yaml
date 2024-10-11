@@ -1,0 +1,12 @@
+apiVersion: openunison.tremolo.io/v1
+kind: ResultGroup
+metadata:
+  name: grafana-header
+  namespace: openunison
+spec:
+  - resultType: header
+    source: static
+    value: X-WEBAUTH-GROUPS=Admin
+  - resultType: header
+    source: user
+    value: X-WEBAUTH-USER=uid

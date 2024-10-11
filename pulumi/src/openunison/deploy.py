@@ -93,6 +93,9 @@ def deploy_openunison(
     k8sdb_host = ""
     api_server_host = ""
     kubevirt_manager_host = ""
+    prometheus_host = ""
+    alertmanager_host = ""
+    grafana_host = ""
 
     running_in_gh_spaces = os.getenv("GITHUB_USER") or None
 
@@ -103,11 +106,18 @@ def deploy_openunison(
         k8sdb_host = os.getenv("CODESPACE_NAME") + '-11443.app.github.dev'
         api_server_host = os.getenv("CODESPACE_NAME") + '-12443.app.github.dev'
         kubevirt_manager_host = os.getenv("CODESPACE_NAME") + '-13443.app.github.dev'
+        prometheus_host = os.getenv("CODESPACE_NAME") + '-14443.app.github.dev'
+        alertmanager_host = os.getenv("CODESPACE_NAME") + '-15443.app.github.dev'
+        grafana_host = os.getenv("CODESPACE_NAME") + '-16443.app.github.dev'
     else:
         ou_host = f"k8sou.{domain_suffix}"
         k8sdb_host = f"k8sdb.{domain_suffix}"
         api_server_host = f"k8sapi.{domain_suffix}"
         kubevirt_manager_host = f"kubevirt-manager.{domain_suffix}"
+        prometheus_host = f"prometheus.{domain_suffix}"
+        alertmanager_host = f"alertmanager.{domain_suffix}"
+        grafana_host = f"grafana.{domain_suffix}"
+
 
     ou_helm_values = {
         "enable_wait_for_job": True,
@@ -251,46 +261,46 @@ def deploy_openunison(
             }
         )
 
-    # if enabled["prometheus"] and enabled["prometheus"]["enabled"]:
-    #     ou_helm_values["openunison"]["apps"].append(
-    #         {
-    #             "name": "prometheus",
-    #             "label": "Prometheus",
-    #             "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
-    #             "badgeUrl": f"https://prometheus.{domain_suffix}/",
-    #             "injectToken": False,
-    #             "proxyTo": "http://prometheus.monitoring.svc:9090${fullURI}",
-    #             "az_groups": az_groups,
-    #             "icon": f"{prometheus_icon_json}",
-    #         }
-    #     )
+    if "prometheus" in enabled and enabled["prometheus"]["enabled"]:
+        ou_helm_values["openunison"]["apps"].append(
+            {
+                "name": "prometheus",
+                "label": "Prometheus",
+                "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
+                "badgeUrl": f"https://{prometheus_host}",
+                "injectToken": False,
+                "proxyTo": "http://prometheus.monitoring.svc:9090${fullURI}",
+                "az_groups": az_groups,
+                "icon": f"{prometheus_icon_json}",
+            }
+        )
 
-    #     ou_helm_values["openunison"]["apps"].append(
-    #                 {
-    #                     "name": "alertmanager",
-    #                     "label": "Alert Manager",
-    #                     "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
-    #                     "badgeUrl": "https://alertmanager." + domain_suffix + "/",
-    #                     "injectToken": False,
-    #                     "proxyTo": "http://alertmanager.monitoring.svc:9093${fullURI}",
-    #                     "az_groups": az_groups,
-    #                     "icon": f"{alertmanager_icon_json}",
-    #                 }
-    #     )
+        ou_helm_values["openunison"]["apps"].append(
+                    {
+                        "name": "alertmanager",
+                        "label": "Alert Manager",
+                        "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
+                        "badgeUrl": f"https://{alertmanager_host}",
+                        "injectToken": False,
+                        "proxyTo": "http://alertmanager.monitoring.svc:9093${fullURI}",
+                        "az_groups": az_groups,
+                        "icon": f"{alertmanager_icon_json}",
+                    }
+        )
 
-    #     ou_helm_values["openunison"]["apps"].append(
-    #         {
-    #             "name": "grafana",
-    #             "label": "Grafana",
-    #             "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
-    #             "badgeUrl": "https://grafana." + domain_suffix + "/",
-    #             "injectToken": False,
-    #             "azSuccessResponse":"grafana",
-    #             "proxyTo": "http://grafana.monitoring.svc${fullURI}",
-    #             "az_groups": az_groups,
-    #             "icon": f"{grafana_icon_json}",
-    #         }
-    #     )
+        ou_helm_values["openunison"]["apps"].append(
+            {
+                "name": "grafana",
+                "label": "Grafana",
+                "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
+                "badgeUrl": f"https://{grafana_host}/",
+                "injectToken": False,
+                "azSuccessResponse":"grafana-header",
+                "proxyTo": "http://grafana.monitoring.svc${fullURI}",
+                "az_groups": az_groups,
+                "icon": f"{grafana_icon_json}",
+            }
+        )
 
     ou_helm_values["dashboard"]["service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name))
     ou_helm_values["dashboard"]["auth_service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + '-auth'))
@@ -498,47 +508,8 @@ def deploy_openunison(
             )
         )
     )
+
     return version, operator_release
-#
-#
-#    if prometheus_enabled:
-#        # create the Grafana ResultGroup
-#        ou_grafana_resultgroup = CustomResource(
-#            "openunison-grafana",
-#            api_version="openunison.tremolo.io/v1",
-#            kind="ResultGroup",
-#            metadata={
-#                "labels": {
-#                    "app.kubernetes.io/component": "openunison-resultgroups",
-#                    "app.kubernetes.io/instance": "openunison-orchestra-login-portal",
-#                    "app.kubernetes.io/name": "openunison",
-#                    "app.kubernetes.io/part-of": "openunison"
-#                    },
-#                "name": "grafana",
-#                "namespace": "openunison"
-#            },
-#            spec=[
-#                {
-#                "resultType": "header",
-#                "source": "static",
-#                "value": "X-WEBAUTH-GROUPS=Admin"
-#                },
-#                {
-#                "resultType": "header",
-#                "source": "user",
-#                "value": "X-WEBAUTH-USER=uid"
-#                }
-#            ],
-#            opts=pulumi.ResourceOptions(
-#                provider = k8s_provider,
-#                depends_on=[ou_orchestra_release],
-#                custom_timeouts=pulumi.CustomTimeouts(
-#                    create="5m",
-#                    update="10m",
-#                    delete="10m"
-#                )
-#            )
-#        )
 
 
 

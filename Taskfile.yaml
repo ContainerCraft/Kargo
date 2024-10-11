@@ -186,6 +186,17 @@ tasks:
     - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
     - source .envrc && pulumi config set --path kubevirt_manager.enabled true
 
+  enable-prometheus:
+    desc: Enables Prometheus
+    cmds:
+    - task: install-gum
+    - task: install-pen
+    - pen 14443 127.0.0.1:10443
+    - pen 15443 127.0.0.1:10443
+    - pen 16443 127.0.0.1:10443
+    - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
+    - source .envrc && pulumi config set --path prometheus.enabled true
+
 
 
   iac-deploy:

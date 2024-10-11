@@ -329,10 +329,10 @@ def run_prometheus():
             openunison_enabled
         )
 
-        versions["prometheus"] = {"enabled": prometheus_enabled, "version": prometheus[0]}
+        versions["prometheus"] = {"enabled": prometheus_enabled, "version": prometheus[0],"release":prometheus[1]}
         prometheus_release = prometheus[1]
 
-        safe_append(depends, prometheus_release)
+        safe_append(openunison_depends, prometheus_release)
 
         return prometheus, prometheus_release
     return None, None
