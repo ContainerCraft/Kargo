@@ -23,15 +23,12 @@ def deploy_openunison(
         domain_suffix: str,
         cluster_issuer: str,
         cert_manager_selfsigned_cert: str,
-        kubernetes_dashboard_release: str,
-        nginx_release: str,
         ou_github_client_id: str,
         ou_github_client_secret: str,
         ou_github_teams: str,
-        enabled : bool,
-        kubevirt_manager_enabled: bool
+        enabled
     ):
-
+    kubernetes_dashboard_release = enabled["kubernetes_dashboard"]["release"]
     ns_retain = True
     ns_protect = False
     ns_annotations = {}
@@ -240,10 +237,7 @@ def deploy_openunison(
 
 
     # if enabled["kubevirt"] and enabled["kubevirt"]["enabled"]:
-    if kubevirt_manager_enabled:
-
-
-
+    if "kubevirt_manager" in enabled and  enabled["kubevirt_manager"]["enabled"]:
         ou_helm_values["openunison"]["apps"].append(
             {
                 "name": "kubevirt-manager",
@@ -307,6 +301,7 @@ def deploy_openunison(
     # Apply function to wait for the dashboard release names before proceeding
     def wait_for_dashboard_release_names():
         return ou_helm_values
+
 
     orchesrta_login_portal_helm_values = kubernetes_dashboard_release.name.apply(lambda _: wait_for_dashboard_release_names())
 

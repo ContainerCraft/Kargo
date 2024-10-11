@@ -16,4 +16,4 @@ def deploy_ui_for_kubevirt(name: str, k8s_provider: Provider):
     # There's no helm chart for kubevirt-manager so <christopher walken shrug>
     kubevirt_manager_manifest_url = 'https://raw.githubusercontent.com/kubevirt-manager/kubevirt-manager/main/kubernetes/bundled.yaml'
     k8s_yaml = k8s.yaml.ConfigFile("kubevirt-manager", file=kubevirt_manager_manifest_url)
-    return k8s_yaml
+    return "1.4.1", k8s_yaml

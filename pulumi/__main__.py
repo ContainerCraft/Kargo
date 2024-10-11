@@ -85,6 +85,9 @@ config_talos, talos_cluster_enabled = get_module_config('talos')
 
 depends = []
 
+# defining a separate depends list for openunison to avoid circular dependencies
+openunison_depends = []
+
 def safe_append(depends, resource):
     if resource:
         depends.append(resource)
@@ -176,7 +179,7 @@ def run_kubevirt():
         versions["kubevirt"] = {"enabled": kubevirt_enabled, "version": kubevirt[0]}
         kubevirt_operator = kubevirt[1]
 
-        safe_append(depends, kubevirt_operator)
+        safe_append(openunison_depends, kubevirt_operator)
 
         return kubevirt, kubevirt_operator
     return None, None
@@ -354,10 +357,10 @@ def run_kubernetes_dashboard():
             openunison_enabled
         )
 
-        versions["kubernetes_dashboard"] = {"enabled": kubernetes_dashboard_enabled, "version": kubernetes_dashboard[0]}
+        versions["kubernetes_dashboard"] = {"enabled": kubernetes_dashboard_enabled, "version": kubernetes_dashboard[0], "release":kubernetes_dashboard[1]}
         kubernetes_dashboard_release = kubernetes_dashboard[1]
 
-        safe_append(depends, kubernetes_dashboard_release)
+        safe_append(openunison_depends, kubernetes_dashboard_release)
 
         return kubernetes_dashboard, kubernetes_dashboard_release
     return None, None
@@ -374,10 +377,17 @@ def run_kubevirt_manager():
             k8s_provider,
         )
 
-        return kubevirt_manager
-    return None
+        versions["kubevirt_manager"] = {"enabled": kubevirt_manager_enabled, "version": kubevirt_manager[0]}
+        kubevirt_manager_release = kubevirt_manager[1]
 
-kubevirt_manager = run_kubevirt_manager()
+        safe_append(openunison_depends, kubevirt_manager_release)
+
+        return kubevirt_manager, kubevirt_manager_release
+
+
+    return None, None
+
+kubevirt_manager, kubevirt_manager_release = run_kubevirt_manager()
 
 ##################################################################################
 def run_openunison():
@@ -403,18 +413,10 @@ def run_openunison():
 
 
         safe_append(custom_depends,nginx_release)
-        safe_append(custom_depends,kubernetes_dashboard_release)
-        if (kubevirt_manager):
-            safe_append(custom_depends,kubevirt_manager);
 
+        custom_depends.extend(depends)
+        custom_depends.extend(openunison_depends)
 
-        # if kubevirt_enabled:
-        #     enabled["kubevirt"] = {"enabled": kubevirt_enabled}
-
-        # if prometheus_enabled:
-        #     enabled["prometheus"] = {"enabled": prometheus_enabled}
-
-        pulumi.export("enabled", enabled)
 
         openunison = deploy_openunison(
             custom_depends,
@@ -424,13 +426,10 @@ def run_openunison():
             domain_suffix,
             cluster_issuer,
             cert_manager_selfsigned_cert,
-            kubernetes_dashboard_release,
-            nginx_release,
             openunison_github_client_id,
             openunison_github_client_secret,
             openunison_github_teams,
-            enabled,
-            kubevirt_manager != None
+            versions
         )
 
         versions["openunison"] = {"enabled": openunison_enabled, "version": openunison[0]}
