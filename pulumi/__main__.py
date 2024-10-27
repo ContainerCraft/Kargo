@@ -19,6 +19,8 @@ from src.kv_manager.deploy import deploy_ui_for_kubevirt
 from src.ceph.deploy import deploy_rook_operator
 from src.vm.ubuntu import deploy_ubuntu_vm
 from src.vm.talos import deploy_talos_cluster
+from src.ingress_nginx.deploy import deploy_ingress_nginx
+from src.kv_manager.deploy import deploy_ui_for_kubevirt
 
 ##################################################################################
 # Load the Pulumi Config
@@ -82,6 +84,9 @@ config_talos, talos_cluster_enabled = get_module_config('talos')
 ##################################################################################
 
 depends = []
+
+# defining a separate depends list for openunison to avoid circular dependencies
+openunison_depends = []
 
 def safe_append(depends, resource):
     if resource:
@@ -174,7 +179,7 @@ def run_kubevirt():
         versions["kubevirt"] = {"enabled": kubevirt_enabled, "version": kubevirt[0]}
         kubevirt_operator = kubevirt[1]
 
-        safe_append(depends, kubevirt_operator)
+        safe_append(openunison_depends, kubevirt_operator)
 
         return kubevirt, kubevirt_operator
     return None, None
@@ -324,10 +329,10 @@ def run_prometheus():
             openunison_enabled
         )
 
-        versions["prometheus"] = {"enabled": prometheus_enabled, "version": prometheus[0]}
+        versions["prometheus"] = {"enabled": prometheus_enabled, "version": prometheus[0],"release":prometheus[1]}
         prometheus_release = prometheus[1]
 
-        safe_append(depends, prometheus_release)
+        safe_append(openunison_depends, prometheus_release)
 
         return prometheus, prometheus_release
     return None, None
@@ -348,18 +353,41 @@ def run_kubernetes_dashboard():
             depends,
             ns_name,
             kubernetes_dashboard_version,
-            k8s_provider
+            k8s_provider,
+            openunison_enabled
         )
 
-        versions["kubernetes_dashboard"] = {"enabled": kubernetes_dashboard_enabled, "version": kubernetes_dashboard[0]}
+        versions["kubernetes_dashboard"] = {"enabled": kubernetes_dashboard_enabled, "version": kubernetes_dashboard[0], "release":kubernetes_dashboard[1]}
         kubernetes_dashboard_release = kubernetes_dashboard[1]
 
-        safe_append(depends, kubernetes_dashboard_release)
+        safe_append(openunison_depends, kubernetes_dashboard_release)
 
         return kubernetes_dashboard, kubernetes_dashboard_release
     return None, None
 
 kubernetes_dashboard, kubernetes_dashboard_release = run_kubernetes_dashboard()
+
+##################################################################################
+# Deploy Kubevirt Manager
+def run_kubevirt_manager():
+    kubevirt_manager_enabled = config_kubevirt_manager.get("enabled") or False
+    if kubevirt_manager_enabled:
+        kubevirt_manager = deploy_ui_for_kubevirt(
+            "kargo",
+            k8s_provider,
+        )
+
+        versions["kubevirt_manager"] = {"enabled": kubevirt_manager_enabled, "version": kubevirt_manager[0]}
+        kubevirt_manager_release = kubevirt_manager[1]
+
+        safe_append(openunison_depends, kubevirt_manager_release)
+
+        return kubevirt_manager, kubevirt_manager_release
+
+
+    return None, None
+
+kubevirt_manager, kubevirt_manager_release = run_kubevirt_manager()
 
 ##################################################################################
 def run_openunison():
@@ -369,34 +397,39 @@ def run_openunison():
         domain_suffix = config_openunison.get('dns_suffix') or "kargo.arpa"
         cluster_issuer = config_openunison.get('cluster_issuer') or "cluster-selfsigned-issuer-ca"
 
-        config_openunison_github = config_openunison.get_object('github') or {}
+        config_openunison_github = config_openunison.get('github') or {}
         openunison_github_teams = config_openunison_github.get('teams')
         openunison_github_client_id = config_openunison_github.get('client_id')
         openunison_github_client_secret = config_openunison_github.get('client_secret')
 
         enabled = {}
 
-        if kubevirt_enabled:
-            enabled["kubevirt"] = {"enabled": kubevirt_enabled}
+        custom_depends = []
 
-        if prometheus_enabled:
-            enabled["prometheus"] = {"enabled": prometheus_enabled}
 
-        pulumi.export("enabled", enabled)
+        # Assume ingress-nginx for OpenUnison
+        nginx_release, nginx_version = deploy_ingress_nginx(None,"ingress-nginx",k8s_provider)
+        versions["nginx"] = {"enabled": openunison_enabled, "version": nginx_version}
+
+
+        safe_append(custom_depends,nginx_release)
+
+        custom_depends.extend(depends)
+        custom_depends.extend(openunison_depends)
+
 
         openunison = deploy_openunison(
-            depends,
+            custom_depends,
             ns_name,
             openunison_version,
             k8s_provider,
             domain_suffix,
             cluster_issuer,
             cert_manager_selfsigned_cert,
-            kubernetes_dashboard_release,
             openunison_github_client_id,
             openunison_github_client_secret,
             openunison_github_teams,
-            enabled,
+            versions
         )
 
         versions["openunison"] = {"enabled": openunison_enabled, "version": openunison[0]}
@@ -405,6 +438,7 @@ def run_openunison():
         safe_append(depends, openunison_release)
 
         return openunison, openunison_release
+
     return None, None
 
 openunison, openunison_release = run_openunison()
@@ -426,23 +460,7 @@ def run_rook_ceph():
 
 rook_operator = run_rook_ceph()
 
-##################################################################################
-# Deploy Kubevirt Manager
-def run_kubevirt_manager():
-    kubevirt_manager_enabled = config.get_bool('kubevirt_manager.enabled') or False
-    if kubevirt_manager_enabled:
-        kubevirt_manager = deploy_ui_for_kubevirt(
-            "kargo",
-            k8s_provider,
-            kubernetes_distribution,
-            "kargo",
-            "kubevirt_manager"
-        )
-        pulumi.export('kubevirt_manager', kubevirt_manager)
-        return kubevirt_manager
-    return None
 
-kubevirt_manager = run_kubevirt_manager()
 
 ##################################################################################
 # Deploy Ubuntu VM

@@ -1,4 +1,5 @@
 import json
+import os
 import base64
 import secrets
 import pulumi
@@ -22,13 +23,12 @@ def deploy_openunison(
         domain_suffix: str,
         cluster_issuer: str,
         cert_manager_selfsigned_cert: str,
-        kubernetes_dashboard_release: str,
         ou_github_client_id: str,
         ou_github_client_secret: str,
         ou_github_teams: str,
         enabled
     ):
-
+    kubernetes_dashboard_release = enabled["kubernetes_dashboard"]["release"]
     ns_retain = True
     ns_protect = False
     ns_annotations = {}
@@ -36,7 +36,7 @@ def deploy_openunison(
         "kubernetes.io/metadata.name": ns_name
     }
     namespace = create_namespace(
-        depends,
+        None,
         ns_name,
         ns_retain,
         ns_protect,
@@ -89,12 +89,42 @@ def deploy_openunison(
     )
     depends.append(ou_certificate)
 
+    ou_host = ""
+    k8sdb_host = ""
+    api_server_host = ""
+    kubevirt_manager_host = ""
+    prometheus_host = ""
+    alertmanager_host = ""
+    grafana_host = ""
+
+    running_in_gh_spaces = os.getenv("GITHUB_USER") or None
+
+    # if running inside of Github Spaces, we'll set the hosts based on the github space name
+    # if it's standalone, we'll configure based on the suffix
+    if running_in_gh_spaces:
+        ou_host = os.getenv("CODESPACE_NAME") + '-10443.app.github.dev'
+        k8sdb_host = os.getenv("CODESPACE_NAME") + '-11443.app.github.dev'
+        api_server_host = os.getenv("CODESPACE_NAME") + '-12443.app.github.dev'
+        kubevirt_manager_host = os.getenv("CODESPACE_NAME") + '-13443.app.github.dev'
+        prometheus_host = os.getenv("CODESPACE_NAME") + '-14443.app.github.dev'
+        alertmanager_host = os.getenv("CODESPACE_NAME") + '-15443.app.github.dev'
+        grafana_host = os.getenv("CODESPACE_NAME") + '-16443.app.github.dev'
+    else:
+        ou_host = f"k8sou.{domain_suffix}"
+        k8sdb_host = f"k8sdb.{domain_suffix}"
+        api_server_host = f"k8sapi.{domain_suffix}"
+        kubevirt_manager_host = f"kubevirt-manager.{domain_suffix}"
+        prometheus_host = f"prometheus.{domain_suffix}"
+        alertmanager_host = f"alertmanager.{domain_suffix}"
+        grafana_host = f"grafana.{domain_suffix}"
+
+
     ou_helm_values = {
         "enable_wait_for_job": True,
         "network": {
-            "ou_host": f"k8sou.{domain_suffix}",
-            "dashboard_host": f"k8sdb.{domain_suffix}",
-            "api_server_host": f"k8sapi.{domain_suffix}",
+            "openunison_host": ou_host,
+            "dashboard_host": k8sdb_host,
+            "api_server_host": api_server_host,
             "session_inactivity_timeout_seconds": 900,
             "k8s_url": "https://192.168.2.130:6443",
             "force_redirect_to_tls": False,
@@ -113,22 +143,21 @@ def deploy_openunison(
         "k8s_cluster_name": "openunison-kargo",
         "enable_impersonation": True,
         "impersonation": {
-            "use_jetstack": True,
-            "explicit_certificate_trust": True
+            "use_jetstack": not running_in_gh_spaces,
+            "explicit_certificate_trust": not running_in_gh_spaces
         },
         "dashboard": {
             "namespace": "kubernetes-dashboard",
-            "label": "app.kubernetes.io/name=kubernetes-dashboard",
-            "require_session": True
+            "label": "k8s-app=kubernetes-dashboard",
+            "require_session": True,
+            "new": True
+
         },
         "certs": {
             "use_k8s_cm": False
         },
         "trusted_certs": [
-        {
-            "name": "unison-ca",
-            "pem_b64": cert_manager_selfsigned_cert,
-        }
+
         ],
         "monitoring": {
             "prometheus_service_account": "system:serviceaccount:monitoring:prometheus-k8s"
@@ -178,6 +207,14 @@ def deploy_openunison(
         }
     }
 
+    if not running_in_gh_spaces:
+        ou_helm_values["trusted_certs"].append(
+            {
+            "name": "unison-ca",
+            "pem_b64": cert_manager_selfsigned_cert,
+            }
+        )
+
     # now that OpenUnison is deployed, we'll make ClusterAdmins of all the groups specified in openunison.github.teams
     github_teams = ou_github_teams.split(',')
     subjects = []
@@ -207,13 +244,16 @@ def deploy_openunison(
     alertmanager_icon_json = json.dumps(assets["alertmanager_icon"])
     grafana_icon_json = json.dumps(assets["grafana_icon"])
 
-    if enabled["kubevirt"]["enabled"]:
+
+
+    # if enabled["kubevirt"] and enabled["kubevirt"]["enabled"]:
+    if "kubevirt_manager" in enabled and  enabled["kubevirt_manager"]["enabled"]:
         ou_helm_values["openunison"]["apps"].append(
             {
                 "name": "kubevirt-manager",
                 "label": "KubeVirt Manager",
                 "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
-                "badgeUrl": "https://kubeverit-manager." + domain_suffix + "/",
+                "badgeUrl": "https://" + kubevirt_manager_host,
                 "injectToken": False,
                 "proxyTo": "http://kubevirt-manager.kubevirt-manager.svc:8080${fullURI}",
                 "az_groups": az_groups,
@@ -221,13 +261,13 @@ def deploy_openunison(
             }
         )
 
-    if enabled["prometheus"]["enabled"]:
+    if "prometheus" in enabled and enabled["prometheus"]["enabled"]:
         ou_helm_values["openunison"]["apps"].append(
             {
                 "name": "prometheus",
                 "label": "Prometheus",
                 "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
-                "badgeUrl": f"https://prometheus.{domain_suffix}/",
+                "badgeUrl": f"https://{prometheus_host}",
                 "injectToken": False,
                 "proxyTo": "http://prometheus.monitoring.svc:9090${fullURI}",
                 "az_groups": az_groups,
@@ -240,7 +280,7 @@ def deploy_openunison(
                         "name": "alertmanager",
                         "label": "Alert Manager",
                         "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
-                        "badgeUrl": "https://alertmanager." + domain_suffix + "/",
+                        "badgeUrl": f"https://{alertmanager_host}",
                         "injectToken": False,
                         "proxyTo": "http://alertmanager.monitoring.svc:9093${fullURI}",
                         "az_groups": az_groups,
@@ -253,9 +293,9 @@ def deploy_openunison(
                 "name": "grafana",
                 "label": "Grafana",
                 "org": "b1bf4c92-7220-4ad2-91af-ee0fe0af7312",
-                "badgeUrl": "https://grafana." + domain_suffix + "/",
+                "badgeUrl": f"https://{grafana_host}/",
                 "injectToken": False,
-                "azSuccessResponse":"grafana",
+                "azSuccessResponse":"grafana-header",
                 "proxyTo": "http://grafana.monitoring.svc${fullURI}",
                 "az_groups": az_groups,
                 "icon": f"{grafana_icon_json}",
@@ -263,11 +303,15 @@ def deploy_openunison(
         )
 
     ou_helm_values["dashboard"]["service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name))
-    ou_helm_values["dashboard"]["cert_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + "-certs"))
+    ou_helm_values["dashboard"]["auth_service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + '-auth'))
+    ou_helm_values["dashboard"]["api_service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + '-api'))
+    ou_helm_values["dashboard"]["web_service_name"] = kubernetes_dashboard_release.name.apply(lambda name: sanitize_name(name + '-web'))
+
 
     # Apply function to wait for the dashboard release names before proceeding
     def wait_for_dashboard_release_names():
         return ou_helm_values
+
 
     orchesrta_login_portal_helm_values = kubernetes_dashboard_release.name.apply(lambda _: wait_for_dashboard_release_names())
 
@@ -442,67 +486,57 @@ def deploy_openunison(
         )
     )
 
+    deploy_kargo_helm(running_in_gh_spaces=running_in_gh_spaces,ou_orchestra_release=ou_orchestra_release,k8s_provider=k8s_provider)
+    cluster_admin_cluster_role_binding = k8s.rbac.v1.ClusterRoleBinding(
+        "clusteradmin-clusterrolebinding",
+        metadata=k8s.meta.v1.ObjectMetaArgs(
+            name="openunison-github-cluster-admins"
+        ),
+        role_ref=k8s.rbac.v1.RoleRefArgs(
+            api_group="rbac.authorization.k8s.io",  # The API group of the role being referenced
+            kind="ClusterRole",  # Indicates the kind of role being referenced
+            name="cluster-admin"  # The name of the ClusterRole you're binding
+        ),
+        subjects=subjects,
+        opts=pulumi.ResourceOptions(
+            provider = k8s_provider,
+            depends_on=[],
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m",
+                update="10m",
+                delete="10m"
+            )
+        )
+    )
+
     return version, operator_release
 
 
-#    cluster_admin_cluster_role_binding = k8s.rbac.v1.ClusterRoleBinding(
-#        "clusteradmin-clusterrolebinding",
-#        metadata=k8s.meta.v1.ObjectMetaArgs(
-#            name="openunison-github-cluster-admins"
-#        ),
-#        role_ref=k8s.rbac.v1.RoleRefArgs(
-#            api_group="rbac.authorization.k8s.io",  # The API group of the role being referenced
-#            kind="ClusterRole",  # Indicates the kind of role being referenced
-#            name="cluster-admin"  # The name of the ClusterRole you're binding
-#        ),
-#        subjects=subjects,
-#        opts=pulumi.ResourceOptions(
-#            provider = k8s_provider,
-#            depends_on=[],
-#            custom_timeouts=pulumi.CustomTimeouts(
-#                create="8m",
-#                update="10m",
-#                delete="10m"
-#            )
-#        )
-#    )
-#
-#
-#    if prometheus_enabled:
-#        # create the Grafana ResultGroup
-#        ou_grafana_resultgroup = CustomResource(
-#            "openunison-grafana",
-#            api_version="openunison.tremolo.io/v1",
-#            kind="ResultGroup",
-#            metadata={
-#                "labels": {
-#                    "app.kubernetes.io/component": "openunison-resultgroups",
-#                    "app.kubernetes.io/instance": "openunison-orchestra-login-portal",
-#                    "app.kubernetes.io/name": "openunison",
-#                    "app.kubernetes.io/part-of": "openunison"
-#                    },
-#                "name": "grafana",
-#                "namespace": "openunison"
-#            },
-#            spec=[
-#                {
-#                "resultType": "header",
-#                "source": "static",
-#                "value": "X-WEBAUTH-GROUPS=Admin"
-#                },
-#                {
-#                "resultType": "header",
-#                "source": "user",
-#                "value": "X-WEBAUTH-USER=uid"
-#                }
-#            ],
-#            opts=pulumi.ResourceOptions(
-#                provider = k8s_provider,
-#                depends_on=[ou_orchestra_release],
-#                custom_timeouts=pulumi.CustomTimeouts(
-#                    create="5m",
-#                    update="10m",
-#                    delete="10m"
-#                )
-#            )
-#        )
+
+def deploy_kargo_helm(running_in_gh_spaces: bool,ou_orchestra_release,k8s_provider: k8s.Provider):
+    kargo_values = {
+        "in_github_codespace": running_in_gh_spaces,
+        "orchestra_service_name": ou_orchestra_release.name.apply(lambda name: sanitize_name('openunison-' + name))
+    }
+
+    chart_name = "kargo-openunison"
+    kargo_openunison_release = k8s.helm.v3.Release(
+        'kargo-openunison',
+        k8s.helm.v3.ReleaseArgs(
+            chart='src/helm/openunison-kargo',
+
+            namespace='openunison',
+            skip_await=False,
+
+            values=kargo_values,
+        ),
+        opts=pulumi.ResourceOptions(
+            provider = k8s_provider,
+            depends_on=[ou_orchestra_release],
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m",
+                update="10m",
+                delete="10m"
+            )
+        )
+    )

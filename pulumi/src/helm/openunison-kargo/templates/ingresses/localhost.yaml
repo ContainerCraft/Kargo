@@ -1,0 +1,60 @@
+{{ if .Values.in_github_codespace }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/affinity: cookie
+    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    nginx.ingress.kubernetes.io/secure-backends: "true"
+    nginx.ingress.kubernetes.io/session-cookie-hash: sha1
+    nginx.ingress.kubernetes.io/session-cookie-name: {{ .Values.orchestra_service_name }}
+    nginx.org/ssl-services: {{ .Values.orchestra_service_name }}
+  labels:
+    app.kubernetes.io/component: ingress-nginx
+    app.kubernetes.io/instance: {{ .Values.orchestra_service_name }}
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/part-of: openunison
+  name: {{ .Values.orchestra_service_name }}-localhost
+  namespace: openunison
+spec:
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ .Values.orchestra_service_name }}
+            port:
+              number: 443
+        path: /
+        pathType: Prefix
+  - host: localhost
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ .Values.orchestra_service_name }}
+            port:
+              number: 443
+        path: /
+        pathType: Prefix
+  - host: localhost
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ .Values.orchestra_service_name }}
+            port:
+              number: 443
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - localhost
+    secretName: ou-tls-certificate
+status:
+  loadBalancer:
+    ingress:
+    - hostname: localhost
+{{ end }}

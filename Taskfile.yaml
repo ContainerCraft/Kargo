@@ -15,7 +15,7 @@ vars:
   talos_patch: "{{.talos_dir}}/patch/cluster.yaml"
   talos_config_file: "{{.talos_dir}}/manifest/talosconfig"
   cluster_name: "talos-kargo-docker"
-  exposed_ports: "30590:30590/tcp"
+  exposed_ports: "30590:30590/tcp,10443:10443/tcp"
   memory: "8192"
   arch:
     sh: |
@@ -137,6 +137,67 @@ tasks:
       - source .envrc && pulumi config set --path cilium.enabled false
       - source .envrc && pulumi config set --path multus.enabled false
       - source .envrc && pulumi config set --path vm.enabled false
+
+  install-gum:
+    desc: Installs the gum utility for collecting user input
+    cmds:
+    - test -e /usr/bin/gum || wget -P /tmp https://github.com/charmbracelet/gum/releases/download/v0.14.5/gum_0.14.5_amd64.deb
+    - test -e /usr/bin/gum || sudo dpkg -i /tmp/gum_0.14.5_amd64.deb
+
+  install-pen:
+    desc: Installs the pen utility for setting up port forwarding
+    cmds:
+    - |-
+        if [[ -z "${GITHUB_USER}" ]]; then
+          echo "Not running in GitHub CodeSpace"
+        else
+          echo "Running in GitHub CodeSpace"
+          test -e /usr/bin/pen || sudo apt-get update
+          test -e /usr/bin/pen || sudo apt-get install -y pen
+        fi
+
+  configure-openunison:
+    desc: "Configure OpenUnison."
+
+    cmds:
+      - task: install-gum
+      - task: install-pen
+      - pen 11443 127.0.0.1:10443
+      - pen 12443 127.0.0.1:10443
+      - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
+      - source .envrc && pulumi config set --path openunison.enabled true
+      - source .envrc && pulumi config set --path kubernetes_dashboard.enabled true
+      - source .envrc && pulumi config set --path openunison.github.client_id $(gum input --placeholder='GitHub OAuth2 Client Id' --header='GitHub OAuth2 Client Id')
+      - source .envrc && pulumi config set --secret --path openunison.github.client_secret $(gum input --placeholder='GitHub OAuth2 Client Secret' --header='GitHub OAuth2 Client Secret')
+      - source .envrc && pulumi config set --path openunison.github.teams $(gum input --placeholder='GitHub OAuth2 Teams' --header='GitHub OAuth2 Teams')
+      - |-
+          if [[ -z "${GITHUB_USER}" ]]; then
+
+          else
+            echo "Set your GitHub OAuth2 Application's 'Authorization callback URL' to https://$CODESPACE_NAME-10443.app.github.dev/auth/github"
+          fi
+
+  enable-kubevirt-manager:
+    desc: Enables the KubeVirt Manager Web UI
+    cmds:
+    - task: install-gum
+    - task: install-pen
+    - pen 13443 127.0.0.1:10443
+    - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
+    - source .envrc && pulumi config set --path kubevirt_manager.enabled true
+
+  enable-prometheus:
+    desc: Enables Prometheus
+    cmds:
+    - task: install-gum
+    - task: install-pen
+    - pen 14443 127.0.0.1:10443
+    - pen 15443 127.0.0.1:10443
+    - pen 16443 127.0.0.1:10443
+    - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
+    - source .envrc && pulumi config set --path prometheus.enabled true
+
+
 
   iac-deploy:
     desc: "Deploy Pulumi infrastructure."
