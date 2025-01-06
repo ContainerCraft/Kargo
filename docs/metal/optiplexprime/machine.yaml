@@ -1,28 +1,45 @@
 machine:
+  features:
+    # Enable KubePrism k8s api proxy listening on each worker/cp node at `localhost:7455`
+    kubePrism:
+      enabled: true
+      port: 7445
   network:
+    hostname: op1
     interfaces:
       - interface: br0
         dhcp: true
         bridge:
           interfaces:
             - enp3s0
+            - enp0s31f6
   disks:
     - device: /dev/sda
       partitions:
-        - mountpoint: /var/mnt/hostpath-provisioner
+        - mountpoint: /var/mnt/hostpath-provisioner/ssd
   kubelet:
-    extraMounts:
-      - destination: /etc/cni/net.d
-        type: bind
-        source: /etc/cni/net.d
-        options:
-          - bind
-          - rshared
-          - rw
-      - destination: /opt/cni/bin
-        type: bind
-        source: /opt/cni/bin
-        options:
-          - bind
-          - rshared
-          - rw
+    extraArgs:
+      # Rotate server certificates automatically
+      # https://kubernetes.io/docs/tasks/tls/certificate-rotation/
+      # Approve the CSR requests for the kubelet to rotate the certificates
+      # https://kubernetes.io/docs/tasks/tls/certificate-rotation/#approving-the-csr-requests
+      # Example Command:
+      # kubectl get csr | grep Pending | awk '{print $1}' | xargs kubectl certificate approve
+      # Example Command for All Namespaces:
+      # kubectl get csr --no-headers | awk '/Pending/ {print $1}' | xargs -I {} kubectl certificate approve {}
+      rotate-server-certificates: "false"
+#   extraMounts:
+#     - destination: /etc/cni/net.d
+#       type: bind
+#       source: /etc/cni/net.d
+#       options:
+#         - bind
+#         - rshared
+#         - rw
+#     - destination: /opt/cni/bin
+#       type: bind
+#       source: /opt/cni/bin
+#       options:
+#         - bind
+#         - rshared
+#         - rw
