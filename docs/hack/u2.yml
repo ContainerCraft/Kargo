@@ -1,0 +1,192 @@
+# Create a secret for SSH key
+# kubectl create secret generic kc2-pubkey --from-file=key1=$HOME/.ssh/id_rsa.pub --dry-run=client -o yaml | kubectl apply -f -
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ubuntu-ssh
+spec:
+  type: NodePort
+  ports:
+    - nodePort: 30590
+      port: 30590
+      protocol: TCP
+      targetPort: 22
+  selector:
+    kc2.ccio.io/instance: ubuntu
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu
+  namespace: default
+  labels:
+    app: kc2
+  annotations:
+    kubevirt.io/allow-pod-bridge-network-live-migration: "true" # Enable live migration for bridge interfaces
+    kubevirt.io/provisionOnNodeChange: "true"                  # Ensure provisioning after node changes
+spec:
+  runStrategy: RerunOnFailure
+  template:
+    metadata:
+      labels:
+        app: kc2
+        kc2.ccio.io/instance: ubuntu
+      annotations:
+        kubevirt.io/allow-pod-bridge-network-live-migration: "true" # Annotation applied for live migration
+    spec:
+      hostname: ubuntu
+      domain:
+        clock:
+          utc: {}
+          timer: {}
+        cpu:
+          cores: 2
+          sockets: 1
+          threads: 2
+          model: host-passthrough
+          dedicatedCpuPlacement: false
+        memory:
+          guest: 8Gi
+        resources:
+          limits:
+            memory: 8Gi
+          requests:
+            memory: 8Gi
+        machine:
+          type: q35
+        devices:
+          rng: {}
+          autoattachPodInterface: false
+          autoattachSerialConsole: true
+          autoattachGraphicsDevice: true
+          networkInterfaceMultiqueue: true
+          disks:
+            - name: containerdisk
+              bootOrder: 1
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: enp1s0                     # Secondary interface
+              bridge: {}                       # Bridge interface
+              macAddress: "de:ad:be:ef:00:02"  # Example MAC address
+            # name: enp2s0                     # Primary interface
+            # model: virtio
+            # masquerade: {}                   # Default pod network
+            # macAddress: "de:ad:be:ef:00:01"  # Example MAC address
+        features:
+          acpi:
+            enabled: true
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
+      networks:
+        - name: enp1s0
+          multus:
+            networkName: br0                   # Multus NetworkAttachmentDefinition
+        # name: enp1s0
+        # pod: {}                              # Default pod network
+      terminationGracePeriodSeconds: 0
+      accessCredentials:
+        - sshPublicKey:
+            source:
+              secret:
+                secretName: kc2-pubkey
+            propagationMethod:
+              qemuGuestAgent:
+                users:
+                  - "kc2"
+      volumes:
+        - name: containerdisk
+          containerDisk:
+            image: docker.io/containercraft/ubuntu:22.04
+            imagePullPolicy: Always
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            networkData: |
+              version: 2
+              ethernets:
+                enp1s0:
+                  dhcp4: true
+                  dhcp6: false
+                  dhcp-identifier: mac
+                enp2s0:
+                  dhcp4: true
+                  dhcp6: false
+                  dhcp-identifier: mac
+            userData: |
+              #cloud-config
+              ssh_pwauth: true
+              chpasswd:
+                list: |
+                   kc2:kc2
+                expire: False
+              users:
+                - name: kc2
+                  sudo: ['ALL=(ALL) NOPASSWD:ALL']
+                  groups: sudo,xrdp,ssl-cert,docker,kvm
+                  shell: /bin/bash
+                  lock_passwd: false
+              hostname: ubuntu
+              update: true
+              packages:
+                - xrdp
+                - docker.io
+                - python3
+                - python3-pip
+                - ubuntu-desktop
+                - gnome-tweak-tool
+                - neofetch
+                - qemu-kvm
+                - libvirt-daemon-system
+                - libvirt-clients
+                - bridge-utils
+                - virt-manager
+                - libguestfs-tools
+                - qemu-utils
+                - virt-top
+                - libosinfo-bin
+                - cloud-image-utils
+                - ovmf
+                - genisoimage
+                - spice-vdagent
+                - spice-client-gtk
+                - virt-viewer
+                - debootstrap
+                - lvm2
+                - parted
+                - net-tools
+                - dnsmasq-base
+                - python3-libvirt
+                - python3-guestfs
+                - guestmount
+                - cpu-checker
+                - qemu-system-x86
+                - qemu-system-arm
+                - qemu-system-ppc
+                - qemu-system-mips
+                - qemu-system-sparc
+                - qemu-system-aarch64
+                - qemu-system-misc
+                - libvirt-daemon-driver-qemu
+                - libvirt-daemon-driver-lxc
+                - virtinst
+                - virt-v2v
+              runcmd:
+                - "systemctl enable --now sshd"
+                - "systemctl restart sshd"
+                - "apt-get update"
+                - "apt-get -y upgrade"
+                - "lxd init --auto"
+                - "mkdir -p /home/kc2/.kube"
+                - "chown -R kc2:kc2 /home/kc2"
+                - "apt-get update"
+                - "apt-get -y upgrade"
+                - "neofetch"
+
