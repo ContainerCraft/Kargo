@@ -72,7 +72,7 @@ spec:
           type: q35
         devices:
           rng: {}
-          autoattachPodInterface: true
+          autoattachPodInterface: false
           autoattachSerialConsole: true
           autoattachGraphicsDevice: true
           networkInterfaceMultiqueue: true
@@ -85,13 +85,13 @@ spec:
               disk:
                 bus: virtio
           interfaces:
-            - name: enp1s0                     # Primary interface
-              model: virtio
-              masquerade: {}                   # Default pod network
-              macAddress: "de:ad:be:ef:00:01"  # Example MAC address
-            - name: enp2s0                     # Secondary interface
+            - name: enp1s0                     # Secondary interface
               bridge: {}                       # Bridge interface
               macAddress: "de:ad:be:ef:00:02"  # Example MAC address
+            # name: enp1s0                     # Primary interface
+            # model: virtio
+            # masquerade: {}                   # Default pod network
+            # macAddress: "de:ad:be:ef:00:01"  # Example MAC address
         features:
           acpi:
             enabled: true
@@ -103,10 +103,10 @@ spec:
               secureBoot: false
       networks:
         - name: enp1s0
-          pod: {}                              # Default pod network
-        - name: enp2s0
           multus:
             networkName: br0                   # Multus NetworkAttachmentDefinition
+        # name: enp2s0
+        # pod: {}                              # Default pod network
       terminationGracePeriodSeconds: 0
       accessCredentials:
         - sshPublicKey:
