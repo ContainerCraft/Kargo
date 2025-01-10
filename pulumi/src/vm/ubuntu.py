@@ -84,6 +84,11 @@ def deploy_ubuntu_vm(config_vm, k8s_provider: k8s.Provider, depends_on: list = [
       enp1s0:
         dhcp4: true
         dhcp6: false
+        nameservers:
+          addresses:
+            - 1.1.1.1
+            - 8.8.8.8
+            - 192.168.1.1
         dhcp-identifier: mac
     """
 

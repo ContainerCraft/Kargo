@@ -132,114 +132,100 @@ def get_helm_values(
     """
     # Common Cilium Helm Chart Values
     common_values = {
-        "cluster": {"id": 1, "name": project_name},
-        "routingMode": "tunnel",
-        "tunnelProtocol": "vxlan",
-        "kubeProxyReplacement": "strict",
-        "image": {"pullPolicy": "IfNotPresent"},
-        # Enable L2 announcements feature
-        "l2announcements": {"enabled": True},
-        "hostServices": {"enabled": False},
+        # "dns": {
+        #    "proxyPort": 53,
+        # },
+        # "dnsProxy": {"enabled": False},
+        # "forwardKubeDNSToHost": False,
+        "bpf": {
+            "masquerade": True,
+            "masqueradeInterface": "br0",
+            "masqueradeEgressInterface": "br0",
+            # bug: https://github.com/cilium/cilium/pull/36852
+            # https://docs.cilium.io/en/latest/installation/k8s-install-helm/#install-cilium
+            # TODO: bpf bug requires hostLegacyRouting to be true as a workaround for now
+            "hostLegacyRouting": True,
+        },
+        "autoDirectNodeRoutes": True,
+        "cgroup": {"autoMount": {"enabled": False}, "hostRoot": "/sys/fs/cgroup"},
         "cluster": {"name": "pulumi"},
+        "cni": {"exclusive": False, "install": True},
+        "devices": "br+ bond+ thunderbolt+",
+        "enableRuntimeDeviceDetection": True,
+        "endpointRoutes": {"enabled": True},
         "externalIPs": {"enabled": True},
         "gatewayAPI": {"enabled": False},
+        "hostPort": {"enabled": True},
+        "hostServices": {"enabled": True},
         "hubble": {
             "enabled": True,
             "relay": {"enabled": True},
             "ui": {"enabled": True},
         },
+        "image": {"pullPolicy": "IfNotPresent"},
         "ipam": {"mode": "kubernetes"},
-        "nodePort": {"enabled": True},
-        "hostPort": {"enabled": True},
-        "operator": {"replicas": 1},
-        "serviceAccounts": {
-            "cilium": {"name": "cilium"},
-            "operator": {"name": "cilium-operator"},
-        },
-        # Configure client rate limits for L2 announcements
-        "k8sClientRateLimit": {
-            "qps": 40,  # Higher QPS for L2 announcements
-            "burst": 80,  # Higher burst for L2 announcements
-        },
-        # Configure L2 announcement lease settings
+        "ipv4NativeRoutingCIDR": "10.244.0.0/16",
+        "k8sClientRateLimit": {"burst": 80, "qps": 40},
+        "k8sServiceHost": "127.0.0.1",
+        "k8sServicePort": 7445,
+        "kubeProxyReplacement": True,
         "l2announcements": {
             "enabled": True,
             "leaseDuration": "15s",
             "leaseRenewDeadline": "5s",
             "leaseRetryPeriod": "2s",
         },
+        "loadBalancer": {
+            "algorithm": "maglev",
+            "mode": "snat",
+        },
+        "localRedirectPolicy": True,
+        "nodePort": {"enabled": True},
+        "operator": {"replicas": 1, "rollOutPods": True},
+        "rollOutCiliumPods": True,
+        "routingMode": "native",
+        "securityContext": {
+            "capabilities": {
+                "ciliumAgent": [
+                    "CHOWN",
+                    "KILL",
+                    "NET_ADMIN",
+                    "NET_RAW",
+                    "IPC_LOCK",
+                    "SYS_ADMIN",
+                    "SYS_RESOURCE",
+                    "DAC_OVERRIDE",
+                    "FOWNER",
+                    "SETGID",
+                    "SETUID",
+                ],
+                "cleanCiliumState": ["NET_ADMIN", "SYS_ADMIN", "SYS_RESOURCE"],
+            }
+        },
+        "serviceAccounts": {
+            "cilium": {"name": "cilium"},
+            "operator": {"name": "cilium-operator"},
+        },
+        "tunnelProtocol": "vxlan",
+        "egressGateway": {
+            "enabled": True
+        },  # Explicitly enable egress gateway for improved egress traffic handling
+        "metrics": {
+            "enabled": True
+        },  # Enable metrics for cluster and networking performance insights
+        "debug": {"enabled": True},  # Enable debug mode for deeper analysis
     }
 
-    # Kind Kubernetes specific Helm values
+    # For the kind distribution, we only need to override the k8s service endpoint
     if kubernetes_distribution == "kind":
         return {
             **common_values,
             "k8sServiceHost": kubernetes_endpoint_service_address,
             "k8sServicePort": 6443,
         }
+    # For Talos, we're already using all the correct values in common_values
     elif kubernetes_distribution == "talos":
-        # Talos-specific Helm values per the Talos Cilium Docs
-        return {
-            **common_values,
-            "cni": {"install": True, "exclusive": False},
-            "autoDirectNodeRoutes": True,
-            "devices": "br+ bond+ thunderbolt+",
-            "enableRuntimeDeviceDetection": True,
-            "endpointRoutes": {"enabled": True},
-            "bpf": {"masquerade": True},
-            "forwardKubeDNSToHost": False,
-            "localRedirectPolicy": True,
-            "loadBalancer": {"algorithm": "maglev", "mode": "dsr"},
-            "cgroup": {
-                "autoMount": {"enabled": False},
-                "hostRoot": "/sys/fs/cgroup",
-            },
-            "routingMode": "native",
-            "ipv4NativeRoutingCIDR": "10.244.0.0/16",
-            "k8sServicePort": 7445,
-            "tunnelProtocol": "vxlan",
-            "k8sServiceHost": "127.0.0.1",
-            "kubeProxyReplacement": "true",
-            "image": {"pullPolicy": "IfNotPresent"},
-            "hostServices": {"enabled": False},
-            "externalIPs": {"enabled": True},
-            "gatewayAPI": {"enabled": False},
-            "nodePort": {"enabled": True},
-            "hostPort": {"enabled": True},
-            "rollOutCiliumPods": True,
-            "operator": {
-                "replicas": 1,
-                "rollOutPods": True,
-            },
-            "securityContext": {
-                "capabilities": {
-                    "ciliumAgent": [
-                        "CHOWN",
-                        "KILL",
-                        "NET_ADMIN",
-                        "NET_RAW",
-                        "IPC_LOCK",
-                        "SYS_ADMIN",
-                        "SYS_RESOURCE",
-                        "DAC_OVERRIDE",
-                        "FOWNER",
-                        "SETGID",
-                        "SETUID",
-                    ],
-                    "cleanCiliumState": ["NET_ADMIN", "SYS_ADMIN", "SYS_RESOURCE"],
-                },
-            },
-        }
-
-    elif kubernetes_distribution == "kind":
-        return {
-            **common_values,
-            "k8sServiceHost": kubernetes_endpoint_ip_string,
-            "k8sServicePort": 6443,
-            "kubeProxyReplacement": "strict",
-            "operator": {"replicas": 1},
-            "routingMode": "tunnel",
-        }
+        return common_values
     else:
         raise ValueError(
             f"Unsupported Kubernetes distribution: {kubernetes_distribution}"

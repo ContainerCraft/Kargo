@@ -21,7 +21,7 @@ config:
       replicas: 2 # Worker replicas, set 0 to disable workers vmpool
       root_disk_size: "64" # Root disk size in GiB
   kargo:vm: # Ubuntu VM deployment configuration
-    enabled: true # Disable VM deployment (set to true if needed)
+    enabled: false # Disable VM deployment (set to true if needed)
   kargo:cdi:
     enabled: true
   kargo:cert_manager:
