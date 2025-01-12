@@ -41,22 +41,51 @@ def deploy_cilium(
         "https://raw.githubusercontent.com/cilium/charts/master/index.yaml"
     )
 
+    # 1. Set up base configuration
     if version is None:
-        # Fetch the latest version of the Cilium Helm chart
         version = get_latest_helm_chart_version(chart_index_url, chart_name)
         pulumi.log.info(
             f"Setting helm release version to latest: {chart_name}/{version}"
         )
     else:
-        # Log the version override
         pulumi.log.info(f"Using helm release version: {chart_name}/{version}")
 
-    # Determine Helm values based on the Kubernetes distribution
-    helm_values = get_helm_values(
+    # 2. Create Gateway API CRDs first (must be done before anything else)
+    gateway_crds = k8s.yaml.ConfigFile(
+        "gateway-api-crds",
+        file="https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml",
+        opts=pulumi.ResourceOptions(provider=k8s_provider),
+    )
+
+    # 3. Prepare Helm values
+    base_values = get_helm_values(
         kubernetes_distribution, project_name, kubernetes_endpoint_service_address
     )
 
-    # Deploy Cilium using the Helm chart
+    helm_values = {
+        **base_values,
+        "gatewayAPI": {
+            "enabled": True,
+            "controller": {"enabled": True, "replicas": 1},
+        },
+        "ingressController": {
+            "enabled": True,
+            "loadbalancerMode": "shared",
+            "service": {"type": "LoadBalancer", "annotations": {}},
+            "default": True,
+            "enableGatewayAPI": True,
+        },
+        "hubble": {
+            "enabled": True,
+            "relay": {"enabled": True},
+            "ui": {
+                "enabled": True,
+                "service": {"type": "ClusterIP", "ports": {"http": 80}},
+            },
+        },
+    }
+
+    # 4. Deploy Cilium with Helm (depends on CRDs)
     release = k8s.helm.v3.Release(
         name,
         chart="cilium",
@@ -66,52 +95,77 @@ def deploy_cilium(
         repository_opts={"repo": "https://helm.cilium.io/"},
         opts=pulumi.ResourceOptions(
             provider=k8s_provider,
+            depends_on=[gateway_crds],
             custom_timeouts=pulumi.CustomTimeouts(
                 create="15m", update="15m", delete="5m"
             ),
         ),
     )
 
-    # Create CiliumL2AnnouncementPolicy for L2 announcements
-    cilium_l2_announcement_policy = CustomResource(
-        "cilium_l2_announcement_policy",
-        api_version="cilium.io/v2alpha1",
-        kind="CiliumL2AnnouncementPolicy",
-        metadata={"name": "l2-default"},
-        spec={
-            "serviceSelector": {
-                "matchLabels": {}
-            },  # Empty matchLabels selects all services
-            "interfaces": [l2_bridge_name],  # Interface to announce on (e.g. br0)
-            "externalIPs": False,  # Don't announce external IPs
-            "loadBalancerIPs": True,  # Announce LoadBalancer IPs
-        },
-        opts=pulumi.ResourceOptions(
-            parent=release,
-            provider=k8s_provider,
-            custom_timeouts=pulumi.CustomTimeouts(
-                create="8m", update="8m", delete="2m"
-            ),
-        ),
-    )
-
-    # Create CiliumLoadBalancerIPPool for L2 announcements
+    # 5. Create L2 announcement resources (depends on Cilium release)
     cilium_load_balancer_ip_pool = k8s.apiextensions.CustomResource(
-        "cilium_load_balancer_ip_pool",
+        "cilium-l2-ip-pool",
         api_version="cilium.io/v2alpha1",
         kind="CiliumLoadBalancerIPPool",
-        metadata={"name": "l2-default"},
-        spec={"blocks": [{"cidr": l2announcements}]},  # CIDR block for L2 announcements
+        metadata={
+            "name": "l2-default",
+            "namespace": namespace,
+            "labels": {
+                "app.kubernetes.io/managed-by": "pulumi",
+                "app.kubernetes.io/name": name,
+            },
+        },
+        spec={"blocks": [{"cidr": l2announcements}]},
         opts=pulumi.ResourceOptions(
-            parent=release,
             provider=k8s_provider,
+            depends_on=[release],
             custom_timeouts=pulumi.CustomTimeouts(
                 create="8m", update="8m", delete="2m"
             ),
         ),
     )
 
-    return version, release
+    cilium_l2_announcement_policy = CustomResource(
+        "cilium-l2-policy",
+        api_version="cilium.io/v2alpha1",
+        kind="CiliumL2AnnouncementPolicy",
+        metadata={
+            "name": "l2-default",
+            "namespace": namespace,
+            "labels": {
+                "app.kubernetes.io/managed-by": "pulumi",
+                "app.kubernetes.io/name": name,
+            },
+        },
+        spec={
+            "serviceSelector": {"matchLabels": {}},
+            "interfaces": [l2_bridge_name],
+            "externalIPs": False,
+            "loadBalancerIPs": True,
+        },
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
+            depends_on=[release, cilium_load_balancer_ip_pool],
+            custom_timeouts=pulumi.CustomTimeouts(
+                create="8m", update="8m", delete="2m"
+            ),
+        ),
+    )
+
+    # 6. Create Hubble Gateway resources (depends on Cilium and L2 resources)
+    gateway, http_route = create_hubble_gateway(
+        name=name,
+        namespace=namespace,
+        k8s_provider=k8s_provider,
+        l2announcements=l2announcements,
+        depends_on=[
+            release,
+            cilium_load_balancer_ip_pool,
+            cilium_l2_announcement_policy,
+        ],
+    )
+
+    return version, release, gateway, http_route
 
 
 def get_helm_values(
@@ -132,11 +186,7 @@ def get_helm_values(
     """
     # Common Cilium Helm Chart Values
     common_values = {
-        # "dns": {
-        #    "proxyPort": 53,
-        # },
-        # "dnsProxy": {"enabled": False},
-        # "forwardKubeDNSToHost": False,
+        "autoDirectNodeRoutes": True,
         "bpf": {
             "masquerade": True,
             "masqueradeInterface": "br0",
@@ -146,7 +196,6 @@ def get_helm_values(
             # TODO: bpf bug requires hostLegacyRouting to be true as a workaround for now
             "hostLegacyRouting": True,
         },
-        "autoDirectNodeRoutes": True,
         "cgroup": {"autoMount": {"enabled": False}, "hostRoot": "/sys/fs/cgroup"},
         "cluster": {"name": "pulumi"},
         "cni": {"exclusive": False, "install": True},
@@ -154,13 +203,30 @@ def get_helm_values(
         "enableRuntimeDeviceDetection": True,
         "endpointRoutes": {"enabled": True},
         "externalIPs": {"enabled": True},
-        "gatewayAPI": {"enabled": False},
+        "gatewayAPI": {
+            "enabled": True,
+            "secretsNamespace": {"create": False, "name": "cilium-secrets"},
+        },
         "hostPort": {"enabled": True},
         "hostServices": {"enabled": True},
+        "ingressController": {
+            "enabled": True,
+            "loadbalancerMode": "shared",
+            "service": {"type": "LoadBalancer", "annotations": {}},
+            "enableGatewayAPI": True,
+        },
+        "egressGateway": {
+            "enabled": True,
+            "secretsNamespace": {"create": False, "name": "cilium-secrets"},
+            "controller": {"enabled": True, "replicas": 1},
+        },
         "hubble": {
             "enabled": True,
             "relay": {"enabled": True},
-            "ui": {"enabled": True},
+            "ui": {
+                "enabled": True,
+                "service": {"type": "ClusterIP", "ports": {"http": 80}},
+            },
         },
         "image": {"pullPolicy": "IfNotPresent"},
         "ipam": {"mode": "kubernetes"},
@@ -175,10 +241,8 @@ def get_helm_values(
             "leaseRenewDeadline": "5s",
             "leaseRetryPeriod": "2s",
         },
-        "loadBalancer": {
-            "algorithm": "maglev",
-            "mode": "snat",
-        },
+        # Use snat, do not use dsr due to extreme performance degredation
+        "loadBalancer": {"algorithm": "maglev", "mode": "snat"},
         "localRedirectPolicy": True,
         "nodePort": {"enabled": True},
         "operator": {"replicas": 1, "rollOutPods": True},
@@ -207,13 +271,8 @@ def get_helm_values(
             "operator": {"name": "cilium-operator"},
         },
         "tunnelProtocol": "vxlan",
-        "egressGateway": {
-            "enabled": True
-        },  # Explicitly enable egress gateway for improved egress traffic handling
-        "metrics": {
-            "enabled": True
-        },  # Enable metrics for cluster and networking performance insights
-        "debug": {"enabled": True},  # Enable debug mode for deeper analysis
+        "metrics": {"enabled": True},
+        "debug": {"enabled": True},
     }
 
     # For the kind distribution, we only need to override the k8s service endpoint
@@ -284,3 +343,81 @@ def deploy_test_service(namespace: str, k8s_provider: k8s.Provider):
     )
 
     return nginx_pod, nginx_load_balancer_service
+
+
+def create_hubble_gateway(
+    name: str,
+    namespace: str,
+    k8s_provider: k8s.Provider,
+    l2announcements: str,
+    depends_on: list = None,
+):
+    """Create Gateway API resources for Hubble UI
+
+    Args:
+        name: Name prefix for Gateway resources
+        namespace: Namespace to deploy Gateway into
+        k8s_provider: Kubernetes provider instance
+        l2announcements: CIDR block for L2 announcements
+        depends_on: List of resources to depend on
+    """
+    gateway = k8s.apiextensions.CustomResource(
+        f"{name}-hubble-gateway",
+        api_version="gateway.networking.k8s.io/v1",
+        kind="Gateway",
+        metadata={
+            "name": f"{name}-hubble-gateway",
+            "namespace": namespace,
+            "labels": {
+                "app.kubernetes.io/managed-by": "pulumi",
+                "app.kubernetes.io/name": name,
+            },
+        },
+        spec={
+            "gatewayClassName": "cilium",
+            "listeners": [
+                {
+                    "name": "http",
+                    "protocol": "HTTP",
+                    "port": 80,
+                    "allowedRoutes": {"namespaces": {"from": "Same"}},
+                }
+            ],
+            "addresses": [
+                {"type": "IPAddress", "value": l2announcements.split("/")[0]}
+            ],
+        },
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
+            depends_on=depends_on,
+        ),
+    )
+
+    http_route = k8s.apiextensions.CustomResource(
+        f"{name}-hubble-route",
+        api_version="gateway.networking.k8s.io/v1",
+        kind="HTTPRoute",
+        metadata={
+            "name": f"{name}-hubble-route",
+            "namespace": namespace,
+            "labels": {
+                "app.kubernetes.io/managed-by": "pulumi",
+                "app.kubernetes.io/name": name,
+            },
+        },
+        spec={
+            "parentRefs": [{"name": gateway.metadata["name"], "namespace": namespace}],
+            "rules": [
+                {
+                    "matches": [{"path": {"type": "PathPrefix", "value": "/"}}],
+                    "backendRefs": [{"name": "hubble-ui", "port": 80}],
+                }
+            ],
+        },
+        opts=pulumi.ResourceOptions(
+            provider=k8s_provider,
+            depends_on=[gateway],
+        ),
+    )
+
+    return gateway, http_route

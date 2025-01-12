@@ -41,6 +41,6 @@ config:
   kargo:multus:
     enabled: true
   kargo:prometheus:
-    enabled: true
+    enabled: false
   kargo:kubevirt_manager:
     enabled: false
