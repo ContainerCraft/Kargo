@@ -1,6 +1,6 @@
 {
-    "name": "konductor",
-    "remoteUser": "vscode",
+    "name": "Kargo",
+    "remoteUser": "ubuntu",
     "dockerFile": "Dockerfile",
     "init": true,
     "privileged": true,
