@@ -50,10 +50,22 @@ tasks:
       - touch {{.kube_config_file}} {{.talos_config_file}}
       - chmod 600 {{.kube_config_file}} {{.talos_config_file}}
 
+  poetry-install:
+    desc: "Install Python dependencies using Poetry in the pulumi directory."
+    cmds:
+      - poetry -C ./pulumi install
+      - poetry -C ./pulumi update
+
+  poetry-update:
+    desc: "Update Python dependencies to their latest versions using Poetry in the pulumi directory."
+    cmds:
+      - poetry -C ./pulumi update
+
   login:
-    desc: "Authenticate with Pulumi."
+    desc: "Authenticate with Pulumi and install dependencies using Poetry."
     cmds:
       - task: init
+      - task: poetry-install
       - source .envrc && pulumi login
       - source .envrc && pulumi install
 
@@ -101,7 +113,7 @@ tasks:
       - clean
     cmds:
       - rm -rf .talos/manifest/* .kube/config .ssh/known_hosts 2>/dev/null || true
-      - rm ${HOME}/.pulumi ${HOME}/.kube ${HOME}/.talos 2>/dev/null || true
+      - rm -rf ${HOME}/.pulumi ${HOME}/.kube ${HOME}/.talos pulumi/.venv poetry.lock 2>/dev/null || true
 
   stop:
     desc: "Stop the GitHub Codespace."
