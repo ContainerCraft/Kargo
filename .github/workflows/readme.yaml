@@ -22,6 +22,7 @@ jobs:
       - id: list
         name: List Runme Commands
         run: |
+          sudo chown -R $(whoami):$(whoami) /home/runner /home/runner/.* /home/runner/.config
           runme list
 
       - id: login
