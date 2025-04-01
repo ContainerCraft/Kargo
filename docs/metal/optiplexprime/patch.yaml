@@ -2,3 +2,8 @@ cluster:
   allowSchedulingOnControlPlanes: true
   apiServer:
     disablePodSecurityPolicy: true
+  network:
+    cni:
+      name: none
+  proxy:
+    disabled: true

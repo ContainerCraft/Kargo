@@ -84,7 +84,7 @@ task kubernetes
 
 Deploy the Kubevirt PaaS IaC to Kubernetes.
 
-```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNSZW7QADA","name":"deploy"}
+```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNSZW7QADA","name":"deploy","terminalRows":"127"}
 task deploy
 ```
 

@@ -9,8 +9,12 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/containercraft/konductor:latest
-      options: --user runner --security-opt seccomp=unconfined
+      image: ghcr.io/containercraft/devcontainer:code-server
+      options: >-
+        --user root
+        --privileged
+        -v /var/run/docker.sock:/var/run/docker.sock
+        --security-opt seccomp=unconfined
 
     steps:
       - id: checkout
@@ -22,6 +26,7 @@ jobs:
       - id: list
         name: List Runme Commands
         run: |
+          sudo chown -R $(whoami):$(whoami) /home/runner /home/runner/.* /home/runner/.config
           runme list
 
       - id: login
@@ -43,10 +48,16 @@ jobs:
           GITHUB_USER: ${{ github.actor }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
-      #     - id: kubernetes
-      #       name: Deploy Kubernetes
-      #       run: |
-      #         runme run kubernetes
+      - id: kubernetes
+        name: Deploy Kubernetes
+        run: |
+          echo "Deploying Kubernetes"
+          #runme run kubernetes
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USER: ${{ github.actor }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
       #     - id: deploy
       #       name: Deploy Kargo Platform on Kubernetes

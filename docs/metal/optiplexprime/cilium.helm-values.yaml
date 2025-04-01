@@ -1,0 +1,83 @@
+USER-SUPPLIED VALUES:
+autoDirectNodeRoutes: true
+bpf:
+  masquerade: true
+cgroup:
+  autoMount:
+    enabled: false
+  hostRoot: /sys/fs/cgroup
+cluster:
+  name: pulumi
+cni:
+  exclusive: false
+  install: true
+devices: br+ bond+ thunderbolt+
+enableRuntimeDeviceDetection: true
+endpointRoutes:
+  enabled: true
+externalIPs:
+  enabled: true
+forwardKubeDNSToHost: false
+gatewayAPI:
+  enabled: false
+hostPort:
+  enabled: true
+hostServices:
+  enabled: false
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+image:
+  pullPolicy: IfNotPresent
+ipam:
+  mode: kubernetes
+ipv4NativeRoutingCIDR: 10.244.0.0/16
+k8sClientRateLimit:
+  burst: 80
+  qps: 40
+k8sServiceHost: 127.0.0.1
+k8sServicePort: 7445
+kubeProxyReplacement: "true"
+l2announcements:
+  enabled: true
+  leaseDuration: 15s
+  leaseRenewDeadline: 5s
+  leaseRetryPeriod: 2s
+loadBalancer:
+  algorithm: maglev
+  mode: dsr
+localRedirectPolicy: true
+nodePort:
+  enabled: true
+operator:
+  replicas: 1
+  rollOutPods: true
+rollOutCiliumPods: true
+routingMode: native
+securityContext:
+  capabilities:
+    ciliumAgent:
+    - CHOWN
+    - KILL
+    - NET_ADMIN
+    - NET_RAW
+    - IPC_LOCK
+    - SYS_ADMIN
+    - SYS_RESOURCE
+    - DAC_OVERRIDE
+    - FOWNER
+    - SETGID
+    - SETUID
+    cleanCiliumState:
+    - NET_ADMIN
+    - SYS_ADMIN
+    - SYS_RESOURCE
+serviceAccounts:
+  cilium:
+    name: cilium
+  operator:
+    name: cilium-operator
+tunnelProtocol: vxlan

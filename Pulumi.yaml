@@ -8,6 +8,7 @@ runtime:
   name: python
   options:
     virtualenv: venv
+    toolchain: poetry
 config:
   pulumi:tags:
     value:

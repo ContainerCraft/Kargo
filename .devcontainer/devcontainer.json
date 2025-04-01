@@ -1,61 +1,444 @@
 {
-    "name": "Kargo",
+    "name": "kargo",
     "remoteUser": "ubuntu",
-    "dockerFile": "Dockerfile",
-    "init": true,
-    "privileged": true,
-    "overrideCommand": false,
+    "containerUser": "ubuntu",
     "updateRemoteUserUID": true,
+    "dockerFile": "Dockerfile",
+    "initializeCommand": "echo 'Initializing development environment...'",
+    "postCreateCommand": "sudo mkdir -p /home/ubuntu/.cache /home/ubuntu/.kube /home/ubuntu/.aws /home/ubuntu/.config /home/ubuntu/.pulumi /home/ubuntu/.terraform.d /home/ubuntu/go/pkg /home/ubuntu/.azure /home/ubuntu/.vscode-server /home/ubuntu/.cargo && sudo mkdir -p /home/ubuntu/.cache/starship && sudo chmod -R 777 /home/ubuntu/.cache && sudo chmod -R 755 /home/ubuntu/.kube /home/ubuntu/.aws /home/ubuntu/.config /home/ubuntu/.pulumi /home/ubuntu/.terraform.d /home/ubuntu/go/pkg /home/ubuntu/.azure /home/ubuntu/.vscode-server /home/ubuntu/.cargo && sudo chown -R ubuntu:ubuntu /home/ubuntu/.cache && sudo chown -R ubuntu:ubuntu /home/ubuntu/.kube && sudo chown -R ubuntu:ubuntu /home/ubuntu/.aws && sudo chown -R ubuntu:ubuntu /home/ubuntu/.config && sudo chown -R ubuntu:ubuntu /home/ubuntu/.pulumi && sudo chown -R ubuntu:ubuntu /home/ubuntu/.terraform.d && sudo chown -R ubuntu:ubuntu /home/ubuntu/go/pkg && sudo chown -R ubuntu:ubuntu /home/ubuntu/.azure && sudo chown -R ubuntu:ubuntu /home/ubuntu/.vscode-server && sudo chown -R ubuntu:ubuntu /home/ubuntu/.cargo && devcontainer-links",
     "shutdownAction": "stopContainer",
+    "overrideCommand": false,
+    "privileged": true,
+    "init": true,
+    "hostRequirements": {
+        "cpus": 4,
+        "memory": "6gb",
+        "storage": "32gb",
+        "gpu": false
+    },
+    "build": {
+        "args": {
+            "DOCKER_BUILDKIT": "0"
+        }
+    },
     "securityOpt": [
         "seccomp=unconfined"
     ],
     "runArgs": [
         "--privileged",
-        "--network=host",
-        "--device=/dev/kvm"
+        "--network=host"
     ],
-    "mounts": [
-        "source=dind-var-lib-docker,target=/var/lib/docker,type=volume"
-    ],
-    "features": {
-        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
-    },
-    "postCreateCommand": "devcontainer-links; direnv allow",
     "forwardPorts": [
-        1313,
         2222,
-        6000,
-        7681,
-        8080,
-        10443,
-        11443,
-        12443
+        7681
     ],
+    "portsAttributes": {
+        "2222": {
+            "label": "SSH Access",
+            "onAutoForward": "silent",
+            "requireLocalPort": false,
+            "elevateIfNeeded": true
+        },
+        "7681": {
+            "label": "TTYD Web Terminal",
+            "protocol": "http",
+            "onAutoForward": "openBrowser",
+            "requireLocalPort": false,
+            "elevateIfNeeded": false
+        }
+    },
+    "otherPortsAttributes": {
+        "onAutoForward": "silent",
+        "elevateIfNeeded": false,
+        "label": "Application Port",
+        "requireLocalPort": false
+    },
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "mounts": [
+        "source=dind-var-lib-docker,target=/var/lib/docker,type=volume",
+        {
+            "source": "kargo-pulumi-config",
+            "target": "/home/ubuntu/.pulumi",
+            "type": "volume",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "source": "kargo-kube-config",
+            "target": "/home/ubuntu/.kube",
+            "type": "volume",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "source": "kargo-aws-config",
+            "target": "/home/ubuntu/.aws",
+            "type": "volume",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "source": "kargo-gcloud-config",
+            "target": "/home/ubuntu/.config/gcloud",
+            "type": "volume",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "source": "kargo-terraform-config",
+            "target": "/home/ubuntu/.terraform.d",
+            "type": "volume",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "source": "kargo-go-pkg",
+            "target": "/home/ubuntu/go/pkg",
+            "type": "volume",
+            "uid": 1000,
+            "gid": 1000
+        },
+        "source=kargo-cache,target=/home/ubuntu/.cache,type=volume",
+        {
+            "source": "kargo-config",
+            "target": "/home/ubuntu/.config",
+            "type": "volume",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "source": "kargo-azure",
+            "target": "/home/ubuntu/.azure",
+            "type": "volume",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "source": "kargo-vscode-server",
+            "target": "/home/ubuntu/.vscode-server",
+            "type": "volume",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "source": "kargo-cargo",
+            "target": "/home/ubuntu/.cargo",
+            "type": "volume",
+            "uid": 1000,
+            "gid": 1000
+        }
+    ],
+    "postStartCommand": "sudo mkdir -p ~/.cache/starship ~/.kube ~/.aws ~/.config/gcloud ~/.pulumi ~/.cache ~/.cargo ~/.azure ~/.vscode-server ~/.terraform.d ~/go/pkg && sudo chown -R ubuntu:ubuntu ~/.cache/starship ~/.kube ~/.aws ~/.config/gcloud ~/.pulumi ~/.cache ~/.cargo ~/.azure ~/.vscode-server ~/.terraform.d ~/go/pkg && sudo chmod -R 755 ~/.cache",
+    "postAttachCommand": "echo 'Welcome to the kargo development environment!' && echo 'Container ID: ${devcontainerId}' && direnv allow && hostname && uptime",
     "customizations": {
         "vscode": {
             "extensions": [
-                "golang.go",
-                "vscodevim.vim",
-                "github.copilot",
-                "stateful.runme",
-                "max-ss.cyberpunk",
-                "ms-python.python",
-                "redhat.vscode-yaml",
-                "esbenp.prettier-vscode",
-                "oderwat.indent-rainbow",
-                "okteto.kubernetes-context",
-                "ms-vsliveshare.vsliveshare",
                 "ms-azuretools.vscode-docker",
-                "github.vscode-github-actions",
-                "ms-kubernetes-tools.kind-vscode",
-                "ms-vscode.vscode-typescript-next",
-                "github.vscode-pull-request-github",
-                "ms-vscode-remote.remote-containers",
-                "randomfractalsinc.vscode-data-table",
-                "visualstudioexptteam.vscodeintellicode",
-                "ms-kubernetes-tools.vscode-kubernetes-tools"
-            ]
+                "ms-kubernetes-tools.vscode-kubernetes-tools",
+                "redhat.vscode-yaml",
+                "hashicorp.hcl",
+                "hashicorp.terraform",
+                "ms-azuretools.vscode-azureterraform",
+                "ms-python.python",
+                "ms-vscode.cpptools",
+                "esbenp.prettier-vscode",
+                "eamodio.gitlens",
+                "GitHub.copilot",
+                "stateful.runme",
+                "ms-vscode-remote.remote-containers"
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "terminal.integrated.profiles.linux": {
+                    "bash": {
+                        "path": "/bin/bash",
+                        "icon": "terminal-bash"
+                    }
+                },
+                "terminal.integrated.fontSize": 14,
+                "editor.fontSize": 14,
+                "editor.formatOnSave": true,
+                "editor.formatOnPaste": false,
+                "editor.rulers": [
+                    80,
+                    120
+                ],
+                "editor.minimap.enabled": true,
+                "editor.bracketPairColorization.enabled": true,
+                "editor.guides.bracketPairs": true,
+                "editor.suggestSelection": "first",
+                "editor.tabSize": 2,
+                "editor.detectIndentation": true,
+                "files.trimTrailingWhitespace": true,
+                "files.insertFinalNewline": true,
+                "files.autoSave": "afterDelay",
+                "files.autoSaveDelay": 1000,
+                "explorer.confirmDragAndDrop": false,
+                "explorer.confirmDelete": true,
+                "workbench.startupEditor": "none",
+                "workbench.colorTheme": "Default Dark+",
+                "workbench.iconTheme": "vs-seti",
+                "telemetry.telemetryLevel": "off",
+                "git.autofetch": true,
+                "git.confirmSync": false,
+                "go.toolsManagement.autoUpdate": true,
+                "go.useLanguageServer": true,
+                "yaml.schemas": {
+                    "kubernetes": "*.yaml"
+                },
+                "docker.showStartPage": false
+            }
         }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+            "version": "latest",
+            "moby": true,
+            "dockerDashComposeVersion": "v2"
+        }
+    },
+    "containerEnv": {
+        "SHELL": "/bin/bash"
     }
 }
+//{
+//    "name": "konductor",
+//    "remoteUser": "ubuntu",
+//    "containerUser": "ubuntu",
+//    "dockerFile": "Dockerfile",
+//    "init": true,
+//    "privileged": true,
+//    "overrideCommand": false,
+//    "updateRemoteUserUID": true,
+//    "shutdownAction": "stopContainer",
+//    "initializeCommand": "echo 'Initializing development environment...'",
+//    "securityOpt": [
+//        "seccomp=unconfined"
+//    ],
+//    "runArgs": [
+//        "--privileged",
+//        "--network=host",
+//        "--device=/dev/kvm"
+//    ],
+//    "hostRequirements": {
+//        "cpus": 4,
+//        "memory": "6gb",
+//        "storage": "32gb",
+//        "gpu": false
+//    },
+//    "build": {
+//        "args": {
+//            "DOCKER_BUILDKIT": "0"
+//        }
+//    },
+//    "forwardPorts": [
+//        1313,
+//        2222,
+//        6000,
+//        7681,
+//        8080,
+//        10443,
+//        11443,
+//        12443
+//    ],
+//    "portsAttributes": {
+//        "2222": {
+//            "label": "SSH Access",
+//            "onAutoForward": "silent",
+//            "requireLocalPort": false,
+//            "elevateIfNeeded": true
+//        },
+//        "7681": {
+//            "label": "TTYD Web Terminal",
+//            "protocol": "http",
+//            "onAutoForward": "openBrowser",
+//            "requireLocalPort": false,
+//            "elevateIfNeeded": false
+//        }
+//    },
+//    "otherPortsAttributes": {
+//        "onAutoForward": "silent",
+//        "elevateIfNeeded": false,
+//        "label": "Application Port",
+//        "requireLocalPort": false
+//    },
+//    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached",
+//    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+//    "mounts": [
+//        "source=dind-var-lib-docker,target=/var/lib/docker,type=volume",
+//        {
+//            "source": "konductor-kube-config",
+//            "target": "/home/ubuntu/.kube",
+//            "type": "volume",
+//            "uid": 1000,
+//            "gid": 1000
+//        },
+//        {
+//            "source": "konductor-aws-config",
+//            "target": "/home/ubuntu/.aws",
+//            "type": "volume",
+//            "uid": 1000,
+//            "gid": 1000
+//        },
+//        {
+//            "source": "konductor-config",
+//            "target": "/home/ubuntu/.config",
+//            "type": "volume",
+//            "uid": 1000,
+//            "gid": 1000
+//        },
+//        {
+//            "source": "konductor-go-pkg",
+//            "target": "/home/ubuntu/go/pkg",
+//            "type": "volume",
+//            "uid": 1000,
+//            "gid": 1000
+//        },
+//        "source=konductor-cache,target=/home/ubuntu/.cache,type=volume"
+//    ],
+//    "features": {
+//        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+//            "version": "latest",
+//            "moby": true,
+//            "dockerDashComposeVersion": "v2"
+//        }
+//    },
+//    "postCreateCommand": "sudo mkdir -p /home/ubuntu/.cache /home/ubuntu/.kube /home/ubuntu/.aws /home/ubuntu/.config /home/ubuntu/go/pkg && sudo chmod -R 777 /home/ubuntu/.cache && sudo chmod -R 755 /home/ubuntu/.kube /home/ubuntu/.aws /home/ubuntu/.config /home/ubuntu/go/pkg && sudo chown -R ubuntu:ubuntu /home/ubuntu/.cache && sudo chown -R ubuntu:ubuntu /home/ubuntu/.kube && sudo chown -R ubuntu:ubuntu /home/ubuntu/.aws && sudo chown -R ubuntu:ubuntu /home/ubuntu/.config && sudo chown -R ubuntu:ubuntu /home/ubuntu/go/pkg && devcontainer-links; direnv allow",
+//    "postStartCommand": "sudo mkdir -p ~/.cache ~/.kube ~/.aws ~/.config ~/.cache ~/go/pkg && sudo chown -R ubuntu:ubuntu ~/.cache ~/.kube ~/.aws ~/.config ~/go/pkg && sudo chmod -R 755 ~/.cache",
+//    "postAttachCommand": "echo 'Welcome to the Konductor development environment!' && echo 'Container ID: ${devcontainerId}' && direnv allow && hostname && uptime",
+//    "customizations": {
+//        "vscode": {
+//            "extensions": [
+//                "golang.go",
+//                "vscodevim.vim",
+//                "github.copilot",
+//                "stateful.runme",
+//                "max-ss.cyberpunk",
+//                "ms-python.python",
+//                "redhat.vscode-yaml",
+//                "esbenp.prettier-vscode",
+//                "oderwat.indent-rainbow",
+//                "okteto.kubernetes-context",
+//                "ms-vsliveshare.vsliveshare",
+//                "ms-azuretools.vscode-docker",
+//                "github.vscode-github-actions",
+//                "ms-kubernetes-tools.kind-vscode",
+//                "ms-vscode.vscode-typescript-next",
+//                "github.vscode-pull-request-github",
+//                "ms-vscode-remote.remote-containers",
+//                "randomfractalsinc.vscode-data-table",
+//                "visualstudioexptteam.vscodeintellicode",
+//                "ms-kubernetes-tools.vscode-kubernetes-tools",
+//                "eamodio.gitlens",
+//                "hashicorp.hcl",
+//                "hashicorp.terraform"
+//            ],
+//            "settings": {
+//                "terminal.integrated.defaultProfile.linux": "bash",
+//                "terminal.integrated.profiles.linux": {
+//                    "bash": {
+//                        "path": "/bin/bash",
+//                        "icon": "terminal-bash"
+//                    }
+//                },
+//                "terminal.integrated.fontSize": 14,
+//                "editor.fontSize": 14,
+//                "editor.formatOnSave": true,
+//                "editor.formatOnPaste": false,
+//                "editor.rulers": [
+//                    80,
+//                    120
+//                ],
+//                "editor.minimap.enabled": true,
+//                "editor.bracketPairColorization.enabled": true,
+//                "editor.guides.bracketPairs": true,
+//                "editor.suggestSelection": "first",
+//                "editor.tabSize": 2,
+//                "editor.detectIndentation": true,
+//                "files.trimTrailingWhitespace": true,
+//                "files.insertFinalNewline": true,
+//                "files.autoSave": "afterDelay",
+//                "files.autoSaveDelay": 1000,
+//                "explorer.confirmDragAndDrop": false,
+//                "explorer.confirmDelete": true,
+//                "workbench.startupEditor": "none",
+//                "workbench.colorTheme": "Default Dark+",
+//                "workbench.iconTheme": "vs-seti",
+//                "telemetry.telemetryLevel": "off",
+//                "git.autofetch": true,
+//                "git.confirmSync": false,
+//                "go.toolsManagement.autoUpdate": true,
+//                "go.useLanguageServer": true,
+//                "yaml.schemas": {
+//                    "kubernetes": "*.yaml"
+//                },
+//                "docker.showStartPage": false
+//            }
+//        }
+//    },
+//    "containerEnv": {
+//        "SHELL": "/bin/bash"
+//    }
+//}
+//{
+//    "name": "konductor",
+//    "remoteUser": "vscode",
+//    "dockerFile": "Dockerfile",
+//    "init": true,
+//    "privileged": true,
+//    "overrideCommand": false,
+//    "updateRemoteUserUID": true,
+//    "shutdownAction": "stopContainer",
+//    "securityOpt": [
+//        "seccomp=unconfined"
+//    ],
+//    "runArgs": [
+//        "--privileged",
+//        "--network=host",
+//        "--device=/dev/kvm"
+//    ],
+//    "mounts": [
+//        "source=dind-var-lib-docker,target=/var/lib/docker,type=volume"
+//    ],
+//    "features": {
+//        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+//    },
+//    "postCreateCommand": "devcontainer-links; direnv allow",
+//    "forwardPorts": [
+//        1313,
+//        2222,
+//        6000,
+//        7681,
+//        8080,
+//        10443,
+//        11443,
+//        12443
+//    ],
+//    "customizations": {
+//        "vscode": {
+//            "extensions": [
+//                "golang.go",
+//                "vscodevim.vim",
+//                "github.copilot",
+//                "stateful.runme",
+//                "max-ss.cyberpunk",
+//                "ms-python.python",
+//                "redhat.vscode-yaml",
+//                "esbenp.prettier-vscode",
+//                "oderwat.indent-rainbow",
+//                "okteto.kubernetes-context",
+//                "ms-vsliveshare.vsliveshare",
+//                "ms-azuretools.vscode-docker",
+//                "github.vscode-github-actions",
+//                "ms-kubernetes-tools.kind-vscode",
+//                "ms-vscode.vscode-typescript-next",
+//                "github.vscode-pull-request-github",
+//                "ms-vscode-remote.remote-containers",
+//                "randomfractalsinc.vscode-data-table",
+//                "visualstudioexptteam.vscodeintellicode",
+//                "ms-kubernetes-tools.vscode-kubernetes-tools"
+//            ]
+//        }
+//    }
+//}

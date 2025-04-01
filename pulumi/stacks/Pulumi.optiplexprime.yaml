@@ -10,7 +10,7 @@ config:
       network_name: "br0" # Multus network name for controlplane
       replicas: ha # Specifies 'single' (1) or 'ha' (3) replicas
       root_disk_size: "32" # Controlplane root disk size in GiB
-    enabled: true # Enable Talos deployment
+    enabled: false # Enable Talos deployment
     running: false # Kargo-on-Kargo Dev Cluster Running/Stopped
     workers:
       cpu_cores: 3 # Worker CPU cores
@@ -22,3 +22,25 @@ config:
       root_disk_size: "64" # Root disk size in GiB
   kargo:vm: # Ubuntu VM deployment configuration
     enabled: false # Disable VM deployment (set to true if needed)
+  kargo:cdi:
+    enabled: true
+  kargo:cert_manager:
+    enabled: true
+  kargo:cilium:
+    enabled: true
+  kargo:cnao:
+    enabled: false
+  kargo:hostpath_provisioner:
+    enabled: true
+    default_storage_class: true
+  kargo:kubernetes_dashboard:
+    enabled: false
+  kargo:kubevirt:
+    enabled: true
+    version: 1.5.0-alpha.0
+  kargo:multus:
+    enabled: true
+  kargo:prometheus:
+    enabled: false
+  kargo:kubevirt_manager:
+    enabled: false

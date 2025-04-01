@@ -20,3 +20,5 @@ tmp.*
 tmp
 .ssh
 tmp
+/poetry.lock
+pulumi/poetry.lock

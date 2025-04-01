@@ -2,11 +2,8 @@ import os
 import pulumi
 import pulumi_kubernetes as k8s
 
-def deploy_ubuntu_vm(
-        config_vm,
-        k8s_provider: k8s.Provider,
-        depends_on: list = []
-    ):
+
+def deploy_ubuntu_vm(config_vm, k8s_provider: k8s.Provider, depends_on: list = []):
     # Extract configuration values from config_vm
     namespace = config_vm.get("namespace", "default")
     instance_name = config_vm.get("instance_name", "ubuntu")
@@ -28,7 +25,7 @@ def deploy_ubuntu_vm(
         string_data={
             "key1": ssh_pub_key,
         },
-        opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=depends_on)
+        opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=depends_on),
     )
 
     # Define the Service
@@ -40,17 +37,19 @@ def deploy_ubuntu_vm(
         ),
         spec=k8s.core.v1.ServiceSpecArgs(
             type="NodePort",
-            ports=[k8s.core.v1.ServicePortArgs(
-                node_port=node_port,
-                port=node_port,
-                protocol="TCP",
-                target_port=22,
-            )],
+            ports=[
+                k8s.core.v1.ServicePortArgs(
+                    node_port=node_port,
+                    port=node_port,
+                    protocol="TCP",
+                    target_port=22,
+                )
+            ],
             selector={
                 f"{app_name}.ccio.io/instance": instance_name,
             },
         ),
-        opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=depends_on)
+        opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=depends_on),
     )
 
     # Cloud-init user data for VM configuration
@@ -85,6 +84,11 @@ def deploy_ubuntu_vm(
       enp1s0:
         dhcp4: true
         dhcp6: false
+        nameservers:
+          addresses:
+            - 1.1.1.1
+            - 8.8.8.8
+            - 192.168.1.1
         dhcp-identifier: mac
     """
 
@@ -116,15 +120,9 @@ def deploy_ubuntu_vm(
                         "cpu": {
                             "model": "host-passthrough",
                             "dedicatedCpuPlacement": False,
-                            "isolateEmulatorThread": False
+                            "isolateEmulatorThread": False,
                         },
-                        "memory": {"guest": "4096M"},
-                        "resources": {
-                            "limits": {
-                                "memory": "4Gi",
-                                "cpu": 2
-                            }
-                        },
+                        "resources": {"limits": {"memory": "4Gi", "cpu": 2}},
                         "devices": {
                             "rng": {},
                             "autoattachPodInterface": False,
@@ -132,39 +130,55 @@ def deploy_ubuntu_vm(
                             "autoattachGraphicsDevice": True,
                             "networkInterfaceMultiqueue": False,
                             "disks": [
-                                {"name": "containerdisk", "bootOrder": 1, "disk": {"bus": "virtio"}},
-                                {"name": "cloudinitdisk", "disk": {"bus": "virtio"}}
+                                {
+                                    "name": "containerdisk",
+                                    "bootOrder": 1,
+                                    "disk": {"bus": "virtio"},
+                                },
+                                {"name": "cloudinitdisk", "disk": {"bus": "virtio"}},
                             ],
                             "interfaces": [
                                 {"name": "enp1s0", "model": "virtio", "bridge": {}}
                             ],
                         },
-                        "machine": {"type": "q35"}
+                        "machine": {"type": "q35"},
                     },
                     "networks": [{"name": "enp1s0", "pod": {}}],
                     "terminationGracePeriodSeconds": 0,
-                    "accessCredentials": [{
-                        "sshPublicKey": {
-                            "source": {
-                                "secret": {"secretName": kc2_pubkey_secret.metadata["name"]}
-                            },
-                            "propagationMethod": {
-                                "qemuGuestAgent": {"users": [ssh_user]}
+                    "accessCredentials": [
+                        {
+                            "sshPublicKey": {
+                                "source": {
+                                    "secret": {
+                                        "secretName": kc2_pubkey_secret.metadata["name"]
+                                    }
+                                },
+                                "propagationMethod": {
+                                    "qemuGuestAgent": {"users": [ssh_user]}
+                                },
                             }
                         }
-                    }],
+                    ],
                     "volumes": [
-                        {"name": "containerdisk",
-                        "containerDisk": {"image": image_name, "imagePullPolicy": "Always"}},
-                        {"name": "cloudinitdisk", "cloudInitNoCloud": {
-                            "networkData": network_data,
-                            "userData": user_data,
-                        }}
-                    ]
-                }
-            }
+                        {
+                            "name": "containerdisk",
+                            "containerDisk": {
+                                "image": image_name,
+                                "imagePullPolicy": "Always",
+                            },
+                        },
+                        {
+                            "name": "cloudinitdisk",
+                            "cloudInitNoCloud": {
+                                "networkData": network_data,
+                                "userData": user_data,
+                            },
+                        },
+                    ],
+                },
+            },
         },
-        opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=depends_on)
+        opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=depends_on),
     )
 
     # Export the Service URL and VM name as outputs

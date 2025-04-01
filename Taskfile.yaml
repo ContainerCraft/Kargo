@@ -251,7 +251,7 @@ tasks:
           --exposed-ports {{.exposed_ports}} \
           --context {{.cluster_name}} \
           --name {{.cluster_name}} \
-          --workers 0 --crashdump
+          --workers 0
 
   kubernetes-ready:
     desc: "Wait for the Talos cluster control plane components to be ready."
