@@ -34,10 +34,10 @@ Tested in Google Chrome & Microsoft Edge browsers.
 | 2           | Click the `Code` button and select the `Codespaces` tab.                                     |                                |
 | 3           | Click `Codespaces > New with options` in the 3-dot menu.                                     |                                |
 | 4           | Select the following options:                                                                |                                |
-|             | **Branch**                                                                                   | `main`                         |
-|             | **Dev container configuration**                                                              | `konductor`                    |
-|             | **Region**                                                                                   | `$USERS_CHOICE`                |
-|             | **Machine type**                                                                             | `4 cores, 16 GB RAM` or better |
+|             | __Branch__                                                                                   | `main`                         |
+|             | __Dev container configuration__                                                              | `konductor`                    |
+|             | __Region__                                                                                   | `$USERS_CHOICE`                |
+|             | __Machine type__                                                                             | `4 cores, 16 GB RAM` or better |
 | 5           | Click the `Create` button.                                                                   |                                |
 
 Wait for the Codespace to build, then continue with the [How To](#how-to) instructions.
@@ -125,6 +125,11 @@ pulumi login
 ```
 
 3. Launch Talos-in-Docker Kubernetes + Deploy Kargo Kubevirt PaaS IaC.
+
+```sh
+task configure
+task kubernetes
+```
 
 ```sh
 task deploy

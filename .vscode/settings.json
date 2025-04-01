@@ -4,6 +4,7 @@
   "window.title": "${localWorkspaceFolderBasename}${separator}${containerName}${separator}${profileName}${separator}${activeEditorShort}",
   "window.density.editorTabHeight": "compact",
   "search.defaultViewMode": "list",
+  "runme.terminal.fontFamily": "Fira Code, monospace",
   "vim.disableExtension": false,
   "vim.useSystemClipboard": true,
   "vim.useCtrlKeys": true,
