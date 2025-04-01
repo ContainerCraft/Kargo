@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/containercraft/konductor:latest
+      image: ghcr.io/containercraft/devcontainer:code-server
       options: --user runner --security-opt seccomp=unconfined
 
     steps:
