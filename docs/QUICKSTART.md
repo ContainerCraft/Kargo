@@ -1,3 +1,10 @@
+---
+cwd: /workspaces/Kargo
+runme:
+  version: "3"
+skipPrompts: false
+---
+
 # Kargo - Quickstart
 
 ## Getting Started
@@ -147,7 +154,7 @@ pulumi up
 
 5. SSH to the new Ubuntu VM instance
 
-```bash
+```bash {"terminalRows":"27"}
 # Access the VM instance via ssh
 ssh -p 30590 -i ~/.ssh/id_rsa kc2@localhost screenfetch
 ```
