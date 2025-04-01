@@ -10,7 +10,11 @@ jobs:
 
     container:
       image: ghcr.io/containercraft/devcontainer:code-server
-      options: --user runner --security-opt seccomp=unconfined
+      options: >-
+        --user root
+        --privileged
+        -v /var/run/docker.sock:/var/run/docker.sock
+        --security-opt seccomp=unconfined
 
     steps:
       - id: checkout
