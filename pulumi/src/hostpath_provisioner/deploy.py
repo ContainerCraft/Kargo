@@ -44,6 +44,94 @@ def deploy(
         depends, ns_name, ns_retain, ns_protect, k8s_provider, ns_labels, ns_annotations
     )
 
+    # Create Role for pod access within the namespace
+    pod_reader_role = k8s.rbac.v1.Role(
+        "hostpath-provisioner-pod-reader",
+        metadata=k8s.meta.v1.ObjectMetaArgs(
+            name="hostpath-provisioner-pod-reader",
+            namespace=ns_name
+        ),
+        rules=[
+            k8s.rbac.v1.PolicyRuleArgs(
+                api_groups=[""],
+                resources=["pods"],
+                verbs=["get", "watch", "list"]
+            )
+        ],
+        opts=pulumi.ResourceOptions(
+            parent=namespace,
+            provider=k8s_provider
+        )
+    )
+
+    # Create RoleBinding for pod reader role
+    pod_reader_binding = k8s.rbac.v1.RoleBinding(
+        "hostpath-provisioner-pod-reader-binding",
+        metadata=k8s.meta.v1.ObjectMetaArgs(
+            name="hostpath-provisioner-pod-reader-binding",
+            namespace=ns_name
+        ),
+        subjects=[
+            k8s.rbac.v1.SubjectArgs(
+                kind="ServiceAccount",
+                name="hostpath-provisioner-admin-csi",
+                namespace=ns_name
+            )
+        ],
+        role_ref=k8s.rbac.v1.RoleRefArgs(
+            api_group="rbac.authorization.k8s.io",
+            kind="Role",
+            name="hostpath-provisioner-pod-reader"
+        ),
+        opts=pulumi.ResourceOptions(
+            parent=pod_reader_role,
+            provider=k8s_provider
+        )
+    )
+
+    # Create ClusterRole for CSI storage capacities management
+    csi_storage_role = k8s.rbac.v1.ClusterRole(
+        "hostpath-provisioner-csi-storage",
+        metadata=k8s.meta.v1.ObjectMetaArgs(
+            name="hostpath-provisioner-csi-storage"
+        ),
+        rules=[
+            k8s.rbac.v1.PolicyRuleArgs(
+                api_groups=["storage.k8s.io"],
+                resources=["csistoragecapacities"],
+                verbs=["get", "list", "watch", "create", "update", "patch", "delete"]
+            )
+        ],
+        opts=pulumi.ResourceOptions(
+            parent=namespace,
+            provider=k8s_provider
+        )
+    )
+
+    # Create ClusterRoleBinding for CSI storage role
+    csi_storage_binding = k8s.rbac.v1.ClusterRoleBinding(
+        "hostpath-provisioner-csi-storage-binding",
+        metadata=k8s.meta.v1.ObjectMetaArgs(
+            name="hostpath-provisioner-csi-storage-binding"
+        ),
+        subjects=[
+            k8s.rbac.v1.SubjectArgs(
+                kind="ServiceAccount",
+                name="hostpath-provisioner-admin-csi",
+                namespace=ns_name
+            )
+        ],
+        role_ref=k8s.rbac.v1.RoleRefArgs(
+            api_group="rbac.authorization.k8s.io",
+            kind="ClusterRole",
+            name="hostpath-provisioner-csi-storage"
+        ),
+        opts=pulumi.ResourceOptions(
+            parent=csi_storage_role,
+            provider=k8s_provider
+        )
+    )
+
     # Function to add namespace to resource if not set
     def add_namespace(args):
         obj = args.props
@@ -70,7 +158,7 @@ def deploy(
         file=url_webhook,
         opts=ResourceOptions(
             parent=namespace,
-            depends_on=depends,
+            depends_on=[pod_reader_binding, csi_storage_binding],
             provider=k8s_provider,
             transformations=[add_namespace],
             custom_timeouts=pulumi.CustomTimeouts(
@@ -85,8 +173,8 @@ def deploy(
         "hostpath-provisioner-operator",
         file=url_operator,
         opts=ResourceOptions(
-            parent=webhook,
-            depends_on=depends,
+            parent=namespace,
+            depends_on=[webhook],
             provider=k8s_provider,
             transformations=[add_namespace],
             custom_timeouts=pulumi.CustomTimeouts(
@@ -101,8 +189,8 @@ def deploy(
         "hostpathprovisioners",
         id="hostpathprovisioners.hostpathprovisioner.kubevirt.io",
         opts=ResourceOptions(
-            parent=operator,
-            depends_on=depends,
+            parent=namespace,
+            depends_on=[operator],
             provider=k8s_provider,
             custom_timeouts=pulumi.CustomTimeouts(
                 create="9m", update="9m", delete="2m"
@@ -122,8 +210,8 @@ def deploy(
             "workload": {"nodeSelector": {"kubernetes.io/os": "linux"}},
         },
         opts=pulumi.ResourceOptions(
-            parent=operator,
-            depends_on=crd,
+            parent=namespace,
+            depends_on=[crd],
             provider=k8s_provider,
             ignore_changes=["status"],
             custom_timeouts=pulumi.CustomTimeouts(
@@ -150,8 +238,8 @@ def deploy(
             "storagePool": "ssd",
         },
         opts=ResourceOptions(
-            parent=hostpath_provisioner,
-            # depends_on=hostpath_provisioner,
+            parent=namespace,
+            depends_on=[hostpath_provisioner],
             provider=k8s_provider,
             custom_timeouts=pulumi.CustomTimeouts(
                 create="8m", update="8m", delete="2m"
