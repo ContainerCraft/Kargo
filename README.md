@@ -159,7 +159,7 @@ Use our GitHub Actions integration and the `act` tool to test CI pipelines local
 
 To test Kargo CI locally:
 
-```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT92WYZEH"}
+```bash {"excludeFromRunAll":"true"}
 task act
 ```
 
