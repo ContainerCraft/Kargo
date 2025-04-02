@@ -68,7 +68,7 @@ tasks:
     desc: "Wait for all Kubernetes pods in the cluster to be ready."
     cmds:
       - bash -c 'until [ "$(kubectl get pods --all-namespaces --no-headers | grep -v "Running\\|Completed\\|Succeeded" | wc -l)" -eq 0 ]; do echo "Waiting for pods..."; sleep 5; done'
-      - kubectl get pods --all-namespaces --show-labels --kubeconfig {{.kube_config_file}}
+      - kubectl get pods --all-namespaces --kubeconfig {{.kube_config_file}}
 
   destroy:
     desc: "Clean up and destroy all Pulumi and Kubernetes resources."
