@@ -118,7 +118,7 @@ pulumi up --skip-preview --refresh=false
 Access the VM via SSH using a Kubernetes NodePort service.
 
 ```bash {"excludeFromRunAll":"false","name":"ssh-cmd-vm-screenfetch","terminalRows":"38"}
-ssh -p 30590 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no kc2@localhost screenfetch
+ssh -p 30590 -i ~/.ssh/id_rsa -o UserKnownHostsFile=/dev/null kc2@localhost screenfetch
 ```
 
 10. **Virtctl SSH:**
