@@ -1,3 +1,10 @@
+---
+cwd: /workspaces/Kargo
+runme:
+  version: "3"
+skipPrompts: false
+---
+
 # Kargo - The Cloud-Native ESXi Replacement
 
 [![Quickstart Test](https://github.com/ContainerCraft/Kargo/actions/workflows/readme.yaml/badge.svg)](https://github.com/ContainerCraft/Kargo/actions/workflows/readme.yaml)
@@ -57,7 +64,7 @@ Check out the video to see Kargo deploy for yourself, or try it in your browser 
 
 Login to Pulumi Cloud and other services.
 
-```bash {"id":"01J5VC1KTJBR22WEDNSSGTNAX4","name":"login"}
+```bash {"excludeFromRunAll":"false","name":"login","terminalRows":"15"}
 task login
 ```
 
@@ -65,18 +72,19 @@ task login
 
 Configure the Pulumi IaC Stack parameters.
 
-```bash {"id":"01J5VC1KTJBR22WEDNSWYBKNQS","name":"configure"}
+```bash {"excludeFromRunAll":"false","name":"configure","terminalRows":"10"}
 # confirm Pulumi stack
 export ORGANIZATION="${GITHUB_USER:-${GITHUB_REPOSITORY_OWNER:-}}"
 export DEPLOYMENT="${RepositoryName:-}"
 task configure
+echo "Configured Pulumi stack: ci"
 ```
 
 6. **Deploy Kubernetes:**
 
 Deploy Kubernetes using Talos.
 
-```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNSX4RHEG2","name":"kubernetes"}
+```bash {"excludeFromRunAll":"true","name":"deploy-kubernetes","terminalRows":"30"}
 task kubernetes
 ```
 
@@ -84,7 +92,7 @@ task kubernetes
 
 Deploy the Kubevirt PaaS IaC to Kubernetes.
 
-```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNSZW7QADA","name":"deploy","terminalRows":"127"}
+```bash {"excludeFromRunAll":"true","name":"deploy","terminalRows":"128"}
 task deploy
 ```
 
@@ -94,7 +102,7 @@ Deploy an Ubuntu Virtual Machine on the platform using Kubevirt.
 
 > **Note:** Run this step manually via integrated terminal.
 
-```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT2EWEW9Q","name":"vm"}
+```bash {"excludeFromRunAll":"false","name":"deploy-virtual-machine","terminalRows":"40"}
 # Purge old known host fingerprints
 task ssh-clean
 
@@ -109,15 +117,15 @@ pulumi up --skip-preview --refresh=false
 
 Access the VM via SSH using a Kubernetes NodePort service.
 
-```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT3YSQGM0","name":"ssh"}
-ssh -p 30590 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no kc2@localhost screenfetch
+```bash {"excludeFromRunAll":"false","name":"ssh-cmd-vm-screenfetch","terminalRows":"38"}
+ssh -p 30590 -i ~/.ssh/id_rsa -o UserKnownHostsFile=/dev/null kc2@localhost screenfetch
 ```
 
 10. **Virtctl SSH:**
 
 Use `virtctl` to access the VM via SSH without a NodePort service.
 
-```bash {"background":"true","excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT6VNC5EK","name":"virtctl-ssh"}
+```bash {"excludeFromRunAll":"true","name":"virtctl-ssh","terminalRows":"48"}
 # SSH using virtctl
 virtctl ssh kc2@ubuntu
 ```
@@ -126,7 +134,7 @@ virtctl ssh kc2@ubuntu
 
 Use `virtctl` to access the serial console of the VM.
 
-```bash {"background":"true","excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT7BDRMAV","name":"virtctl-console"}
+```bash {"excludeFromRunAll":"true","name":"virtctl-console","terminalRows":"48"}
 # Serial console access
 virtctl console ubuntu
 ```
@@ -137,7 +145,7 @@ virtctl console ubuntu
 
 Clean up all Kubernetes and Pulumi resources.
 
-```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT7BDRMAV","name":"clean"}
+```bash {"excludeFromRunAll":"true","name":"clean-all","terminalRows":"15"}
 task clean-all
 ```
 
@@ -151,7 +159,7 @@ Use our GitHub Actions integration and the `act` tool to test CI pipelines local
 
 To test Kargo CI locally:
 
-```bash {"excludeFromRunAll":"true","id":"01J5VC1KTJBR22WEDNT92WYZEH"}
+```bash {"excludeFromRunAll":"true"}
 task act
 ```
 

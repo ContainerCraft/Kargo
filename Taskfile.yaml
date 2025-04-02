@@ -31,7 +31,6 @@ vars:
 tasks:
   ##################################################################################
   # Meta & Utility Tasks
-  # TODO: @RUNME remove `source .envrc` when runme support lands for direnv
 
   default:
     desc: "Run all tasks to set up and configure a Kargo Kubevirt Kubernetes Platform."
@@ -54,8 +53,8 @@ tasks:
     desc: "Authenticate with Pulumi."
     cmds:
       - task: init
-      - source .envrc && pulumi login
-      - source .envrc && pulumi install
+      - pulumi login
+      - pulumi install
 
   deploy:
     desc: "Deploy Kubernetes + Kargo Kubevirt PaaS IaC"
@@ -68,7 +67,7 @@ tasks:
     desc: "Wait for all Kubernetes pods in the cluster to be ready."
     cmds:
       - bash -c 'until [ "$(kubectl get pods --all-namespaces --no-headers | grep -v "Running\\|Completed\\|Succeeded" | wc -l)" -eq 0 ]; do echo "Waiting for pods..."; sleep 5; done'
-      - kubectl get pods --all-namespaces --show-labels --kubeconfig {{.kube_config_file}}
+      - kubectl get pods --all-namespaces --kubeconfig {{.kube_config_file}}
 
   destroy:
     desc: "Clean up and destroy all Pulumi and Kubernetes resources."
@@ -115,14 +114,14 @@ tasks:
   vm-deploy:
     desc: "Enable the built in pulumi Ubuntu vm iac feature"
     cmds:
-      - source .envrc && pulumi config set --path vm.enabled true
-      - source .envrc && pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
+      - pulumi config set --path vm.enabled true
+      - pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
 
   vm-destroy:
     desc: "Enable the built in pulumi Ubuntu vm iac feature"
     cmds:
-      - source .envrc && pulumi config set --path vm.enabled false
-      - source .envrc && pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
+      - pulumi config set --path vm.enabled false
+      - pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
 
   ##################################################################################
   # Pulumi Tasks
@@ -130,13 +129,13 @@ tasks:
   configure:
     desc: "Configure Pulumi stack settings."
     cmds:
-      - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
-      - source .envrc && pulumi config set --path kubernetes.distribution talos
-      - source .envrc && pulumi config set --path kubernetes.context admin@{{.cluster_name}}
-      - source .envrc && pulumi config set --path kubernetes.kubeconfig {{.kube_config_file}}
-      - source .envrc && pulumi config set --path cilium.enabled false
-      - source .envrc && pulumi config set --path multus.enabled false
-      - source .envrc && pulumi config set --path vm.enabled false
+      - pulumi stack select --create {{.pulumi_stack_identifier}} || true
+      - pulumi config set --path kubernetes.distribution talos
+      - pulumi config set --path kubernetes.context admin@{{.cluster_name}}
+      - pulumi config set --path kubernetes.kubeconfig {{.kube_config_file}}
+      - pulumi config set --path cilium.enabled false
+      - pulumi config set --path multus.enabled false
+      - pulumi config set --path vm.enabled false
 
   install-gum:
     desc: Installs the gum utility for collecting user input
@@ -164,12 +163,12 @@ tasks:
       - task: install-pen
       - pen 11443 127.0.0.1:10443
       - pen 12443 127.0.0.1:10443
-      - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
-      - source .envrc && pulumi config set --path openunison.enabled true
-      - source .envrc && pulumi config set --path kubernetes_dashboard.enabled true
-      - source .envrc && pulumi config set --path openunison.github.client_id $(gum input --placeholder='GitHub OAuth2 Client Id' --header='GitHub OAuth2 Client Id')
-      - source .envrc && pulumi config set --secret --path openunison.github.client_secret $(gum input --placeholder='GitHub OAuth2 Client Secret' --header='GitHub OAuth2 Client Secret')
-      - source .envrc && pulumi config set --path openunison.github.teams $(gum input --placeholder='GitHub OAuth2 Teams' --header='GitHub OAuth2 Teams')
+      - pulumi stack select --create {{.pulumi_stack_identifier}} || true
+      - pulumi config set --path openunison.enabled true
+      - pulumi config set --path kubernetes_dashboard.enabled true
+      - pulumi config set --path openunison.github.client_id $(gum input --placeholder='GitHub OAuth2 Client Id' --header='GitHub OAuth2 Client Id')
+      - pulumi config set --secret --path openunison.github.client_secret $(gum input --placeholder='GitHub OAuth2 Client Secret' --header='GitHub OAuth2 Client Secret')
+      - pulumi config set --path openunison.github.teams $(gum input --placeholder='GitHub OAuth2 Teams' --header='GitHub OAuth2 Teams')
       - |-
           if [[ -z "${GITHUB_USER}" ]]; then
 
@@ -183,8 +182,8 @@ tasks:
     - task: install-gum
     - task: install-pen
     - pen 13443 127.0.0.1:10443
-    - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
-    - source .envrc && pulumi config set --path kubevirt_manager.enabled true
+    - pulumi stack select --create {{.pulumi_stack_identifier}} || true
+    - pulumi config set --path kubevirt_manager.enabled true
 
   enable-prometheus:
     desc: Enables Prometheus
@@ -194,8 +193,8 @@ tasks:
     - pen 14443 127.0.0.1:10443
     - pen 15443 127.0.0.1:10443
     - pen 16443 127.0.0.1:10443
-    - source .envrc && pulumi stack select --create {{.pulumi_stack_identifier}} || true
-    - source .envrc && pulumi config set --path prometheus.enabled true
+    - pulumi stack select --create {{.pulumi_stack_identifier}} || true
+    - pulumi config set --path prometheus.enabled true
 
 
 
@@ -203,9 +202,9 @@ tasks:
     desc: "Deploy Pulumi infrastructure."
     cmds:
       - task: iac-cancel
-      - source .envrc && pulumi up --yes --skip-preview --refresh --continue-on-error --stack {{.pulumi_stack_identifier}} || true
+      - pulumi up --yes --skip-preview --refresh --continue-on-error --stack {{.pulumi_stack_identifier}} || true
       - task: all-pods-ready
-      - source .envrc && pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
+      - pulumi up --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
       - task: all-pods-ready
 
   iac-destroy:
@@ -213,20 +212,19 @@ tasks:
     cmds:
       - task: iac-cancel
       - |
-        source .envrc
         pulumi down --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}} || true
         pulumi down --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}}
 
   iac-cancel:
     desc: "Cancel the Pulumi update."
     cmds:
-      - source .envrc && pulumi cancel --yes --stack {{.pulumi_stack_identifier}} 2>/dev/null || true
+      - pulumi cancel --yes --stack {{.pulumi_stack_identifier}} 2>/dev/null || true
 
   iac-clean:
     desc: "Clean up all Pulumi resources."
     cmds:
       - task: iac-cancel
-      - source .envrc && pulumi down --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}} 2>/dev/null || true
+      - pulumi down --yes --skip-preview --refresh --stack {{.pulumi_stack_identifier}} 2>/dev/null || true
 
   ##################################################################################
   # Talos Tasks
